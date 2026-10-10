@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "tasks": [
+    {
+      "id": "H-01",
+      "status": "done",
+      "refs": [
+        "NFR-05"
+      ],
+      "dependsOn": [],
+      "doneWhen": "统一检查与反例退出正确；隔离仓库真实 commit 拒绝坏输入、接受好输入；本仓钩子生效"
+    },
+    {
+      "id": "M0-01",
+      "status": "todo",
+      "refs": [
+        "AC-08",
+        "Q-07",
+        "DEC-07"
+      ],
+      "dependsOn": [
+        "H-01"
+      ],
+      "doneWhen": "两版本离线安装、精确选择、回退、坏包拒绝及移动路径原型通过；正式 Release 范围单列"
+    },
+    {
+      "id": "M0-02",
+      "status": "todo",
+      "refs": [
+        "DEC-01",
+        "DEC-02",
+        "AC-07",
+        "VIS-02",
+        "SER-04"
+      ],
+      "dependsOn": [
+        "H-01"
+      ],
+      "doneWhen": "ELF、SDK隔离、串口记录和发布原型形成可复现证据，依据测量选择技术栈"
+    },
+    {
+      "id": "M0-03",
+      "status": "todo",
+      "refs": [
+        "Q-04",
+        "Q-06",
+        "DEC-05",
+        "AC-12"
+      ],
+      "dependsOn": [
+        "H-01"
+      ],
+      "doneWhen": "G4样本读取优先级及读计划生命周期测试通过；EIDE真实读回与上传单列"
+    },
+    {
+      "id": "M0-04",
+      "status": "todo",
+      "refs": [
+        "DEC-03",
+        "DEC-04",
+        "DEC-06",
+        "Q-05",
+        "Q-08",
+        "AC-04",
+        "AC-06"
+      ],
+      "dependsOn": [
+        "M0-02"
+      ],
+      "doneWhen": "落实设备及具体操作授权后执行本地远程采集与串口实测，记录速率、释放和未覆盖范围"
+    }
+  ]
+}

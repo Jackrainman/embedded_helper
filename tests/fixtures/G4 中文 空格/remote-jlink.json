@@ -1,0 +1,11 @@
+{
+  "ServerName": "fixture.invalid",
+  "Port": 19011,
+  "Device": "STM32G474VE",
+  "Interface": "SWD",
+  "SpeedKHz": 8000,
+  "JLinkExe": "",
+  "x-fixture": {
+    "preserve": true
+  }
+}
