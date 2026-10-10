@@ -17,6 +17,25 @@
     "serial.bin": "03b26330404ca500d0a62b1231639450bafa1743dc34a0f3525ba8c48c36d218",
     "G4 中文 空格/remote-jlink.json": "855ac436d14df8f33f268f40233f301ba0a5b4b83f1433d50b0565af96b84398",
     "G4 中文 空格/.eide/eide.yml": "f486dc464d779480d06408b5a6cb3c8d55448c5a28ff1876b5160d1bc6d7b123",
-    "G4 中文 空格/.vscode/launch.json": "41b21da7e25e2c31c2ea50dbd2e11467cdb1df74c110b4ff7a927ebdaf889fda"
+    "G4 中文 空格/.vscode/launch.json": "41b21da7e25e2c31c2ea50dbd2e11467cdb1df74c110b4ff7a927ebdaf889fda",
+    "scalars.c": "adbc65be2048f3bfe1e9074bb972867698f479910ea3c64fe8d452c263d8210f",
+    "scalars.elf": "cbcc29cbb798200197c2fd8666320803ed164fbde1f647c8b02e04ec170efdc9"
+  },
+  "syntheticElf": {
+    "compiler": "arm-none-eabi-gcc.exe (Arm GNU Toolchain 15.2.Rel1 (Build arm-15.86)) 15.2.1 20251203",
+    "arguments": [
+      "-g",
+      "-gdwarf-4",
+      "-O0",
+      "-nostdlib",
+      "-Wl,-e,main",
+      "-Wl,-Ttext=0x08000000",
+      "-Wl,-Tdata=0x20000000",
+      "-ffile-prefix-map=<repository>=fixtures",
+      "tests/fixtures/scalars.c",
+      "-o",
+      "tests/fixtures/scalars.elf"
+    ],
+    "purpose": "self-owned scalar DWARF fixture; never flash"
   }
 }

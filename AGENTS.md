@@ -6,6 +6,6 @@
 
 本仓库拥有客户端和原型；Debug_LAN 源码归 Template，服务归 LAN-Debug-Server。配置试验只写 `tmp/` 内隔离副本；`tests/fixtures/` 是带来源和摘要的只读输入，不运行其中的工程钩子。不得为观察擅自烧录、复位、停核或部署服务；设备操作遵循具体任务授权。
 
-开发环境暂用 Python 3.12+ 标准库运行 Harness，不代表产品语言选型。安装钩子：`python scripts/verify.py --install-hooks`。统一验证：`python scripts/verify.py`；包含环境检查、文档链接、账本、文件边界、样本及反例。钩子验证暂存快照；缺工具/硬件输出未验证，不得替代实测结论。
+开发环境暂用 Python 3.12+；Harness本体使用标准库，M0测试依赖按README安装根requirements.lock，不代表产品语言选型。安装钩子：`python scripts/verify.py --install-hooks`。统一验证：`python scripts/verify.py`；包含环境检查、语法检查、文档链接、账本、文件边界、样本及反例。钩子验证暂存快照；缺工具/硬件输出未验证，不得替代实测结论。
 
 每批从账本取任务，实施、验证、更新权威文档后独立提交；不默认推送、打标签或发布。完成条件须有可执行验证和真实退出结果，模拟、离线、实机分别说明。产品选型后接入锁定依赖、静态检查、构建及 Windows CI；版本纪律见概要10.4。

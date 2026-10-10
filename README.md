@@ -1,6 +1,6 @@
 # Embedded Helper 设计文档
 
-文档版本0.5，2026-10-10。此目录目前交付需求与设计，尚未实现客户端、发布工具Release或完成硬件验证。
+文档版本0.6，2026-10-10。此目录已实现最小Harness及M0离线原型，尚未交付客户端、发布工具Release或完成硬件验证。
 
 ## 阅读顺序
 
@@ -52,3 +52,5 @@ M0选型后补依赖锁定、静态检查、测试/构建统一入口及Windows 
 仓库长期文档保留本入口与三份规格/设计；研究结论写回对应权威位置，普通审查过程、完成日志和原始测试输出不新增永久文档，历史通过Git恢复。
 
 统一验证入口：`python scripts/verify.py`；首次克隆运行 `python scripts/verify.py --install-hooks`。开发环境需要 Python 3.12+ 与 Git；产品技术栈仍由 M0 测量决定。活动任务见 [唯一账本](.harness/todo.json)，验证证据见详细设计18节。
+
+M0离线依赖：`python -m venv .venv` 后运行 `.venv/Scripts/python -m pip install -r requirements.lock`。统一验证会优先使用本仓库虚拟环境。`--build` 为待完成的Qt发布试验，缺依赖返回非零；不代表可分发产品。

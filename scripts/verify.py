@@ -1,6 +1,8 @@
 """唯一离线验证编排；提交时检查索引快照而非未暂存工作树。"""
 import argparse
 import hashlib
+import importlib.metadata
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -25,8 +27,10 @@ def git(root, *args):
 
 def validate(root):
     errors = []
-    files = [p for p in root.rglob('*') if p.is_file() and
-             not any(x in {'.git', 'tmp', '.venv', '__pycache__'} for x in p.relative_to(root).parts)]
+    files = []
+    for directory, dirs, names in os.walk(root):
+        dirs[:] = [d for d in dirs if d not in {'.git', 'tmp', '.venv', '__pycache__', 'build', 'dist', '.ruff_cache'}]
+        files.extend(Path(directory) / name for name in names)
     for p in files:
         rel = p.relative_to(root).as_posix()
         if p.suffix == '.md' and rel not in DOCS and not rel.startswith('.agents/skills/'):
@@ -39,6 +43,9 @@ def validate(root):
             errors.append(f'缺少文档: {name}')
             continue
         content = p.read_text(encoding='utf-8-sig')
+        headings = re.findall(r'^## (\d+)\.', content, re.MULTILINE)
+        if len(headings) != len(set(headings)):
+            errors.append(f'重复章节编号: {name}')
         for target in re.findall(r'\]\(([^)]+)\)', content):
             target = target.strip('<>').split('#')[0]
             if target and not re.match(r'[a-zA-Z]+:', target) and not (p.parent / target).exists():
@@ -89,9 +96,13 @@ def environment():
 
 
 def main():
+    local_python = ROOT / '.venv/Scripts/python.exe'
+    if local_python.exists() and Path(sys.executable).resolve() != local_python.resolve():
+        return subprocess.call([str(local_python), str(Path(__file__).resolve()), *sys.argv[1:]])
     parser = argparse.ArgumentParser()
     parser.add_argument('--install-hooks', action='store_true')
     parser.add_argument('--staged', action='store_true')
+    parser.add_argument('--build', action='store_true')
     args = parser.parse_args()
     if args.install_hooks:
         git(ROOT, 'config', '--local', 'core.hooksPath', '.githooks')
@@ -99,8 +110,24 @@ def main():
         print('已安装 core.hooksPath=.githooks；运行完整验证检查真实提交触发')
         return 0
     environment()
+    if (ROOT / 'requirements.lock').exists():
+        for line in (ROOT / 'requirements.lock').read_text(encoding='utf-8').splitlines():
+            if not line or line.startswith('#'):
+                continue
+            name, version = line.split('==')
+            try:
+                actual = importlib.metadata.version(name)
+            except importlib.metadata.PackageNotFoundError:
+                actual = 'missing'
+            if actual != version:
+                print(f'未验证：依赖 {name} 需要 {version}，实际 {actual}；请安装 requirements.lock')
+                return 2
     if args.staged:
         git(ROOT, 'diff', '--cached', '--check')
+        for name in git(ROOT, 'ls-files', '-z').decode('utf-8').split('\0'):
+            if name and name.split('/')[0] in {'data', 'dist', 'build', 'tmp', '.venv', '.codex'}:
+                print('FAIL 暂存本机产物:', name)
+                return 1
         (ROOT / 'tmp').mkdir(exist_ok=True)
         with tempfile.TemporaryDirectory(dir=ROOT / 'tmp') as temp:
             snapshot = Path(temp)
@@ -112,10 +139,21 @@ def main():
         print('FAIL', error)
     if errors:
         return 1
+    for directory in ['scripts', 'prototypes', 'tests']:
+        for source in (ROOT / directory).rglob('*.py'):
+            compile(source.read_text(encoding='utf-8'), str(source), 'exec')
     suite = unittest.defaultTestLoader.discover(str(ROOT / 'tests'), pattern='test_*.py')
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     print('PASS 离线验证' if result.wasSuccessful() else 'FAIL 测试')
-    return 0 if result.wasSuccessful() else 1
+    if not result.wasSuccessful():
+        return 1
+    if args.build:
+        missing = [m for m in ['PySide6', 'pyqtgraph', 'PyInstaller'] if importlib.util.find_spec(m) is None]
+        if missing:
+            print('未验证：构建依赖缺失', ', '.join(missing))
+            return 2
+        return subprocess.call([sys.executable, str(ROOT / 'scripts/build_probe.py')], cwd=ROOT)
+    return 0
 
 
 if __name__ == '__main__':

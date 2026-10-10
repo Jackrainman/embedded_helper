@@ -25,7 +25,7 @@
     },
     {
       "id": "M0-02",
-      "status": "todo",
+      "status": "blocked",
       "refs": [
         "DEC-01",
         "DEC-02",
@@ -36,11 +36,12 @@
       "dependsOn": [
         "H-01"
       ],
-      "doneWhen": "ELF、SDK隔离、串口记录和发布原型形成可复现证据，依据测量选择技术栈"
+      "doneWhen": "ELF、SDK隔离、串口记录和发布原型形成可复现证据，依据测量选择技术栈",
+      "blocker": "Qt下载超时/镜像无进展；ELF、配置与记录离线测试完成，GUI/打包/真实SDK未验证，无法完成技术选型"
     },
     {
       "id": "M0-03",
-      "status": "todo",
+      "status": "in_progress",
       "refs": [
         "Q-04",
         "Q-06",
