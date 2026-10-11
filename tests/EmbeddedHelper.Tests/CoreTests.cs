@@ -18,9 +18,9 @@ public sealed class CoreTests : IDisposable
         root = Path.Combine(repository.FullName, "tmp", "csharp-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(root);
     }
-    private string CopyProject()
+    private string CopyProject(string fixture = "G4 中文 空格")
     {
-        var source = Path.Combine(fixtures, "G4 中文 空格");
+        var source = Path.Combine(fixtures, fixture);
         var target = Path.Combine(root, "工程 含空格");
         foreach (var file in Directory.GetFiles(source, "*", SearchOption.AllDirectories))
         {
@@ -323,6 +323,52 @@ public sealed class CoreTests : IDisposable
         Assert.Equal("before", File.ReadAllText(path)); Assert.Equal("external", File.ReadAllText(conflict));
         File.WriteAllText(conflict, "before2");
         Assert.Empty(ConfigTransaction.RecoverIncomplete(root, journal)); Assert.Empty(ConfigTransaction.Pending(journal));
+    }
+    [Theory]
+    [InlineData("G4 中文 空格", "G4")]
+    [InlineData("H7 配置样本", "H7")]
+    [InlineData("F4 配置样本", "F4")]
+    [InlineData("F1 配置样本", "F1")]
+    public void TemplateAdaptersRestoreEideUploadBytesAndKeepLocalEntries(string fixture, string family)
+    {
+        var path = CopyProject(fixture); var project = ProjectReader.Read(path);
+        Assert.Equal(family, project.Family);
+        var yaml = Path.Combine(path, ".eide/eide.yml");
+        var before = File.ReadAllText(yaml);
+        var eide = EideUpload.Plan(path, project.Targets[0].Name, true, []);
+        ConfigTransaction.Apply(new ConfigPlan(path, [eide.Change]), Path.Combine(root, "journal"));
+        Assert.Equal("\"Custom\"", EideUpload.Get(File.ReadAllText(yaml), ["targets", project.Targets[0].Name, "uploader"]));
+        Assert.Equal(eide.Change.After, EideUpload.Plan(path, project.Targets[0].Name, true, eide.Fields).Change.After);
+        var removal = EideUpload.Plan(path, project.Targets[0].Name, false, eide.Fields);
+        ConfigTransaction.Apply(new ConfigPlan(path, [removal.Change]), Path.Combine(root, "journal"));
+        Assert.Equal(before, File.ReadAllText(yaml));
+        var launch = Path.Combine(path, ".vscode/launch.json");
+        using var localBefore = System.Text.Json.JsonDocument.Parse(File.ReadAllText(launch), ProjectReader.JsonOptions);
+        var localEntries = localBefore.RootElement.GetProperty("configurations").EnumerateArray().Select(e => e.GetRawText()).ToArray();
+        var complete = VsCodeIntegration.Plan(project, project.Targets[0], "server.local", 19011, 2450, ToolRelease.Known[1], true, "http://server.local:8000");
+        ConfigTransaction.Apply(complete, Path.Combine(root, "journal"));
+        Assert.Empty(VsCodeIntegration.Plan(project, project.Targets[0], "server.local", 19011, 2450, ToolRelease.Known[1], true, "http://server.local:8000").Changes);
+        Assert.Equal(2450, VsCodeIntegration.ReadState(path)!.GdbPort);
+        ConfigTransaction.Apply(VsCodeIntegration.Remove(path), Path.Combine(root, "journal"));
+        Assert.Equal(before, File.ReadAllText(yaml));
+        using var localAfter = System.Text.Json.JsonDocument.Parse(File.ReadAllText(launch), ProjectReader.JsonOptions);
+        Assert.Equal(localEntries, localAfter.RootElement.GetProperty("configurations").EnumerateArray().Select(e => e.GetRawText()));
+    }
+    [Fact]
+    public void EideRestoreKeepsUnknownFieldsAndRejectsExternalManagedEdits()
+    {
+        var path = CopyProject(); var project = ProjectReader.Read(path);
+        var yaml = Path.Combine(path, ".eide/eide.yml");
+        var input = File.ReadAllText(yaml);
+        var prefix = new[] { "targets", project.Targets[0].Name, "uploadConfigMap", "Custom" };
+        input = EideUpload.Set(input, [.. prefix, "unknown"], "\"keep me\"");
+        input = EideUpload.Set(input, [.. prefix, "commandLine"], "\"original command\"");
+        File.WriteAllText(yaml, input);
+        var eide = EideUpload.Plan(path, project.Targets[0].Name, true, []);
+        File.WriteAllText(yaml, eide.Change.After);
+        Assert.Equal(input, EideUpload.Plan(path, project.Targets[0].Name, false, eide.Fields).Change.After);
+        File.WriteAllText(yaml, EideUpload.Set(File.ReadAllText(yaml), [.. prefix, "commandLine"], "\"external command\""));
+        Assert.Throws<InvalidDataException>(() => EideUpload.Plan(path, project.Targets[0].Name, false, eide.Fields));
     }
     public void Dispose() => Directory.Delete(root, true);
 }

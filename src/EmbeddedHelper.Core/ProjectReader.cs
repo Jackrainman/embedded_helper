@@ -37,7 +37,7 @@ public static class ProjectReader
             if (launch.RootElement.TryGetProperty("configurations", out var configurations))
                 localLaunches = configurations.EnumerateArray().Where(c => c.TryGetProperty("servertype", out var kind) && kind.GetString() == "jlink").Select(c => c.Clone()).ToArray();
         }
-        if (family != "G4") diagnostics.Add("该系列尚未完成客户端适配验证；工程只读。");
+        diagnostics.Add(family == "未知" ? "该系列尚未完成配置适配；工程只读。" : "该系列已验证配置样本适配；硬件链路未验收。");
         var targets = Map(map, "targets").Children.Select(pair =>
         {
             var targetName = ((YamlScalarNode)pair.Key).Value ?? throw new InvalidDataException("目标名称缺失。");

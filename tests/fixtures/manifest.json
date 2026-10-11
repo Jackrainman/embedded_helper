@@ -3,14 +3,21 @@
   "upstreamPaths": [
     "g4_template/.eide/eide.yml",
     "g4_template/.vscode/launch.json",
-    "Debug_LAN/remote-jlink.json"
+    "Debug_LAN/remote-jlink.json",
+    "h7_template/.eide/eide.yml",
+    "h7_template/.vscode/launch.json",
+    "f4_template/.eide/eide.yml",
+    "f4_template/.vscode/launch.json",
+    "f1_template/.eide/eide.yml",
+    "f1_template/.vscode/launch.json"
   ],
   "sanitization": "仅配置切片；uid匿名化，服务器替换为保留域名，JLinkExe清空；新增未知字段。无业务源码或上游工具副本。",
   "expectations": [
     "中文空格路径可读",
     "G4 Debug目标、未知字段与本地launch保留",
     "invalid.elf为故意截断的合成反例，必须拒绝，不是可烧录固件",
-    "serial.bin为合成全字节和跨块UTF-8输入，不依赖换行"
+    "serial.bin为合成全字节和跨块UTF-8输入，不依赖换行",
+    "H7/F4/F1 FreeRTOS配置来自相同上游提交；只在tmp副本解析/接入/恢复，不执行钩子、不代表硬件验收"
   ],
   "sha256": {
     "invalid.elf": "e131a526bfb2ff2dba412af8120ac946fc50e16e93192f13ee6050162866f6d0",
@@ -19,7 +26,13 @@
     "G4 中文 空格/.eide/eide.yml": "f486dc464d779480d06408b5a6cb3c8d55448c5a28ff1876b5160d1bc6d7b123",
     "G4 中文 空格/.vscode/launch.json": "41b21da7e25e2c31c2ea50dbd2e11467cdb1df74c110b4ff7a927ebdaf889fda",
     "scalars.c": "adbc65be2048f3bfe1e9074bb972867698f479910ea3c64fe8d452c263d8210f",
-    "scalars.elf": "cbcc29cbb798200197c2fd8666320803ed164fbde1f647c8b02e04ec170efdc9"
+    "scalars.elf": "cbcc29cbb798200197c2fd8666320803ed164fbde1f647c8b02e04ec170efdc9",
+    "H7 配置样本/.eide/eide.yml": "ff9ec2dc39f0a58083e22e6566f3c6e4ade9807149449225aa98fb64f40d42ce",
+    "H7 配置样本/.vscode/launch.json": "8282cf8afa242e9b6ed48043b1ea5957fd7d95ac36bc0fae03202c81e2bf6768",
+    "F4 配置样本/.eide/eide.yml": "f20b75205c5079c455085292cbb97eaa170f7c9ac3efe6b150ff70b087dd8b69",
+    "F4 配置样本/.vscode/launch.json": "e33a2e0421d4ec4f900cf8963cae313bc3bac7012b3472af91145e1602dc3382",
+    "F1 配置样本/.eide/eide.yml": "7dee591517b8d10f3760e1c98b13426e8ad2b9d49d24a67c42450fae5e294c59",
+    "F1 配置样本/.vscode/launch.json": "26feb8cb3a07264fd1ed57a7a117351c46f89ad278a540ce567b7973b791f998"
   },
   "syntheticElf": {
     "compiler": "arm-none-eabi-gcc.exe (Arm GNU Toolchain 15.2.Rel1 (Build arm-15.86)) 15.2.1 20251203",

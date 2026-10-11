@@ -77,7 +77,8 @@ public partial class MainWindow : Window
         EncodingBox.SelectedItem = settings.SerialEncoding;
         if (EncodingBox.SelectedIndex < 0) EncodingBox.SelectedIndex = 0;
         SendHistoryBox.ItemsSource = settings.SendHistory ?? [];
-        ToolVersionBox.ItemsSource = ToolRelease.Known; ToolVersionBox.SelectedIndex = 0;
+        try { ToolCatalog.Load(App.Data.Root); } catch (Exception ex) { Report("工具目录记录无法读取：" + ex.Message); }
+        ToolVersionBox.ItemsSource = ToolRelease.Available; ToolVersionBox.SelectedIndex = 0;
         ReadElfPath.Text = string.IsNullOrEmpty(settings.ReadElf) ? ReadElfIndex.FindTool() ?? "" : settings.ReadElf;
         Width = Math.Clamp(settings.Width, MinWidth, Math.Max(MinWidth, SystemParameters.WorkArea.Width));
         Height = Math.Clamp(settings.Height, MinHeight, Math.Max(MinHeight, SystemParameters.WorkArea.Height));
@@ -124,11 +125,18 @@ public partial class MainWindow : Window
             var watch = JsonSerializer.Deserialize<WatchSettings>(await File.ReadAllTextAsync(statePath), Product.Json);
             TargetBox.SelectedItem = loaded.Targets.FirstOrDefault(t => t.Name == watch?.Target);
         }
+        RemoteHost.Text = ""; RemotePort.Text = "19011"; WebAddress.Text = "";
+        var integration = VsCodeIntegration.ReadState(loaded.Root);
+        GdbPort.Text = (integration?.GdbPort ?? 2331).ToString(CultureInfo.InvariantCulture);
+        UseEideUpload.IsChecked = integration?.EideFields?.Length > 0;
+        if (File.Exists(System.IO.Path.Combine(loaded.Root, ".embedded_helper", "tools.lock.json")))
+            ToolVersionBox.SelectedItem = ToolCache.ReadLock(loaded.Root);
         if (File.Exists(loaded.RemotePath))
         {
             using var remote = JsonDocument.Parse(await File.ReadAllTextAsync(loaded.RemotePath), ProjectReader.JsonOptions);
             RemoteHost.Text = remote.RootElement.GetProperty("ServerName").GetString();
             RemotePort.Text = remote.RootElement.GetProperty("Port").GetInt32().ToString(CultureInfo.InvariantCulture);
+            WebAddress.Text = remote.RootElement.TryGetProperty("WebUrl", out var web) ? web.GetString() ?? "" : "";
         }
         settings = settings with { Recent = new[] { loaded.Root }.Concat(settings.Recent ?? []).Distinct(StringComparer.OrdinalIgnoreCase).Take(8).ToArray() };
         RecentProjects.ItemsSource = settings.Recent;
@@ -202,7 +210,7 @@ public partial class MainWindow : Window
         var variables = Variables.Where(v => v.Selected).Select(v => v.Variable).ToArray();
         if (variables.Length == 0 && EnableRtt.IsChecked != true) throw new InvalidOperationException("请选择变量或启用 RTT。");
         if (variables.Any(v => !v.Supported)) throw new InvalidOperationException("观察列表包含不支持的变量类型。");
-        transition = true; StartButton.IsEnabled = false; TargetBox.IsEnabled = false;
+        transition = true; StartButton.IsEnabled = false; TargetBox.IsEnabled = false; EnableConnectionFields(false);
         var candidate = new ObservationSession();
         observation = candidate;
         try
@@ -218,7 +226,7 @@ public partial class MainWindow : Window
             PersistSettings();
         }
         catch { await candidate.DisposeAsync(); observation = null; throw; }
-        finally { transition = false; StartButton.IsEnabled = observation == null; TargetBox.IsEnabled = observation == null; }
+        finally { transition = false; StartButton.IsEnabled = observation == null; TargetBox.IsEnabled = observation == null; EnableConnectionFields(observation == null); }
     });
     private async void StopObservation(object? sender, RoutedEventArgs e) => await Guard(StopObservationAsync);
     private async Task StopObservationAsync()
@@ -231,9 +239,13 @@ public partial class MainWindow : Window
             observation = null; sampling.Stop();
             foreach (var row in Variables.Where(v => v.Selected)) row.Value = "已停止 / 过期";
             ObservationStatus.Text = "已释放 · 可使用外部烧录/调试工具";
-            StartButton.IsEnabled = true; TargetBox.IsEnabled = true;
+            StartButton.IsEnabled = true; TargetBox.IsEnabled = true; EnableConnectionFields(true);
         }
         finally { transition = false; }
+    }
+    private void EnableConnectionFields(bool enabled)
+    {
+        foreach (var field in new UIElement[] { TransportBox, ProbeSerial, DllPath, RemoteHost, RemotePort, EnableRtt }) field.IsEnabled = enabled;
     }
     private void Refresh(object? sender, EventArgs e)
     {
@@ -310,7 +322,7 @@ public partial class MainWindow : Window
     {
         try
         {
-            plan = RemoteConfiguration.Plan(project ?? throw new InvalidOperationException("请先打开工程。"), Target ?? throw new InvalidOperationException("请选择目标。"), RemoteHost.Text, int.Parse(RemotePort.Text, CultureInfo.InvariantCulture));
+            plan = RemoteConfiguration.Plan(project ?? throw new InvalidOperationException("请先打开工程。"), Target ?? throw new InvalidOperationException("请选择目标。"), RemoteHost.Text, int.Parse(RemotePort.Text, CultureInfo.InvariantCulture), WebAddress.Text);
             ConfigPreview.Text = string.Join("\n\n", plan.Changes.Select(c => c.Path + "\n" + c.After));
             ApplyConfigButton.IsEnabled = true;
         }
@@ -334,7 +346,7 @@ public partial class MainWindow : Window
             var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
             var release = ToolVersionBox.SelectedItem as ToolRelease ?? throw new InvalidOperationException("请在设置页选择工具版本。");
             new ToolCache(App.Data.Root).Resolve(release);
-            ShowPlan(VsCodeIntegration.Plan(loaded, Target ?? throw new InvalidOperationException("请选择目标。"), RemoteHost.Text, int.Parse(RemotePort.Text, CultureInfo.InvariantCulture), int.Parse(GdbPort.Text, CultureInfo.InvariantCulture), release));
+            ShowPlan(VsCodeIntegration.Plan(loaded, Target ?? throw new InvalidOperationException("请选择目标。"), RemoteHost.Text, int.Parse(RemotePort.Text, CultureInfo.InvariantCulture), int.Parse(GdbPort.Text, CultureInfo.InvariantCulture), release, UseEideUpload.IsChecked == true, WebAddress.Text));
         }
         catch (Exception ex) { plan = null; ApplyConfigButton.IsEnabled = false; Report(ex.Message); }
     }
@@ -357,15 +369,15 @@ public partial class MainWindow : Window
         ConfigPreview.Text = conflicts.Length == 0 ? "已检查未完成事务，能确认归属的写入已恢复。" : "以下文件有外部修改，未覆盖；请按事务备份人工处理：\n" + string.Join("\n", conflicts) + "\n备份：" + JournalFor(root);
         Report(ConfigPreview.Text);
     });
-    private void OpenWeb(object? sender, RoutedEventArgs e)
+    private async void OpenWeb(object? sender, RoutedEventArgs e) => await Guard(async () =>
     {
-        try
-        {
-            if (!Uri.TryCreate(WebAddress.Text, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")) throw new ArgumentException("请输入完整 http:// 或 https:// 网页地址。");
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
-        }
-        catch (Exception ex) { Report(ex.Message); }
-    }
+        if (!Uri.TryCreate(WebAddress.Text, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")) throw new ArgumentException("请输入完整 http:// 或 https:// 网页地址。");
+        if (transition) throw new InvalidOperationException("连接正在切换，请稍后重试。");
+        await StopObservationAsync();
+        if (observation != null) throw new IOException("采集连接尚未释放，未打开网页。");
+        Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
+        Report("已释放客户端采集并打开网页；返回远程变量前，请先在网页手动停止 RTT。");
+    });
     private void RefreshPorts(object? sender, RoutedEventArgs e)
     { try { var current = SerialPortBox.Text; SerialPortBox.ItemsSource = SerialPort.GetPortNames().Order().ToArray(); SerialPortBox.Text = current; } catch (Exception ex) { Report(ex.Message); } }
     private SerialSettings ReadSerialSettings() => new(SerialPortBox.Text, int.Parse(BaudBox.Text, CultureInfo.InvariantCulture), DataBitsBox.SelectedIndex + 5, (Parity)ParityBox.SelectedItem, (StopBits)StopBitsBox.SelectedItem, (Handshake)FlowBox.SelectedItem);
@@ -451,6 +463,22 @@ public partial class MainWindow : Window
         if (dialog.ShowDialog(this) == true) await Guard(() => PrepareToolAsync(dialog.FileName));
     }
     private async void DownloadTool(object? sender, RoutedEventArgs e) => await Guard(() => PrepareToolAsync(null));
+    private async void RefreshTools(object? sender, RoutedEventArgs e) => await Guard(async () =>
+    {
+        if (toolBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
+        toolBusy = true;
+        try
+        {
+            var version = (ToolVersionBox.SelectedItem as ToolRelease)?.Version;
+            ToolStatus.Text = "正在查询官方发布清单并核对标签提交和摘要；工程版本不会自动改变。";
+            var available = await ToolCatalog.RefreshAsync(App.Data.Root);
+            ToolVersionBox.ItemsSource = available;
+            ToolVersionBox.SelectedItem = available.FirstOrDefault(v => v.Version == version) ?? available.First();
+            ToolStatus.Text = $"已核验 {available.Length} 个兼容工具版本。选择后下载或导入，再预览更新工程锁。";
+        }
+        catch (Exception ex) { ToolStatus.Text = "更新检查失败，已安装工具仍可离线使用：" + ex.Message; throw; }
+        finally { toolBusy = false; }
+    });
     private async Task PrepareToolAsync(string? zip)
     {
         if (toolBusy) throw new InvalidOperationException("工具正在准备，请稍候。");

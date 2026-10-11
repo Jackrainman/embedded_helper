@@ -17,13 +17,24 @@ public sealed record ToolRelease(string Version, string Sha256, string Commit)
     public static readonly ToolRelease[] Known = [
         new("0.1.0-alpha.2", "d17e8b3e113b12fff97652a24f88a9262281550f1249978b3fb6d900ce2951b5", "a699c144103f705f5d7e15c2e2107b4d974efee0"),
         new("0.1.0-alpha.1", "565aacf60362a98d1e78dfcfa0623e3044f760b8b6d4d5cb4cd0a51219bd7c5e", "967e8bc17ac258e5fd5926ffa57f083b0abb1431")];
-    public static ToolRelease Find(string version) => Known.SingleOrDefault(r => r.Version == version) ?? throw new InvalidDataException("未知工具版本；请先使用已核验的上游发布版本。");
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, ToolRelease> discovered = new();
+    public static ToolRelease[] Available => Known.Concat(discovered.Values).DistinctBy(r => r.Version).OrderByDescending(r => System.Version.Parse(r.Version.Split('-')[0])).ThenByDescending(r => r.Version, StringComparer.Ordinal).ToArray();
+    internal static void Register(ToolRelease release)
+    {
+        if (!Regex.IsMatch(release.Version, @"^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$") || release.Version.Length > 64 || !System.Version.TryParse(release.Version.Split('-')[0], out _) || !Regex.IsMatch(release.Sha256, "^[0-9a-f]{64}$") || !Regex.IsMatch(release.Commit, "^[0-9a-f]{40}$")) throw new InvalidDataException("上游工具版本或摘要格式无效。");
+        var known = Known.SingleOrDefault(r => r.Version == release.Version);
+        if (known != null) { if (known != release) throw new InvalidDataException("上游已发布版本的内容发生变化，禁止覆盖。"); return; }
+        if (discovered.GetOrAdd(release.Version, release) != release) throw new InvalidDataException("同一工具版本存在冲突摘要。");
+    }
+    public static ToolRelease Find(string version) => Known.SingleOrDefault(r => r.Version == version) ?? (discovered.TryGetValue(version, out var value) ? value : throw new InvalidDataException("未知工具版本；请在设置页刷新官方版本目录，或使用已核验版本。"));
 }
 
 public sealed record InstalledTool(string Version, string PackageSha256, string Commit, Dictionary<string, string> Files);
 
-public sealed class ToolCache(string dataRoot)
+public sealed class ToolCache
 {
+    private readonly string dataRoot;
+    public ToolCache(string dataRoot) { this.dataRoot = Path.GetFullPath(dataRoot); ToolCatalog.Load(this.dataRoot); }
     private string Root => Path.GetFullPath(Path.Combine(dataRoot, "tools", "debug-lan"));
     private static string Digest(string path) { using var stream = File.OpenRead(path); return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant(); }
     public static void ValidateArchive(ZipArchive archive)

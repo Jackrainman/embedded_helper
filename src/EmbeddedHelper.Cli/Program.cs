@@ -6,8 +6,9 @@ try
 {
     var data = Path.Combine(AppContext.BaseDirectory, "data");
     if (args.Length >= 2 && args[0] == "--data") { data = Path.GetFullPath(args[1]); args = args[2..]; }
-    var cache = new ToolCache(data);
     if (args is ["--version"] or ["--self-test"]) { Console.WriteLine(Product.Version); return 0; }
+    var cache = new ToolCache(data);
+    if (args is ["tool", "refresh"]) { Console.WriteLine(JsonSerializer.Serialize(await ToolCatalog.RefreshAsync(data), Product.Json)); return 0; }
     if (args is ["tool", "install", var zip, var version])
     { Console.WriteLine(await cache.InstallAsync(zip, ToolRelease.Find(version))); return 0; }
     if (args is ["tool", "version", var installedVersion])

@@ -4,23 +4,24 @@ using System.Text.Json.Nodes;
 namespace EmbeddedHelper.Core;
 
 public sealed record ManagedEntry(string File, string Array, string Key, string Identity, JsonObject Value);
-public sealed record IntegrationState(int SchemaVersion, string Target, ManagedEntry[] Entries);
+public sealed record IntegrationState(int SchemaVersion, string Target, ManagedEntry[] Entries, ManagedYamlField[]? EideFields = null, int GdbPort = 2331);
 
 public static class VsCodeIntegration
 {
     private const string OwnerFile = ".embedded_helper/integration.json";
-    private static IntegrationState? ReadState(string root)
+    public static IntegrationState? ReadState(string root)
     {
         var path = Path.Combine(root, OwnerFile);
         if (!File.Exists(path)) return null;
         var state = JsonSerializer.Deserialize<IntegrationState>(File.ReadAllText(path), Product.Json) ?? throw new InvalidDataException("接入归属记录无效。");
         if (state.SchemaVersion != 1 || state.Entries.Any(e => (e.File, e.Array, e.Key) is not ((".vscode/tasks.json", "tasks", "label") or (".vscode/launch.json", "configurations", "name")))) throw new InvalidDataException("接入归属记录包含不支持的条目。");
+        if (state.EideFields?.Any(f => f.Keys is not ["targets", _, "uploader"] and not ["targets", _, "uploadConfigMap", "Custom", "bin" or "commandLine" or "eraseChipCommand"]) == true) throw new InvalidDataException("EIDE归属字段无效。");
         return state;
     }
-    public static ConfigPlan Plan(ProjectInfo project, BuildTarget target, string host, int port, int gdbPort, ToolRelease tool)
+    public static ConfigPlan Plan(ProjectInfo project, BuildTarget target, string host, int port, int gdbPort, ToolRelease tool, bool eideUpload = false, string? webAddress = null)
     {
         if (gdbPort is < 1 or > 65533) throw new ArgumentException("本机GDB端口须为1～65533，并为相邻两个端口留出空间。");
-        var remote = RemoteConfiguration.Plan(project, target, host, port);
+        var remote = RemoteConfiguration.Plan(project, target, host, port, webAddress);
         var relativeElf = Path.GetRelativePath(project.Root, target.ElfPath).Replace('\\', '/');
         if (Path.IsPathRooted(relativeElf) || relativeElf.StartsWith("../")) throw new InvalidDataException("共享调试配置要求ELF位于工程内。");
         var suffix = target.Name;
@@ -68,14 +69,16 @@ public static class VsCodeIntegration
             if (local.Length == 1 && local[0].TryGetProperty("svdFile", out var svd)) launch["svdFile"] = svd.GetString();
         }
         ManagedEntry[] desired = [new(".vscode/tasks.json", "tasks", "label", flashLabel, flash), new(".vscode/tasks.json", "tasks", "label", gdbLabel, gdb), new(".vscode/launch.json", "configurations", "name", debugName, launch)];
-        return MakePlan(project.Root, target.Name, desired, remote.Changes.Append(ToolCache.SelectVersion(project.Root, tool)).ToArray());
+        return MakePlan(project.Root, target.Name, desired, remote.Changes.Append(ToolCache.SelectVersion(project.Root, tool)).ToArray(), eideUpload, gdbPort);
     }
     public static ConfigPlan Remove(string root) => MakePlan(root, "", [], []);
-    private static ConfigPlan MakePlan(string root, string target, ManagedEntry[] desired, FileChange[] additional)
+    private static ConfigPlan MakePlan(string root, string target, ManagedEntry[] desired, FileChange[] additional, bool eideUpload = false, int gdbPort = 2331)
     {
         var state = ReadState(root);
         if (desired.Length == 0 && state == null) throw new InvalidDataException("没有共享接入归属记录，无法确认可移除条目；原配置保持不变。");
         var changes = new List<FileChange>(additional);
+        var eide = EideUpload.Plan(root, target, eideUpload, state?.EideFields ?? []);
+        changes.Add(eide.Change);
         var old = state?.Entries ?? [];
         foreach (var file in old.Select(e => e.File).Concat(desired.Select(e => e.File)).Distinct())
         {
@@ -89,7 +92,7 @@ public static class VsCodeIntegration
             changes.Add(new FileChange(path, before, text));
         }
         var owner = Path.Combine(root, OwnerFile); ConfigTransaction.CheckPath(root, owner);
-        changes.Add(new FileChange(owner, File.Exists(owner) ? File.ReadAllText(owner) : null, JsonSerializer.Serialize(new IntegrationState(1, target, desired), Product.Json)));
+        changes.Add(new FileChange(owner, File.Exists(owner) ? File.ReadAllText(owner) : null, JsonSerializer.Serialize(new IntegrationState(1, target, desired, eide.Fields, gdbPort), Product.Json)));
         return new ConfigPlan(root, changes.Where(c => c.Before != c.After).ToArray());
     }
 }
