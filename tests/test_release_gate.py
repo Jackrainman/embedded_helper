@@ -114,6 +114,24 @@ class ReleaseGateTests(unittest.TestCase):
         self.assertEqual(bump(path, '0.1.0-alpha.1'), self.version)
         self.assertEqual(path.read_text().strip(), '0.1.0-alpha.1')
 
+    def test_single_exe_must_match_the_tested_archive(self):
+        executable = self.root / 'EmbeddedHelper.exe'
+        executable.write_bytes(b'synthetic single-exe gate fixture')
+        with zipfile.ZipFile(self.package, 'w') as archive:
+            archive.write(executable, 'EmbeddedHelper.exe')
+        self.manifest.update(deployment='self-contained-single-exe', executableName=executable.name,
+                             executableSha256=hashlib.sha256(executable.read_bytes()).hexdigest(),
+                             executableBytes=executable.stat().st_size,
+                             packageSha256=hashlib.sha256(self.package.read_bytes()).hexdigest(),
+                             packageBytes=self.package.stat().st_size)
+        (self.root / 'release-manifest.json').write_text(json.dumps(self.manifest), encoding='utf-8')
+        (self.root / 'SHA256SUMS').write_text(
+            f"{self.manifest['packageSha256']}  {self.package.name}\n{self.manifest['executableSha256']}  EmbeddedHelper.exe\n", encoding='utf-8')
+        self.evidence['packageSha256'] = self.manifest['packageSha256']
+        self.assertEqual(self.validate(), [])
+        executable.write_bytes(b'modified')
+        self.assertTrue(any('EXE' in x for x in self.validate()))
+
 
 if __name__ == '__main__':
     unittest.main()

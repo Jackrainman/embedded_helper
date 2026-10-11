@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType><TargetFramework>net10.0</TargetFramework>
+    <PublishSingleFile>true</PublishSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(PortablePayload)' != ''">
+    <EmbeddedResource Include="$(PortablePayload)/payload.zip" LogicalName="payload.zip" />
+    <EmbeddedResource Include="$(PortablePayload)/payload.json" LogicalName="payload.json" />
+  </ItemGroup>
+</Project>

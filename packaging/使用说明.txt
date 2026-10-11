@@ -1,19 +1,15 @@
-Embedded Helper 开发内测
+Embedded Helper Windows x64 便携版
 
-完整解压 ZIP 到可写目录后双击 EmbeddedHelper.exe。无需安装 Python 或 .NET。
-不要只复制 exe；同目录的运行库、工作进程与 CLI 都必须保留。
-升级时退出应用，保留 data，替换其他程序文件。项目文件不会被复制进 data。
+将 EmbeddedHelper.exe 放在可写目录，双击即可使用；无需安装 Python 或 .NET。
+首次启动会自动在旁边的 data/runtime 准备内部组件，请稍候。
+设置、工具和串口记录位于 data；升级替换主 EXE，迁移时一起携带 data。
+不要手动更改 data/runtime 内部文件。组件损坏时，关闭程序后删除 data/runtime 可重新生成；不要删除整个 data。
 
-工程：打开包含 .eide/eide.yml 的目录，选择目标和 ELF。仅打开不会改文件、构建或连接设备。
-变量：勾选支持的变量，在设置中指定外部 SEGGER JLink_x64.dll，再填写探针序列号并开始。
-DWARF4由内置库解析；DWARF5需现有 ARM 工具链的 arm-none-eabi-readelf.exe，设置页可填写路径。
-停止并释放后再用外部调试工具。更新变量地址会在完整采样批次边界切换；解析失败保留原计划。不要让网页RTT与远程观察同时占用探针。
-远程配置：先预览再应用，仅更新兼容 remote-jlink.json；一键 VS Code 接入与版本化工具仍在开发。
-串口：无需工程；UTF-8/GB18030/ASCII/UTF-16LE文本或HEX收发，周期发送可取消。双向记录保存在 data/serial/records。
-记录序号是主机观察顺序，不表示对端收到。TX失败时可能已部分发送，软件会明确报告未知结果。
-1Mbps未完成硬件验收，5Mbps为实验档。RS485应使用硬件自动换向转接器。
-诊断：设置页可检查路径，日志位于 data/logs；错误会在窗口底部显示。
+五个页面：工程、变量/RTT、远程配置、串口、设置/诊断。
+先选择工程与已有 ELF。硬件采集需要自行安装 J-Link/串口驱动；程序不会自动烧录。
+远程功能先在设置中下载/导入 Debug_LAN，然后绑定 VS Code 入口并重启 VS Code。
+配置修改先预览后应用；本地入口保留，可移除远程接入并恢复 EIDE 上传方式。
+变量与网页 RTT 手动二选一，返回变量前先在网页停止 RTT。
 
-本版硬件未验收。纯净Windows、G4烧录/RTT/调试恢复、串口双向30分钟测试由用户后续执行。
-功能与测试状态以同包发布说明、release-manifest.json 和 verification-evidence.json 为准。
-源码：https://github.com/Jackrainman/embedded_helper
+这是开发内测版。离线软件与界面自检不代表真实设备通过；设备、纯净Windows及30分钟实测由用户后续验收。
+内部依赖许可见 data/runtime 当前版本目录的 THIRD-PARTY-NOTICES.txt。

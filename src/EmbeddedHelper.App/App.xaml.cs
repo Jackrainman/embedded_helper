@@ -6,7 +6,7 @@ namespace EmbeddedHelper.App;
 
 public partial class App : Application
 {
-    public static PortableData Data { get; } = new(AppContext.BaseDirectory);
+    public static PortableData Data { get; } = new(Product.HomeDirectory);
     protected override void OnStartup(StartupEventArgs e)
     {
         base.OnStartup(e);

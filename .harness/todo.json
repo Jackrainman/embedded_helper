@@ -148,6 +148,19 @@
         "D-01"
       ],
       "doneWhen": "软件部分已实现远程变量/网页RTT手动切换、H7/F4/F1RTOS配置移植、可选EIDE上传及官方工具发现；真实硬件与完整P0门依赖C-05用户后续验收，随后正式发布"
+    },
+    {
+      "id": "H-04",
+      "status": "in_progress",
+      "refs": [
+        "REL-01",
+        "REL-09",
+        "AC-14"
+      ],
+      "dependsOn": [
+        "H-03"
+      ],
+      "doneWhen": "单EXE首次/重复/迁移启动和组件损坏拒绝通过；设置仍在旁边data；同包直接EXE发布Pre-release，硬件延期用户验收"
     }
   ]
 }

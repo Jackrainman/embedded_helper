@@ -28,10 +28,11 @@ def validate_release(candidate, evidence_path, version, commit):
             raise ValueError('必须指定完整提交SHA')
         manifest = read_json(candidate / 'release-manifest.json')
         if (manifest.get('schemaVersion'), manifest.get('productId'), manifest.get('version'),
-                manifest.get('commit'), manifest.get('platform'), manifest.get('architecture'),
-                manifest.get('deployment')) != (1, 'embedded-helper', version, commit, 'windows',
-                                               'x64', 'self-contained-directory'):
+                manifest.get('commit'), manifest.get('platform'), manifest.get('architecture')) != (1, 'embedded-helper', version, commit, 'windows', 'x64'):
             raise ValueError('发布清单身份、平台或部署方式不匹配')
+        deployment = manifest.get('deployment')
+        if deployment not in {'self-contained-directory', 'self-contained-single-exe'}:
+            raise ValueError('未知部署方式')
         name = f'EmbeddedHelper-{version}-win-x64.zip'
         if manifest.get('packageName') != name:
             raise ValueError('包名不匹配')
@@ -40,7 +41,14 @@ def validate_release(candidate, evidence_path, version, commit):
         if manifest.get('packageSha256') != digest or manifest.get('packageBytes') != package.stat().st_size:
             raise ValueError('包摘要或大小不匹配')
         checksum = (candidate / 'SHA256SUMS').read_text(encoding='utf-8').strip()
-        if checksum != f'{digest}  {name}':
+        expected_checksum = f'{digest}  {name}'
+        if deployment == 'self-contained-single-exe':
+            executable = candidate / 'EmbeddedHelper.exe'
+            exe_digest = hashlib.sha256(executable.read_bytes()).hexdigest()
+            if (manifest.get('executableName'), manifest.get('executableSha256'), manifest.get('executableBytes')) != ('EmbeddedHelper.exe', exe_digest, executable.stat().st_size):
+                raise ValueError('单EXE摘要或大小不匹配')
+            expected_checksum += f'\n{exe_digest}  EmbeddedHelper.exe'
+        if checksum != expected_checksum:
             raise ValueError('SHA256SUMS与包不一致')
         with zipfile.ZipFile(package) as archive:
             members = archive.namelist()
@@ -51,8 +59,11 @@ def validate_release(candidate, evidence_path, version, commit):
                         or '..' in path.parts or member.casefold() in normalized):
                     raise ValueError('ZIP条目不安全或重复')
                 normalized.add(member.casefold())
-            if not ENTRYPOINTS.issubset(members):
+            required_entries = ENTRYPOINTS if deployment == 'self-contained-directory' else {'EmbeddedHelper.exe'}
+            if not required_entries.issubset(members):
                 raise ValueError('ZIP缺少GUI、工作进程或稳定CLI入口')
+            if deployment == 'self-contained-single-exe' and hashlib.sha256(archive.read('EmbeddedHelper.exe')).hexdigest() != exe_digest:
+                raise ValueError('直接下载EXE与ZIP内EXE不一致')
             if archive.testzip():
                 raise ValueError('ZIP内容损坏')
         evidence = read_json(evidence_path)

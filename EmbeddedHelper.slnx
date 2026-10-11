@@ -3,5 +3,6 @@
   <Project Path="src/EmbeddedHelper.App/EmbeddedHelper.App.csproj" />
   <Project Path="src/EmbeddedHelper.Worker/EmbeddedHelper.Worker.csproj" />
   <Project Path="src/EmbeddedHelper.Cli/EmbeddedHelper.Cli.csproj" />
+  <Project Path="src/EmbeddedHelper.Portable/EmbeddedHelper.Portable.csproj" />
   <Project Path="tests/EmbeddedHelper.Tests/EmbeddedHelper.Tests.csproj" />
 </Solution>

@@ -91,5 +91,5 @@ jobs:
           EXPECTED_COMMIT: ${{ github.sha }}
         run: |
           $package = "candidate/EmbeddedHelper-$env:RELEASE_VERSION-win-x64.zip"
-          gh release create "v$env:RELEASE_VERSION" $package candidate/release-manifest.json candidate/SHA256SUMS candidate/verification-evidence.json --repo $env:GITHUB_REPOSITORY --target $env:EXPECTED_COMMIT --title "Embedded Helper $env:RELEASE_VERSION" --notes-file candidate/release-notes.md --prerelease --latest=false
+          gh release create "v$env:RELEASE_VERSION" candidate/EmbeddedHelper.exe $package candidate/release-manifest.json candidate/SHA256SUMS candidate/verification-evidence.json --repo $env:GITHUB_REPOSITORY --target $env:EXPECTED_COMMIT --title "Embedded Helper $env:RELEASE_VERSION" --notes-file candidate/release-notes.md --prerelease --latest=false
           if ($LASTEXITCODE -ne 0) { throw 'Release发布失败；不得报告成功' }

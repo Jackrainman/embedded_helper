@@ -1,6 +1,6 @@
 # Embedded Helper 设计文档
 
-文档版本0.9，2026-10-11。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含目录式便携ZIP按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
+文档版本0.9，2026-10-11。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含单EXE按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
 
 ## 阅读顺序
 
@@ -59,10 +59,12 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 ## 启动、产物与发布
 
-交付 `EmbeddedHelper-<版本>-win-x64.zip`、release-manifest.json、SHA256SUMS及包内说明/许可。完整解压到可写目录并双击EmbeddedHelper.exe，无需Python或预装.NET；J-Link软件和设备驱动由用户安装。DWARF4内置解析，DWARF5调用已有ARM readelf（自动定位EIDE工具链，亦可在设置中填写）。软件在自身目录创建data；升级保留data，工程观察设置保存到.embedded_helper/watch.json。
+直接交付 `EmbeddedHelper.exe`，另提供同字节EXE的可选ZIP、清单及摘要。将EXE放在可写目录并双击，无需Python或预装.NET；J-Link软件和设备驱动由用户安装。DWARF4内置解析，DWARF5调用已有ARM readelf（自动定位EIDE工具链，亦可在设置中填写）。软件在自身目录创建data；升级保留data，工程观察设置保存到.embedded_helper/watch.json。
 
 [Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
 
-当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.5补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
+当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.6补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
 
 远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；重新打开VS Code使用户环境变量生效。远程配置页预览并应用，新增独立LAN烧录/调试条目，本地条目保留。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。
+
+单EXE首次启动自动将内部运行组件准备到旁边data/runtime，设置仍在data/settings；搬迁时携带data保留配置，更新只替换主EXE。内部SDK工作进程和CLI保持隔离，用户无需管理DLL。运行时可能另用Windows临时缓存。

@@ -556,9 +556,13 @@ public partial class MainWindow : Window
             if (File.Exists(toolPackage))
             {
                 await PrepareToolAsync(toolPackage);
+                UseEideUpload.IsChecked = true; GdbPort.Text = "2450"; WebAddress.Text = "http://test.example.invalid:8000";
                 PreviewIntegration(null, null!);
                 if (plan == null || plan.Changes.Length == 0) throw new InvalidDataException("一键接入预览失败。");
                 await ApplyConfigAsync();
+                await LoadProjectAsync(project!.Root);
+                if (UseEideUpload.IsChecked != true || GdbPort.Text != "2450" || WebAddress.Text != "http://test.example.invalid:8000") throw new InvalidDataException("远程配置读回失败。");
+                ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf"); await ParseElfAsync();
                 PreviewIntegration(null, null!);
                 if (plan == null || plan.Changes.Length != 0) throw new InvalidDataException("重复接入非幂等。");
                 PreviewRemoveIntegration(null, null!);
