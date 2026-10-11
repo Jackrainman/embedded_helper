@@ -151,14 +151,19 @@ def main():
             upgrade_home.mkdir()
             entry = upgrade_home / 'EmbeddedHelper.exe'
             shutil.copy2(args.upgrade_from, entry)
-            old = subprocess.run([str(entry), '--cli', '--version'], check=True,
-                                 capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=60)
+            subprocess.run([str(entry), '--cli', '--version'], check=True,
+                           capture_output=True, env=clean_env, timeout=60)
+            old_runtimes = [p for p in (upgrade_home / 'data/runtime').iterdir()
+                            if p.is_dir() and (p / '.portable-runtime').is_file()]
+            if len(old_runtimes) != 1:
+                raise RuntimeError('Previous portable runtime was not prepared.')
+            # Older WinExe launchers did not forward redirected stdout. Identify
+            # their actual prepared CLI directly; the new entry must forward it.
+            old = subprocess.run([str(old_runtimes[0] / 'embedded-helper-cli.exe'), '--version'], check=True,
+                                 capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=30)
             upgrade_from = old.stdout.strip()
             if not upgrade_from or upgrade_from == version:
                 raise RuntimeError('Upgrade input must report a different product version.')
-            old_runtimes = list((upgrade_home / 'data/runtime').glob(upgrade_from + '-*'))
-            if len(old_runtimes) != 1:
-                raise RuntimeError('Previous portable runtime was not prepared.')
             saved = upgrade_home / 'data/settings/upgrade-probe.json'
             saved.parent.mkdir(parents=True, exist_ok=True)
             saved.write_bytes(b'{"keep":"previous-settings"}')
