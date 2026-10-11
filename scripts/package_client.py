@@ -106,16 +106,16 @@ def main():
                 raise RuntimeError('WPF smoke did not pass.')
         installed = next((extracted / 'data/runtime').glob(version + '-*'))
         external = subprocess.run([str(extracted / 'EmbeddedHelper.exe'), '--cli', '--version'],
-                                  check=True, capture_output=True, text=True, env=clean_env, timeout=30)
+                                  check=True, capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=30)
         if external.stdout.strip() != version:
             raise RuntimeError('Portable CLI stdout/version mismatch.')
         invalid = subprocess.run([str(extracted / 'EmbeddedHelper.exe'), '--cli', 'invalid-command'],
-                                 capture_output=True, text=True, env=clean_env, timeout=30)
+                                 capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=30)
         if invalid.returncode != 2 or 'embedded-helper-cli' not in invalid.stderr:
             raise RuntimeError('Portable CLI stderr/exit code mismatch.')
         for exe in ['EmbeddedHelper.Worker.exe', 'embedded-helper-cli.exe']:
             result = subprocess.run([str(installed / exe), '--self-test'], check=True,
-                                    capture_output=True, text=True, env=clean_env, timeout=15)
+                                    capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=15)
             if result.stdout.strip() != version:
                 raise RuntimeError(f'Version mismatch: {exe}')
         if not (extracted / 'data/settings/window.json').is_file():
@@ -133,7 +133,7 @@ def main():
         subprocess.run([str(moved / 'EmbeddedHelper.exe'), '--smoke', str(qa)], check=True,
                        env=clean_env, timeout=60, cwd=temporary)
         external = subprocess.run([str(moved / 'EmbeddedHelper.exe'), '--cli', '--version'],
-                                  check=True, capture_output=True, text=True, env=clean_env, timeout=30)
+                                  check=True, capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=30)
         if external.stdout.strip() != version:
             raise RuntimeError('Moved portable CLI did not resolve current components.')
         installed = next((moved / 'data/runtime').glob(version + '-*'))
@@ -152,7 +152,7 @@ def main():
             entry = upgrade_home / 'EmbeddedHelper.exe'
             shutil.copy2(args.upgrade_from, entry)
             old = subprocess.run([str(entry), '--cli', '--version'], check=True,
-                                 capture_output=True, text=True, env=clean_env, timeout=60)
+                                 capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=60)
             upgrade_from = old.stdout.strip()
             if not upgrade_from or upgrade_from == version:
                 raise RuntimeError('Upgrade input must report a different product version.')
@@ -174,7 +174,7 @@ def main():
                         raise RuntimeError('Upgrade trial paths escaped the isolated workspace.')
                     old_runtime.rename(retired)
                 current = subprocess.run([upgrade_env['EMBEDDED_HELPER_ENTRY'], '--cli', '--version'],
-                                         check=True, capture_output=True, text=True, env=upgrade_env, timeout=60)
+                                         check=True, capture_output=True, text=True, encoding='utf-8', env=upgrade_env, timeout=60)
                 if current.stdout.strip() != version or hashlib.sha256(saved.read_bytes()).hexdigest() != settings_digest:
                     raise RuntimeError('Replacement did not select current CLI or preserve settings.')
         # Hash the original ZIP again after testing the extracted copy.
