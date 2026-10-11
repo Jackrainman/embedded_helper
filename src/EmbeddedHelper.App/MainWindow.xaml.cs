@@ -554,6 +554,8 @@ public partial class MainWindow : Window
         e.Cancel = true;
         if (toolBusy) { Report("正在准备工具，请等待下载或校验完成后关闭。"); return; }
         if (transition) { Report("正在切换连接，请稍后关闭。"); return; }
+        // Let the cancelled Closing event return before calling Close again, even when cleanup completes synchronously.
+        await Dispatcher.Yield(DispatcherPriority.Background);
         await Guard(async () => { await CloseSerialAsync(); await StopObservationAsync(); try { PersistSettings(); } catch (Exception ex) { Report("输入无效，保留上次设置：" + ex.Message); } refresh.Stop(); closing = true; Close(); });
     }
     public async Task SmokeAsync(string directory)
@@ -609,7 +611,7 @@ public partial class MainWindow : Window
                 using var output = File.Create(System.IO.Path.Combine(directory, $"page-{i}.png")); encoder.Save(output);
             }
             PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, scalarCount = Variables.Count, toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested" });
-            closing = true; refresh.Stop(); Application.Current.Shutdown(0);
+            Close();
         }
         catch (Exception ex)
         {
