@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 
+if (args.FirstOrDefault() is "--cli" or "--worker") Native.AttachConsole(uint.MaxValue);
 try
 {
     var assembly = Assembly.GetExecutingAssembly();
@@ -50,9 +51,15 @@ try
     var mode = args.FirstOrDefault();
     var targetName = mode == "--worker" ? "EmbeddedHelper.Worker.exe" : mode == "--cli" ? "embedded-helper-cli.exe" : "EmbeddedHelper.exe";
     var start = new ProcessStartInfo(Path.Combine(destination, targetName)) { UseShellExecute = false, WorkingDirectory = AppContext.BaseDirectory };
+    start.Environment["EMBEDDED_HELPER_LAUNCHER"] = Environment.ProcessPath!;
     foreach (var argument in mode is "--worker" or "--cli" ? args[1..] : args) start.ArgumentList.Add(argument);
+    using var cancellation = new CancellationTokenSource();
+    ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; cancellation.Cancel(); };
+    Console.CancelKeyPress += cancel;
     using var child = Process.Start(start) ?? throw new IOException("客户端未能启动。");
-    child.WaitForExit(); return child.ExitCode;
+    try { await child.WaitForExitAsync(cancellation.Token); return child.ExitCode; }
+    catch (OperationCanceledException) { if (!child.HasExited) child.Kill(true); await child.WaitForExitAsync(); return 130; }
+    finally { Console.CancelKeyPress -= cancel; }
 }
 catch (Exception ex)
 {
@@ -82,6 +89,8 @@ static void Verify(string root, Payload payload)
 internal sealed record Payload(string Version, string Sha256, Dictionary<string, string> Files);
 internal static class Native
 {
+    [DllImport("kernel32.dll")]
+    internal static extern bool AttachConsole(uint processId);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)]
     internal static extern int MessageBox(IntPtr window, string text, string caption, uint type);
 }

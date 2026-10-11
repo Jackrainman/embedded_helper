@@ -219,7 +219,7 @@ public partial class MainWindow : Window
             var request = new ObservationRequest(DllPath.Text, int.TryParse(ProbeSerial.Text, out var number) ? number : 0,
                 remote ? RemoteHost.Text : "", int.Parse(RemotePort.Text, CultureInfo.InvariantCulture), target.Device, target.Interface, target.SpeedKHz,
                 int.Parse(SampleRate.Text, CultureInfo.InvariantCulture), EnableRtt.IsChecked == true && !remote, variables);
-            await candidate.StartAsync(System.IO.Path.Combine(AppContext.BaseDirectory, "EmbeddedHelper.Worker.exe"), request);
+            await candidate.StartAsync(RuntimePaths.Current.WorkerExecutable, request);
             samples = 0; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear();
             foreach (var row in Variables) { row.History.Clear(); row.LatestValue = null; row.LastObservedAt = null; row.Value = row.Variable.Supported ? "等待新会话数据" : row.Variable.Status; }
             if (project != null) PortableData.SaveFile(System.IO.Path.Combine(project.Root, ".embedded_helper", "watch.json"), new WatchSettings(target.Name, variables.Select(v => v.Identity).ToArray(), request.SampleRate));
@@ -533,9 +533,11 @@ public partial class MainWindow : Window
     {
         try
         {
-            Environment.SetEnvironmentVariable("EMBEDDED_HELPER_HOME", AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar), EnvironmentVariableTarget.User);
-            Environment.SetEnvironmentVariable("EMBEDDED_HELPER_HOME", AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar));
-            Report("已绑定本机入口；请完全退出并重新打开 VS Code 使环境变量生效。搬迁本软件后再次点击此按钮即可。");
+            var entry = RuntimePaths.Current.ExternalEntry(Environment.GetEnvironmentVariable(RuntimePaths.LauncherVariable));
+            if (!File.Exists(entry)) throw new FileNotFoundException("未找到稳定入口，请从完整便携包启动。", entry);
+            Environment.SetEnvironmentVariable(RuntimePaths.EntryVariable, entry, EnvironmentVariableTarget.User);
+            Environment.SetEnvironmentVariable(RuntimePaths.EntryVariable, entry);
+            Report("已绑定稳定入口；请预览并应用旧工程接入以迁移命令，再完全退出并重新打开 VS Code。旧入口变量保持原值；搬迁后重新绑定。");
         }
         catch (Exception ex) { Report("入口绑定失败：" + ex.Message); }
     }

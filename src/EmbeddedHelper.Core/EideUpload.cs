@@ -10,7 +10,7 @@ public sealed record EideUploadChange(FileChange Change, ManagedYamlField[] Fiel
 
 public static class EideUpload
 {
-    public const string Command = "\"%EMBEDDED_HELPER_HOME%\\embedded-helper-cli.exe\" --project \"${ProjectRoot}\" flash --program \"${programFile}\"";
+    public const string Command = "\"%EMBEDDED_HELPER_ENTRY%\" --cli --project \"${ProjectRoot}\" flash --program \"${programFile}\"";
     public static EideUploadChange Plan(string root, string target, bool enabled, ManagedYamlField[] previous)
     {
         var path = Path.Combine(root, ".eide", "eide.yml"); ConfigTransaction.CheckPath(root, path);

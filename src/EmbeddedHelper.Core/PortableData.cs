@@ -5,8 +5,7 @@ namespace EmbeddedHelper.Core;
 
 public static class Product
 {
-    public static string HomeDirectory => File.Exists(Path.Combine(AppContext.BaseDirectory, ".portable-runtime"))
-        ? Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "../../..")) : AppContext.BaseDirectory;
+    public static string HomeDirectory => RuntimePaths.Current.HomeDirectory;
     public static string Version => typeof(Product).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
     public static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNameCaseInsensitive = true };
 }

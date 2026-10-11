@@ -32,7 +32,7 @@ G4一键VS Code接入/共享移除及两个已发布工具版本的下载、离�
 
 ## 开发与验证
 
-标准库Python Harness仅用于开发与打包，不进入客户端运行依赖；产品及其测试采用C#。本任务已授权客户端构建、推送、打标签与发布；不操作硬件。
+标准库Python Harness仅用于开发与打包，不进入客户端运行依赖；产品及其测试采用C#。提交、验证及设备操作边界见根AGENTS；推送、打标签与发布按具体任务授权执行。
 
 | 准备项 | 必要内容 |
 | --- | --- |
@@ -65,7 +65,7 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 当前开发Pre-release：[0.2.0-alpha.8](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.8)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.2.0-alpha.8/EmbeddedHelper.exe)，约98MiB。主线0.2.0-alpha.8补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
 
-远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；重新打开VS Code使用户环境变量生效。远程配置页预览并应用，新增独立LAN烧录/调试条目，本地条目保留。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。
+远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；完全退出并重新打开VS Code使用户环境变量生效。新接入使用EMBEDDED_HELPER_ENTRY指向外层EXE，通过--cli进入当前组件。旧工程须在远程配置页预览并应用以迁移命令；旧EMBEDDED_HELPER_HOME不被覆盖，尚未迁移的工程仍依赖旧组件目录，全部迁移前不要删除该目录。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。
 
 单EXE首次启动自动将内部运行组件准备到旁边data/runtime，设置仍在data/settings；搬迁时携带data保留配置，更新只替换主EXE。内部SDK工作进程和CLI保持隔离，用户无需管理DLL。运行时可能另用Windows临时缓存。
 

@@ -161,6 +161,54 @@
         "H-03"
       ],
       "doneWhen": "单EXE首次/重复/迁移启动和组件损坏拒绝通过；设置仍在旁边data；同包直接EXE发布Pre-release，硬件延期用户验收"
+    },
+    {
+      "id": "R-01",
+      "status": "done",
+      "refs": [
+        "REL-01",
+        "PRJ-10",
+        "REM-07"
+      ],
+      "dependsOn": [],
+      "doneWhen": "统一运行路径与外部稳定入口，旧接入事务迁移和离线升级回归通过；不操作设备"
+    },
+    {
+      "id": "R-02",
+      "status": "todo",
+      "refs": [
+        "DEC-01",
+        "VIS-02",
+        "SER-01"
+      ],
+      "dependsOn": [
+        "R-01"
+      ],
+      "doneWhen": "按页面拆分窗口与状态，提取设置和流程服务；保留五页GUI自检与关闭行为"
+    },
+    {
+      "id": "R-03",
+      "status": "todo",
+      "refs": [
+        "DEC-01",
+        "NFR-05"
+      ],
+      "dependsOn": [
+        "R-02"
+      ],
+      "doneWhen": "Core按功能归位并拆分职责，测试按领域拆分与隔离，Worker定位兼容Debug和Release"
+    },
+    {
+      "id": "R-04",
+      "status": "todo",
+      "refs": [
+        "NFR-05",
+        "REL-11"
+      ],
+      "dependsOn": [
+        "R-03"
+      ],
+      "doneWhen": "预检覆盖全部解决方案工程，缺失引用反例通过，权威目录和配置文档一致"
     }
   ]
 }

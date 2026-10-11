@@ -4,7 +4,8 @@ using EmbeddedHelper.Core;
 
 try
 {
-    var data = Path.Combine(Product.HomeDirectory, "data");
+    if (args.FirstOrDefault() == "--cli") args = args[1..];
+    var data = RuntimePaths.Current.DataDirectory;
     if (args.Length >= 2 && args[0] == "--data") { data = Path.GetFullPath(args[1]); args = args[2..]; }
     if (args is ["--version"] or ["--self-test"]) { Console.WriteLine(Product.Version); return 0; }
     var cache = new ToolCache(data);

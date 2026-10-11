@@ -5,7 +5,7 @@ using Xunit;
 
 namespace EmbeddedHelper.Tests;
 
-public sealed class CoreTests : IDisposable
+public sealed partial class CoreTests : IDisposable
 {
     private readonly string root;
     private readonly string fixtures;
@@ -308,7 +308,7 @@ public sealed class CoreTests : IDisposable
         Assert.False(File.Exists(Path.Combine(path, ".vscode/tasks.json")));
         ConfigTransaction.Apply(plan, Path.Combine(root, "journal"));
         var tasks = Path.Combine(path, ".vscode/tasks.json");
-        File.WriteAllText(tasks, File.ReadAllText(tasks).Replace("embedded-helper-cli.exe", "user-owned.exe"));
+        File.WriteAllText(tasks, File.ReadAllText(tasks).Replace("${env:EMBEDDED_HELPER_ENTRY}", "user-owned.exe"));
         Assert.Throws<InvalidDataException>(() => VsCodeIntegration.Remove(path));
         Assert.Contains("user-owned.exe", File.ReadAllText(tasks));
     }

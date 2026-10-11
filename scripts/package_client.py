@@ -104,6 +104,14 @@ def main():
             if smoke.get('status') != 'passed' or smoke.get('exitCode') != 0 or smoke.get('version') != version:
                 raise RuntimeError('WPF smoke did not pass.')
         installed = next((extracted / 'data/runtime').glob(version + '-*'))
+        external = subprocess.run([str(extracted / 'EmbeddedHelper.exe'), '--cli', '--version'],
+                                  check=True, capture_output=True, text=True, env=clean_env, timeout=30)
+        if external.stdout.strip() != version:
+            raise RuntimeError('Portable CLI stdout/version mismatch.')
+        invalid = subprocess.run([str(extracted / 'EmbeddedHelper.exe'), '--cli', 'invalid-command'],
+                                 capture_output=True, text=True, env=clean_env, timeout=30)
+        if invalid.returncode != 2 or 'embedded-helper-cli' not in invalid.stderr:
+            raise RuntimeError('Portable CLI stderr/exit code mismatch.')
         for exe in ['EmbeddedHelper.Worker.exe', 'embedded-helper-cli.exe']:
             result = subprocess.run([str(installed / exe), '--self-test'], check=True,
                                     capture_output=True, text=True, env=clean_env, timeout=15)
@@ -123,6 +131,10 @@ def main():
                 time.sleep(0.5)
         subprocess.run([str(moved / 'EmbeddedHelper.exe'), '--smoke', str(qa)], check=True,
                        env=clean_env, timeout=60, cwd=temporary)
+        external = subprocess.run([str(moved / 'EmbeddedHelper.exe'), '--cli', '--version'],
+                                  check=True, capture_output=True, text=True, env=clean_env, timeout=30)
+        if external.stdout.strip() != version:
+            raise RuntimeError('Moved portable CLI did not resolve current components.')
         installed = next((moved / 'data/runtime').glob(version + '-*'))
         damaged = installed / 'EmbeddedHelper.Worker.exe'
         original = damaged.read_bytes()

@@ -32,8 +32,8 @@ public static class VsCodeIntegration
         {
             ["label"] = label,
             ["type"] = "process",
-            ["command"] = "${env:EMBEDDED_HELPER_HOME}/embedded-helper-cli.exe",
-            ["args"] = new JsonArray(arguments.Select(a => (JsonNode?)JsonValue.Create(a)).ToArray()),
+            ["command"] = "${env:EMBEDDED_HELPER_ENTRY}",
+            ["args"] = new JsonArray(new[] { "--cli" }.Concat(arguments).Select(a => (JsonNode?)JsonValue.Create(a)).ToArray()),
             ["options"] = new JsonObject { ["cwd"] = "${workspaceFolder}" },
             ["problemMatcher"] = new JsonArray()
         };
