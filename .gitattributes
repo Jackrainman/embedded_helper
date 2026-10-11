@@ -20,3 +20,5 @@ VERSION text eol=lf
 *.elf binary
 *.bin binary
 *.zip binary
+*.png binary
+*.ico binary

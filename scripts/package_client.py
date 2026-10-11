@@ -113,7 +113,14 @@ def main():
             raise RuntimeError('Settings did not stay beside the single EXE.')
         # Launch after moving the complete portable directory; no old absolute runtime dependency.
         moved = temporary / '移动后 单 EXE'
-        extracted.rename(moved)
+        for attempt in range(11):
+            try:
+                extracted.rename(moved)
+                break
+            except PermissionError:
+                if attempt == 10:
+                    raise
+                time.sleep(0.5)
         subprocess.run([str(moved / 'EmbeddedHelper.exe'), '--smoke', str(qa)], check=True,
                        env=clean_env, timeout=60, cwd=temporary)
         installed = next((moved / 'data/runtime').glob(version + '-*'))

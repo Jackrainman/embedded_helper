@@ -63,8 +63,10 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 [Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
 
-当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.6补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
+当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.7补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
 
 远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；重新打开VS Code使用户环境变量生效。远程配置页预览并应用，新增独立LAN烧录/调试条目，本地条目保留。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。
 
 单EXE首次启动自动将内部运行组件准备到旁边data/runtime，设置仍在data/settings；搬迁时携带data保留配置，更新只替换主EXE。内部SDK工作进程和CLI保持隔离，用户无需管理DLL。运行时可能另用Windows临时缓存。
+
+串口打开/关闭合并为单按钮，绿灯表示驱动连接正常，红灯表示未连接或故障，附带文字；切换期间禁用重复操作。程序图标和页首logo使用用户提供的原图。

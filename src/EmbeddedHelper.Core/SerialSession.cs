@@ -26,6 +26,7 @@ public sealed class OrderedRecorder : IAsyncDisposable
     public long PeakBytes => Interlocked.Read(ref peakBytes);
     public long DiscardedBytes => Interlocked.Read(ref discardedBytes);
     public string? Error => failure?.Message;
+    public Exception? Failure => failure;
     public OrderedRecorder(string directory, int segmentBytes = 16 * 1024 * 1024, int byteCapacity = 8 * 1024 * 1024)
     {
         if (segmentBytes < 1 || byteCapacity < 1) throw new ArgumentOutOfRangeException(nameof(segmentBytes));

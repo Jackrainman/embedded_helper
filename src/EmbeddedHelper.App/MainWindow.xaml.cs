@@ -249,6 +249,7 @@ public partial class MainWindow : Window
     }
     private void Refresh(object? sender, EventArgs e)
     {
+        UpdateSerialConnection();
         if (observation != null)
         {
             while (observation.Events.TryRead(out var item))
@@ -381,13 +382,18 @@ public partial class MainWindow : Window
     private void RefreshPorts(object? sender, RoutedEventArgs e)
     { try { var current = SerialPortBox.Text; SerialPortBox.ItemsSource = SerialPort.GetPortNames().Order().ToArray(); SerialPortBox.Text = current; } catch (Exception ex) { Report(ex.Message); } }
     private SerialSettings ReadSerialSettings() => new(SerialPortBox.Text, int.Parse(BaudBox.Text, CultureInfo.InvariantCulture), DataBitsBox.SelectedIndex + 5, (Parity)ParityBox.SelectedItem, (StopBits)StopBitsBox.SelectedItem, (Handshake)FlowBox.SelectedItem);
-    private async void ConnectSerial(object? sender, RoutedEventArgs e) => await Guard(async () =>
+    private async void ToggleSerial(object? sender, RoutedEventArgs e) => await Guard(async () =>
+    {
+        if (serialOpening || serialClosing) return;
+        if (serial != null) await CloseSerialAsync(); else await ConnectSerialAsync();
+    });
+    private async Task ConnectSerialAsync()
     {
         if (serial != null || serialOpening || serialClosing) throw new InvalidOperationException("请先关闭当前串口并等待完成。");
         var parameters = ReadSerialSettings();
         ConnectSerialButton.IsEnabled = false;
         var candidate = new SerialSession();
-        serial = candidate; serialOpening = true;
+        serial = candidate; serialOpening = true; UpdateSerialConnection();
         serialText.Clear(); lastReceived = lastSent = 0; lastSerialTime = 0; serialClock.Restart();
         try
         {
@@ -396,13 +402,22 @@ public partial class MainWindow : Window
             if (!serialClosing) Report(parameters.Baud > 1000000 ? "实验波特率请求已被驱动接受；实际速率和链路完整性未验收。" : "串口已打开；发送结果表示驱动已接受，尚无对端确认。");
         }
         catch { await candidate.DisposeAsync(); if (ReferenceEquals(serial, candidate)) serial = null; throw; }
-        finally { serialOpening = false; ConnectSerialButton.IsEnabled = serial == null && !serialClosing; }
-    });
-    private async void DisconnectSerial(object? sender, RoutedEventArgs e) => await Guard(CloseSerialAsync);
+        finally { serialOpening = false; UpdateSerialConnection(); }
+    }
+    private void UpdateSerialConnection()
+    {
+        var busy = serialOpening || serialClosing;
+        var connected = !busy && serial?.Connected == true;
+        ConnectSerialButton.IsEnabled = !busy;
+        ConnectSerialButton.Content = serialOpening ? "打开中…" : serialClosing ? "关闭中…" : serial != null ? "关闭串口" : "打开串口";
+        SerialConnectionLight.Fill = connected ? Brushes.ForestGreen : Brushes.Firebrick;
+        SerialConnectionLabel.Text = serialOpening ? "正在打开" : serialClosing ? "正在关闭" : connected ? "已连接" : serial != null ? "连接故障" : "未连接";
+        foreach (var field in new UIElement[] { SerialPortBox, BaudBox, DataBitsBox, ParityBox, StopBitsBox, FlowBox, RecordSerial }) field.IsEnabled = serial == null && !busy;
+    }
     private async Task CloseSerialAsync()
     {
         if (serialClosing) throw new InvalidOperationException("串口正在关闭，请稍候。");
-        serialClosing = true; ConnectSerialButton.IsEnabled = false;
+        serialClosing = true; UpdateSerialConnection();
         try
         {
             periodic?.Cancel();
@@ -412,7 +427,7 @@ public partial class MainWindow : Window
             serial = null; serialClock.Stop();
             SerialStats.Text = current?.Recorder?.Error is { } error ? "串口已关闭；记录失败：" + error : $"串口已关闭；记录缺口 {current?.Recorder?.Discarded ?? 0} 块。";
         }
-        finally { serialClosing = false; ConnectSerialButton.IsEnabled = serial == null && !serialOpening; }
+        finally { serialClosing = false; UpdateSerialConnection(); }
     }
     private async void SendSerial(object? sender, RoutedEventArgs e) => await Guard(() => SendSerialAsync(CancellationToken.None));
     private async Task SendSerialAsync(CancellationToken token)
@@ -579,6 +594,9 @@ public partial class MainWindow : Window
             ElfPath.Text = savedElf;
             await Guard(() => SendSerialAsync(CancellationToken.None));
             if (!StatusLabel.Text.Contains("请先打开串口")) throw new InvalidDataException("未连接串口的错误未反馈。");
+            SerialPortBox.Text = "";
+            await Guard(ConnectSerialAsync);
+            if (serial != null || ConnectSerialButton.Content?.ToString() != "打开串口" || !ConnectSerialButton.IsEnabled || SerialConnectionLabel.Text != "未连接" || SerialConnectionLight.Fill != Brushes.Firebrick) throw new InvalidDataException("打开失败后串口按钮和红灯未恢复。");
             Report("离线 GUI 自检：工程、ELF、设置与错误反馈通过；硬件未验收。");
             for (int i = 0; i < Pages.Items.Count; i++)
             {

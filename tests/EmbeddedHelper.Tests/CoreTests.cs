@@ -98,11 +98,13 @@ public sealed class CoreTests : IDisposable
     {
         var output = Path.Combine(root, "record");
         var bytes = Enumerable.Range(0, 256).Select(i => (byte)i).ToArray();
-        await using (var recorder = new OrderedRecorder(output, 500))
+        var recorder = new OrderedRecorder(output, 500);
+        await using (recorder)
         {
             await Task.WhenAll(Task.Run(() => { for (int i = 0; i < 30; i++) recorder.Record("TX", bytes); }), Task.Run(() => { for (int i = 0; i < 30; i++) recorder.Record("RX", bytes); }));
             Assert.Equal(0, recorder.Discarded);
         }
+        Assert.Null(recorder.Failure);
         var lines = Directory.GetFiles(output, "*.jsonl").Order().SelectMany(File.ReadAllLines).Select(line => JsonDocument.Parse(line)).ToArray();
         Assert.Equal(60, lines.Length);
         Assert.Equal(Enumerable.Range(1, 60).Select(i => (long)i), lines.Select(d => d.RootElement.GetProperty("sequence").GetInt64()));

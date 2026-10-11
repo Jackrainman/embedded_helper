@@ -2,6 +2,8 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType><TargetFramework>net10.0-windows</TargetFramework>
     <UseWPF>true</UseWPF><AssemblyName>EmbeddedHelper</AssemblyName>
+    <ApplicationIcon>../../packaging/EmbeddedHelper.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup><ProjectReference Include="../EmbeddedHelper.Core/EmbeddedHelper.Core.csproj" /></ItemGroup>
+  <ItemGroup><Resource Include="../../packaging/EmbeddedHelper.png" Link="Assets/EmbeddedHelper.png" /></ItemGroup>
 </Project>

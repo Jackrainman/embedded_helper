@@ -28,7 +28,14 @@ public sealed class PortableData(string baseDirectory)
         try
         {
             File.WriteAllText(temp, JsonSerializer.Serialize(value, Product.Json));
-            File.Move(temp, path, true);
+            // Windows can briefly deny replacement while another reader releases its handle.
+            // Retry only this atomic operation; permanent errors still reach the caller.
+            for (var attempt = 0; ; attempt++)
+            {
+                try { File.Move(temp, path, true); break; }
+                catch (Exception ex) when (attempt < 5 && (ex is UnauthorizedAccessException || ex is IOException io && (io.HResult & 0xffff) is 32 or 33))
+                { Thread.Sleep(20 << attempt); }
+            }
         }
         finally { if (File.Exists(temp)) File.Delete(temp); }
     }
