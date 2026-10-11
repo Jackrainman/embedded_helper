@@ -1,6 +1,6 @@
 # Embedded Helper 设计文档
 
-文档版本0.8，2026-10-11。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含目录式便携ZIP按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
+文档版本0.9，2026-10-11。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含目录式便携ZIP按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
 
 ## 阅读顺序
 
@@ -18,7 +18,7 @@ Windows本地小助手配合VS Code/EIDE使用。第一版围绕现有模板工�
 
 需求与验收统一维护在需求说明书；概要设计维护模块职责和架构决策；详细设计维护数据模型、算法和测试步骤。下游文档引用需求编号，不重复制定功能范围或发布门槛。用例、实现方案和验收步骤是不同层次的描述，不因涉及同一功能就删除。
 
-配置归属见概要第6节，旧工具兼容见REM-07及详细设计第6节，网页快捷入口规则见详细设计第11节，产品版本纪律见REL-10及概要10.4。首批内测范围与门槛见需求4.1及AC-13，不代表全部P0已完成。
+配置归属见概要第6节，旧工具兼容见REM-07及详细设计第6节，网页快捷入口规则见详细设计第11节，产品版本纪律见REL-10及概要10.4。首批范围见需求4.1；开发内测按AC-14，完整验收按AC-13，不代表全部P0已完成。
 
 ## 后续更新规则
 
@@ -62,3 +62,5 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 交付 `EmbeddedHelper-<版本>-win-x64.zip`、release-manifest.json、SHA256SUMS及包内说明/许可。完整解压到可写目录并双击EmbeddedHelper.exe，无需Python或预装.NET；J-Link软件和设备驱动由用户安装。DWARF4内置解析，DWARF5调用已有ARM readelf（自动定位EIDE工具链，亦可在设置中填写）。软件在自身目录创建data；升级保留data，工程观察设置保存到.embedded_helper/watch.json。
 
 [Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
+
+当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.2继续完善串口软件流程；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。

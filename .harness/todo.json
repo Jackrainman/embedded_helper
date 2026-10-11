@@ -73,7 +73,7 @@
     },
     {
       "id": "C-04",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "SER-01",
         "SER-04",
@@ -87,7 +87,7 @@
     },
     {
       "id": "H-03",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "REL-01",
         "REL-09",

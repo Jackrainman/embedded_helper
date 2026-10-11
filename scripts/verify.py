@@ -239,7 +239,7 @@ def main():
     print('PASS 离线验证' if result.wasSuccessful() else 'FAIL 测试')
     if not result.wasSuccessful():
         return 1
-    print('未验证：客户端构建、成品启动和实机验收；仓库检查通过不代表产品通过')
+    print('仓库门不覆盖成品启动和实机验收；仅显式--client继续检查客户端', flush=True)
     if args.client_preflight:
         return client_preflight(ROOT)
     if args.client:

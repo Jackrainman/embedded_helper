@@ -68,7 +68,7 @@ class HarnessTests(unittest.TestCase):
         self.assertEqual(accepted.returncode, 0, (accepted.stdout + accepted.stderr).decode(errors='replace'))
 
     def test_dotnet_baseline_and_missing_client(self):
-        with patch.object(verify.subprocess, 'run') as process:
+        with patch.object(verify.subprocess, 'run') as process, patch('builtins.print'):
             self.assertEqual(verify.verify_client(self.root), 2)
             process.assert_not_called()
         p = self.root / 'global.json'

@@ -30,7 +30,7 @@ public sealed class VariableRow(Variable variable) : INotifyPropertyChanged
     public event PropertyChangedEventHandler? PropertyChanged;
     private void Changed([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
 }
-public sealed record AppSettings(string Dll = "", string Probe = "", string[]? Recent = null, double Width = 1280, double Height = 860, SerialSettings? Serial = null, string ReadElf = "");
+public sealed record AppSettings(string Dll = "", string Probe = "", string[]? Recent = null, double Width = 1280, double Height = 860, SerialSettings? Serial = null, string ReadElf = "", string SerialEncoding = "utf-8", string[]? SendHistory = null);
 public sealed record WatchSettings(string Target, string[] Identities, int Rate);
 
 public partial class MainWindow : Window
@@ -42,9 +42,14 @@ public partial class MainWindow : Window
     private ObservationSession? observation;
     private SerialSession? serial;
     private CancellationTokenSource? periodic;
+    private Task? periodicTask;
     private readonly DispatcherTimer refresh = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private readonly Decoder rttDecoder = Encoding.UTF8.GetDecoder();
-    private readonly Dictionary<string, Decoder> serialDecoders = new() { ["RX"] = Encoding.UTF8.GetDecoder(), ["TX"] = Encoding.UTF8.GetDecoder() };
+    private readonly SerialTextBuffer serialText = new();
+    private readonly Stopwatch serialClock = new();
+    private long lastReceived, lastSent;
+    private double lastSerialTime;
+    private bool serialOpening, serialClosing;
     private DateTime elfStamp;
     private bool closing, transition;
     private long samples;
@@ -63,6 +68,10 @@ public partial class MainWindow : Window
         try { settings = App.Data.Load("settings/window.json", () => new AppSettings()); }
         catch (Exception ex) { Report("设置读取失败，保留原文件并使用默认值：" + ex.Message); }
         DllPath.Text = settings.Dll; ProbeSerial.Text = settings.Probe;
+        EncodingBox.ItemsSource = new[] { "utf-8", "gb18030", "us-ascii", "utf-16" };
+        EncodingBox.SelectedItem = settings.SerialEncoding;
+        if (EncodingBox.SelectedIndex < 0) EncodingBox.SelectedIndex = 0;
+        SendHistoryBox.ItemsSource = settings.SendHistory ?? [];
         ReadElfPath.Text = string.IsNullOrEmpty(settings.ReadElf) ? ReadElfIndex.FindTool() ?? "" : settings.ReadElf;
         Width = Math.Clamp(settings.Width, MinWidth, Math.Max(MinWidth, SystemParameters.WorkArea.Width));
         Height = Math.Clamp(settings.Height, MinHeight, Math.Max(MinHeight, SystemParameters.WorkArea.Height));
@@ -220,12 +229,16 @@ public partial class MainWindow : Window
             ObservationStatus.Text += " · ELF 已变化，当前地址未替换";
         if (serial != null)
         {
+            var changed = false;
             while (serial.Display.TryRead(out var block))
             {
-                if (PauseSerial.IsChecked == true) continue;
-                AppendBounded(SerialText, $"[{block.Direction}] " + (HexDisplay.IsChecked == true ? Convert.ToHexString(block.Bytes) + "\n" : Decode(serialDecoders[block.Direction], block.Bytes)));
+                serialText.Append(block); changed = true;
             }
-            SerialStats.Text = $"{(serial.Connected ? "已连接" : "连接故障")} · RX {serial.Received:N0} B · TX 驱动已接受 {serial.Sent:N0} B · 显示裁剪 {serial.Clipped:N0} B · 原始记录缺口 {serial.Recorder?.Discarded ?? 0} · {serial.Error ?? serial.Recorder?.Error}";
+            if (PauseSerial.IsChecked != true && (changed || SerialText.Text != serialText.Text)) { SerialText.Text = serialText.Text; SerialText.ScrollToEnd(); }
+            var elapsed = serialClock.Elapsed.TotalSeconds;
+            var delta = Math.Max(0.001, elapsed - lastSerialTime);
+            SerialStats.Text = $"{(serialOpening ? "打开中" : serialClosing ? "关闭中" : serial.Connected ? "已连接" : "连接故障")} · RX {serial.Received:N0} B / {(serial.Received - lastReceived) / delta:N0} B/s · TX 驱动已接受 {serial.Sent:N0} B / {(serial.Sent - lastSent) / delta:N0} B/s\n显示队列丢弃 {serial.Clipped:N0} B · 历史裁剪 {serialText.TrimmedCharacters:N0} 字符 · 记录积压 {serial.Recorder?.QueuedBytes ?? 0:N0} B · 记录缺口 {serial.Recorder?.Discarded ?? 0} 块 / {serial.Recorder?.DiscardedBytes ?? 0:N0} B · 驱动错误通知 {serial.DriverErrors} · {serial.LastDriverError} · {serial.Error ?? serial.Recorder?.Error}";
+            lastReceived = serial.Received; lastSent = serial.Sent; lastSerialTime = elapsed;
         }
     }
     private static string Decode(Decoder decoder, byte[] data)
@@ -284,34 +297,73 @@ public partial class MainWindow : Window
     private SerialSettings ReadSerialSettings() => new(SerialPortBox.Text, int.Parse(BaudBox.Text, CultureInfo.InvariantCulture), DataBitsBox.SelectedIndex + 5, (Parity)ParityBox.SelectedItem, (StopBits)StopBitsBox.SelectedItem, (Handshake)FlowBox.SelectedItem);
     private async void ConnectSerial(object? sender, RoutedEventArgs e) => await Guard(async () =>
     {
-        if (serial != null) throw new InvalidOperationException("请先关闭当前串口。");
+        if (serial != null || serialOpening || serialClosing) throw new InvalidOperationException("请先关闭当前串口并等待完成。");
+        var parameters = ReadSerialSettings();
         ConnectSerialButton.IsEnabled = false;
         var candidate = new SerialSession();
+        serial = candidate; serialOpening = true;
+        serialText.Clear(); lastReceived = lastSent = 0; lastSerialTime = 0; serialClock.Restart();
         try
         {
-            await candidate.OpenAsync(ReadSerialSettings(), RecordSerial.IsChecked == true ? System.IO.Path.Combine(App.Data.Root, "serial", "records") : null);
-            serial = candidate; foreach (var decoder in serialDecoders.Values) decoder.Reset(); PersistSettings();
+            await candidate.OpenAsync(parameters, RecordSerial.IsChecked == true ? System.IO.Path.Combine(App.Data.Root, "serial", "records") : null);
+            PersistSettings();
+            if (!serialClosing) Report(parameters.Baud > 1000000 ? "实验波特率请求已被驱动接受；实际速率和链路完整性未验收。" : "串口已打开；发送结果表示驱动已接受，尚无对端确认。");
         }
-        catch { await candidate.DisposeAsync(); throw; }
-        finally { ConnectSerialButton.IsEnabled = true; }
+        catch { await candidate.DisposeAsync(); if (ReferenceEquals(serial, candidate)) serial = null; throw; }
+        finally { serialOpening = false; ConnectSerialButton.IsEnabled = serial == null && !serialClosing; }
     });
     private async void DisconnectSerial(object? sender, RoutedEventArgs e) => await Guard(CloseSerialAsync);
     private async Task CloseSerialAsync()
-    { periodic?.Cancel(); if (serial != null) await serial.DisposeAsync(); serial = null; SerialStats.Text = "串口已关闭，原始记录已完成写入。"; }
+    {
+        if (serialClosing) throw new InvalidOperationException("串口正在关闭，请稍候。");
+        serialClosing = true; ConnectSerialButton.IsEnabled = false;
+        try
+        {
+            periodic?.Cancel();
+            if (periodicTask != null) { try { await periodicTask; } catch (Exception ex) { Report("周期发送已停止：" + ex.Message); } }
+            var current = serial;
+            if (current != null) await current.DisposeAsync();
+            serial = null; serialClock.Stop();
+            SerialStats.Text = current?.Recorder?.Error is { } error ? "串口已关闭；记录失败：" + error : $"串口已关闭；记录缺口 {current?.Recorder?.Discarded ?? 0} 块。";
+        }
+        finally { serialClosing = false; ConnectSerialButton.IsEnabled = serial == null && !serialOpening; }
+    }
     private async void SendSerial(object? sender, RoutedEventArgs e) => await Guard(() => SendSerialAsync(CancellationToken.None));
-    private Task SendSerialAsync(CancellationToken token) => (serial ?? throw new InvalidOperationException("请先打开串口。")).SendAsync(SerialSession.ParseSend(SendText.Text, HexSend.IsChecked == true, NewlineBox.SelectedIndex switch { 1 => "\n", 2 => "\r\n", _ => "" }), token);
+    private async Task SendSerialAsync(CancellationToken token)
+    {
+        if (serialClosing || serialOpening) throw new InvalidOperationException("串口正在切换状态。");
+        var current = serial ?? throw new InvalidOperationException("请先打开串口。");
+        var text = SendText.Text;
+        var bytes = SerialSession.ParseSend(text, HexSend.IsChecked == true, NewlineBox.SelectedIndex switch { 1 => "\n", 2 => "\r\n", _ => "" }, SerialTextBuffer.GetEncoding((string)EncodingBox.SelectedItem));
+        if (bytes.Length == 0) throw new ArgumentException("发送内容为空。");
+        await current.SendAsync(bytes, token);
+        settings = settings with { SendHistory = new[] { text }.Concat(settings.SendHistory ?? []).Distinct().Take(20).ToArray() };
+        SendHistoryBox.ItemsSource = settings.SendHistory;
+    }
     private async void StartPeriodic(object? sender, RoutedEventArgs e) => await Guard(async () =>
     {
         if (periodic != null) throw new InvalidOperationException("周期发送已启动。");
         var delay = int.Parse(SendPeriod.Text, CultureInfo.InvariantCulture);
         if (delay < 10) throw new ArgumentException("周期不得小于 10 ms。");
-        periodic = new CancellationTokenSource();
-        try { while (!periodic.IsCancellationRequested) { await SendSerialAsync(periodic.Token); await Task.Delay(delay, periodic.Token); } }
-        catch (OperationCanceledException) { }
-        finally { periodic.Dispose(); periodic = null; }
+        var cancellation = new CancellationTokenSource(); periodic = cancellation;
+        periodicTask = RunPeriodicAsync(cancellation, delay);
+        try { await periodicTask; } finally { periodicTask = null; }
     });
+    private async Task RunPeriodicAsync(CancellationTokenSource cancellation, int delay)
+    {
+        try { while (!cancellation.IsCancellationRequested) { await SendSerialAsync(cancellation.Token); await Task.Delay(delay, cancellation.Token); } }
+        catch (OperationCanceledException) { }
+        finally { cancellation.Dispose(); periodic = null; }
+    }
     private void StopPeriodic(object? sender, RoutedEventArgs e) => periodic?.Cancel();
-    private void ClearSerial(object? sender, RoutedEventArgs e) => SerialText.Clear();
+    private void ClearSerial(object? sender, RoutedEventArgs e) { serialText.Clear(); SerialText.Clear(); }
+    private void SerialEncodingChanged(object? sender, RoutedEventArgs e)
+    {
+        if (EncodingBox?.SelectedItem is not string encoding || HexDisplay == null || SerialText == null) return;
+        serialText.Configure(encoding, HexDisplay.IsChecked == true); SerialText.Clear();
+    }
+    private void SelectSendHistory(object? sender, SelectionChangedEventArgs e)
+    { if (SendHistoryBox.SelectedItem is string text) SendText.Text = text; }
     private void OpenRecords(object? sender, RoutedEventArgs e) => OpenDirectory(System.IO.Path.Combine(App.Data.Root, "serial", "records"));
     private void OpenLogs(object? sender, RoutedEventArgs e) => OpenDirectory(System.IO.Path.Combine(App.Data.Root, "logs"));
     private void OpenDirectory(string path) { try { Directory.CreateDirectory(path); Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); } catch (Exception ex) { Report(ex.Message); } }
@@ -321,7 +373,7 @@ public partial class MainWindow : Window
     { try { PersistSettings(); Report("设置已保存。升级时保留程序目录下的 data。"); } catch (Exception ex) { Report("设置保存失败：" + ex.Message); } }
     private void PersistSettings()
     {
-        settings = settings with { Dll = DllPath.Text, ReadElf = ReadElfPath.Text, Probe = ProbeSerial.Text, Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, Serial = ReadSerialSettings() };
+        settings = settings with { Dll = DllPath.Text, ReadElf = ReadElfPath.Text, Probe = ProbeSerial.Text, Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, Serial = ReadSerialSettings(), SerialEncoding = EncodingBox.SelectedItem as string ?? "utf-8" };
         App.Data.Save("settings/window.json", settings);
     }
     private void EnvironmentCheck(object? sender, RoutedEventArgs e)
