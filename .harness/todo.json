@@ -56,7 +56,7 @@
     },
     {
       "id": "C-03",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "DEC-02",
         "CON-03",

@@ -11,24 +11,45 @@ if (args is not ["--observe"]) { Console.Error.WriteLine("请由 Embedded Helper
 try
 {
     var request = JsonSerializer.Deserialize<ObservationRequest>(Console.ReadLine() ?? "") ?? throw new InvalidDataException("缺少采集请求。");
-    if (request.SampleRate is < 1 or > 1000 || request.Variables.Length > 64 || request.Variables.Any(v => !v.Supported || v.Address > uint.MaxValue || v.Size is < 1 or > 4)) throw new InvalidDataException("无效读取计划。");
+    var plan = new ReadPlan(request.Generation, request.SampleRate, request.Variables); plan.Validate();
+    if (request.SessionId.Length != 32) throw new InvalidDataException("无效会话身份。");
+    var mailbox = new ReadPlanMailbox(plan);
     using var cancel = new CancellationTokenSource();
-    _ = Task.Run(() => { while (Console.ReadLine() != null) { } cancel.Cancel(); });
+    _ = Task.Run(() =>
+    {
+        try
+        {
+            while (Console.ReadLine() is { } line)
+            {
+                if (line.Length > 1024 * 1024) throw new InvalidDataException("控制请求过长。");
+                mailbox.Submit(JsonSerializer.Deserialize<ReadPlan>(line) ?? throw new InvalidDataException("缺少计划。"));
+            }
+        }
+        catch (Exception ex) { Console.Error.WriteLine("控制通道失败：" + ex.Message); }
+        finally { cancel.Cancel(); }
+    });
     using var link = new Link(request);
-    Emit(new ObservationEvent("state", "采集中 · 固件与 ELF 匹配未核验"));
+    Emit(new ObservationEvent("state", "采集中 · 固件与 ELF 匹配未核验", SessionId: request.SessionId, Generation: plan.Generation));
+    Emit(new ObservationEvent("plan", "读取计划已应用", SessionId: request.SessionId, Generation: plan.Generation));
     var timer = Stopwatch.StartNew();
-    long sequence = 0;
+    long sequence = 0, round = 0;
     while (!cancel.IsCancellationRequested)
     {
+        if (mailbox.Take() is { } updated)
+        {
+            plan = updated; round = 0; timer.Restart();
+            Emit(new ObservationEvent("plan", "读取计划已应用", SessionId: request.SessionId, Generation: plan.Generation));
+        }
+        var readStart = Stopwatch.GetTimestamp();
         var values = new Dictionary<string, string>();
-        foreach (var variable in request.Variables)
+        foreach (var variable in plan.Variables)
         {
             try { values[variable.Identity] = ElfIndex.Decode(variable, link.Read(variable)).ToString("G9", CultureInfo.InvariantCulture); }
             catch (IOException) { values[variable.Identity] = "读取失败"; }
         }
         var rtt = link.Rtt();
-        Emit(new ObservationEvent("sample", "", values, rtt.Length > 0 ? Convert.ToBase64String(rtt) : null, ++sequence));
-        var delay = (int)Math.Max(0, sequence * 1000.0 / request.SampleRate - timer.Elapsed.TotalMilliseconds);
+        Emit(new ObservationEvent("sample", "", values, rtt.Length > 0 ? Convert.ToBase64String(rtt) : null, ++sequence, request.SessionId, plan.Generation, readStart, Stopwatch.GetTimestamp(), DateTimeOffset.UtcNow));
+        var delay = (int)Math.Max(0, ++round * 1000.0 / plan.SampleRate - timer.Elapsed.TotalMilliseconds);
         if (delay > 0) { try { await Task.Delay(Math.Min(delay, 1000), cancel.Token); } catch (OperationCanceledException) { } }
     }
     return 0;
@@ -75,7 +96,7 @@ internal sealed class Link : IDisposable
             if (request.Rtt && request.Host.Length == 0)
             {
                 rtt = Function<RttControlDelegate>("JLINK_RTTERMINAL_Control")(0, IntPtr.Zero) >= 0;
-                if (!rtt) Console.WriteLine(JsonSerializer.Serialize(new ObservationEvent("notice", "RTT 启动失败；变量采集仍可使用。")));
+                if (!rtt) Console.WriteLine(JsonSerializer.Serialize(new ObservationEvent("notice", "RTT 启动失败；变量采集仍可使用。", SessionId: request.SessionId, Generation: request.Generation)));
             }
         }
         catch { Dispose(); throw; }

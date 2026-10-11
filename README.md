@@ -63,4 +63,4 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 [Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
 
-当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.2继续完善串口软件流程；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
+当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.3继续完善串口软件流程和采集计划更新；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。

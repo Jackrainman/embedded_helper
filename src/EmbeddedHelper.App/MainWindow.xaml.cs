@@ -25,6 +25,8 @@ public sealed class VariableRow(Variable variable) : INotifyPropertyChanged
     public string Address => Variable.AddressText;
     public bool Selected { get; set; }
     public Queue<double> History { get; } = new();
+    public string? LatestValue { get; set; }
+    public DateTimeOffset? LastObservedAt { get; set; }
     private string value = variable.Supported ? "未采集" : variable.Status;
     public string Value { get => value; set { this.value = value; Changed(); } }
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -45,6 +47,7 @@ public partial class MainWindow : Window
     private Task? periodicTask;
     private readonly DispatcherTimer refresh = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private readonly Decoder rttDecoder = Encoding.UTF8.GetDecoder();
+    private readonly StringBuilder rttHistory = new();
     private readonly SerialTextBuffer serialText = new();
     private readonly Stopwatch serialClock = new();
     private long lastReceived, lastSent;
@@ -139,42 +142,65 @@ public partial class MainWindow : Window
     }
     private async void BrowseElf(object? sender, RoutedEventArgs e)
     {
-        if (observation != null) { Report("请先停止采集再更换 ELF。"); return; }
+        if (observation != null || transition) { Report("请先停止采集或等待当前解析结束再更换 ELF。"); return; }
         var dialog = new OpenFileDialog { Filter = "固件 ELF|*.elf;*.axf|所有文件|*.*" };
         if (dialog.ShowDialog(this) == true) { ElfPath.Text = dialog.FileName; await Guard(ParseElfAsync); }
     }
     private async void ParseElf(object? sender, RoutedEventArgs e) => await Guard(ParseElfAsync);
     private async Task ParseElfAsync()
     {
-        if (observation != null) throw new InvalidOperationException("请先停止并释放，再更新地址并重新开始。");
-        var path = ElfPath.Text;
-        var tool = ReadElfPath.Text;
-        var indexed = await Task.Run(() => ElfIndex.Read(path, tool));
-        var selected = Variables.Where(v => v.Selected).Select(v => v.Variable.Identity).ToHashSet();
-        if (selected.Count == 0 && project != null)
+        if (transition) throw new InvalidOperationException("正在切换连接或读取计划，请稍候。");
+        transition = true; TargetBox.IsEnabled = false;
+        try
         {
-            var state = System.IO.Path.Combine(project.Root, ".embedded_helper", "watch.json");
-            if (File.Exists(state))
+            var path = ElfPath.Text;
+            var tool = ReadElfPath.Text;
+            var indexed = await Task.Run(() =>
             {
-                var watch = JsonSerializer.Deserialize<WatchSettings>(await File.ReadAllTextAsync(state), Product.Json);
-                if (watch != null && watch.Target == Target?.Name) selected.UnionWith(watch.Identities);
+                static string Digest(string file) { using var stream = File.OpenRead(file); return Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(stream)); }
+                var before = Digest(path);
+                var result = ElfIndex.Read(path, tool);
+                if (before != Digest(path)) throw new IOException("解析期间 ELF 发生变化，请等待编译完成后重试。");
+                return result;
+            });
+            var selected = Variables.Where(v => v.Selected).Select(v => v.Variable.Identity).ToHashSet();
+            if (selected.Count == 0 && project != null)
+            {
+                var state = System.IO.Path.Combine(project.Root, ".embedded_helper", "watch.json");
+                if (File.Exists(state))
+                {
+                    var watch = JsonSerializer.Deserialize<WatchSettings>(await File.ReadAllTextAsync(state), Product.Json);
+                    if (watch != null && watch.Target == Target?.Name) selected.UnionWith(watch.Identities);
+                }
             }
+            var missing = Variables.Where(v => v.Selected && !indexed.Any(n => n.Identity == v.Variable.Identity)).Select(v => v.Variable with { Status = "新 ELF 中缺失，地址未使用" }).ToArray();
+            var rows = indexed.Concat(missing).Select(v => new VariableRow(v) { Selected = selected.Contains(v.Identity) }).ToArray();
+            if (observation != null)
+            {
+                await observation.UpdateAsync(rows.Where(v => v.Selected && v.Variable.Supported).Select(v => v.Variable).ToArray(), int.Parse(SampleRate.Text, CultureInfo.InvariantCulture));
+                samples = 0; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear();
+            }
+            Variables.Clear();
+            foreach (var row in rows) Variables.Add(row);
+            elfStamp = File.GetLastWriteTimeUtc(path);
+            ObservationStatus.Text = $"ELF 已解析：{indexed.Length} 项，{indexed.Count(v => v.Supported)} 项可读取 · 与目标固件匹配未核验";
+            Report(observation == null ? "变量索引完成；地址来自 ELF，尚未连接硬件。" : $"读计划第 {observation.Generation} 代已在批次边界应用；新曲线重新开始，缺失项标为无效。固件与 ELF 仍未核验。");
+            if (project != null && Target is { } target) PortableData.SaveFile(System.IO.Path.Combine(project.Root, ".embedded_helper", "watch.json"), new WatchSettings(target.Name, selected.ToArray(), int.Parse(SampleRate.Text, CultureInfo.InvariantCulture)));
         }
-        Variables.Clear();
-        foreach (var variable in indexed) Variables.Add(new VariableRow(variable) { Selected = variable.Supported && selected.Contains(variable.Identity) });
-        elfStamp = File.GetLastWriteTimeUtc(path);
-        ObservationStatus.Text = $"ELF 已解析：{indexed.Length} 项，{indexed.Count(v => v.Supported)} 项可读取 · 与目标固件匹配未核验";
-        Report("变量索引完成；地址来自 ELF，尚未连接硬件。");
+        finally { transition = false; TargetBox.IsEnabled = observation == null; }
     }
     private async void StartObservation(object? sender, RoutedEventArgs e) => await Guard(async () =>
     {
-        if (transition || observation != null) throw new InvalidOperationException("请先停止已有采集。");
+        if (transition) throw new InvalidOperationException("正在切换连接，请稍候。");
+        if (observation?.CanRetry == true) await StopObservationAsync();
+        if (observation != null) throw new InvalidOperationException("请先停止已有采集。");
         if (Target is not { } target) throw new InvalidOperationException("请先选择工程目标。");
         var variables = Variables.Where(v => v.Selected).Select(v => v.Variable).ToArray();
         if (variables.Length == 0 && EnableRtt.IsChecked != true) throw new InvalidOperationException("请选择变量或启用 RTT。");
         if (variables.Any(v => !v.Supported)) throw new InvalidOperationException("观察列表包含不支持的变量类型。");
         transition = true; StartButton.IsEnabled = false; TargetBox.IsEnabled = false;
         var candidate = new ObservationSession();
+        observation = candidate;
         try
         {
             var remote = TransportBox.SelectedIndex == 1;
@@ -182,11 +208,12 @@ public partial class MainWindow : Window
                 remote ? RemoteHost.Text : "", int.Parse(RemotePort.Text, CultureInfo.InvariantCulture), target.Device, target.Interface, target.SpeedKHz,
                 int.Parse(SampleRate.Text, CultureInfo.InvariantCulture), EnableRtt.IsChecked == true && !remote, variables);
             await candidate.StartAsync(System.IO.Path.Combine(AppContext.BaseDirectory, "EmbeddedHelper.Worker.exe"), request);
-            observation = candidate; samples = 0; sampling.Restart(); rttDecoder.Reset();
+            samples = 0; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear();
+            foreach (var row in Variables) { row.History.Clear(); row.LatestValue = null; row.LastObservedAt = null; row.Value = row.Variable.Supported ? "等待新会话数据" : row.Variable.Status; }
             if (project != null) PortableData.SaveFile(System.IO.Path.Combine(project.Root, ".embedded_helper", "watch.json"), new WatchSettings(target.Name, variables.Select(v => v.Identity).ToArray(), request.SampleRate));
             PersistSettings();
         }
-        catch { await candidate.DisposeAsync(); throw; }
+        catch { await candidate.DisposeAsync(); observation = null; throw; }
         finally { transition = false; StartButton.IsEnabled = observation == null; TargetBox.IsEnabled = observation == null; }
     });
     private async void StopObservation(object? sender, RoutedEventArgs e) => await Guard(StopObservationAsync);
@@ -210,20 +237,30 @@ public partial class MainWindow : Window
         {
             while (observation.Events.TryRead(out var item))
             {
+                if (item.SessionId != observation.SessionId || item.Generation != observation.Generation) continue;
                 if (item.Kind != "sample") { if (item.Message.Length > 0) Report(item.Message); continue; }
                 samples++;
-                if (PauseObservation.IsChecked == true) continue;
                 if (item.Values != null) foreach (var row in Variables)
                     if (item.Values.TryGetValue(row.Variable.Identity, out var value))
                     {
-                        row.Value = value;
+                        row.LatestValue = value; row.LastObservedAt = item.ObservedAt;
                         if (double.TryParse(value, CultureInfo.InvariantCulture, out var number) && double.IsFinite(number))
                         { row.History.Enqueue(number); if (row.History.Count > 2000) row.History.Dequeue(); }
                     }
-                if (item.RttBase64 != null) AppendBounded(RttText, Decode(rttDecoder, Convert.FromBase64String(item.RttBase64)));
+                if (item.RttBase64 != null)
+                {
+                    rttHistory.Append(Decode(rttDecoder, Convert.FromBase64String(item.RttBase64)));
+                    if (rttHistory.Length > 65536) rttHistory.Remove(0, rttHistory.Length - 65536);
+                }
             }
-            ObservationStatus.Text = $"{observation.State} · 实际显示批次 {samples / Math.Max(1, sampling.Elapsed.TotalSeconds):F1} Hz · 显示缺口 {observation.Dropped}";
-            if (PauseObservation.IsChecked != true) DrawPlot();
+            ObservationStatus.Text = $"{observation.State} · 第 {observation.Generation} 代 · 接收批次 {samples / Math.Max(1, sampling.Elapsed.TotalSeconds):F1} Hz · 显示缺口 {observation.Dropped}";
+            StartButton.IsEnabled = !transition && observation.CanRetry;
+            StartButton.Content = observation.CanRetry ? "清理并重试" : "开始采集";
+            if (PauseObservation.IsChecked != true)
+            {
+                foreach (var row in Variables.Where(v => v.LatestValue != null)) row.Value = row.LatestValue + (observation.CanRetry || DateTimeOffset.UtcNow - row.LastObservedAt > TimeSpan.FromSeconds(3) ? " / 过期" : "");
+                RttText.Text = rttHistory.ToString(); RttText.ScrollToEnd(); DrawPlot();
+            }
         }
         if (!string.IsNullOrEmpty(ElfPath.Text) && elfStamp != default && File.GetLastWriteTimeUtc(ElfPath.Text) != elfStamp)
             ObservationStatus.Text += " · ELF 已变化，当前地址未替换";
@@ -264,7 +301,7 @@ public partial class MainWindow : Window
         }
     }
     private void PlotSizeChanged(object? sender, SizeChangedEventArgs e) => DrawPlot();
-    private void ClearRtt(object? sender, RoutedEventArgs e) => RttText.Clear();
+    private void ClearRtt(object? sender, RoutedEventArgs e) { rttHistory.Clear(); RttText.Clear(); }
     private void PreviewConfig(object? sender, RoutedEventArgs e)
     {
         try
