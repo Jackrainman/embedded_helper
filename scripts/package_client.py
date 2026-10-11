@@ -26,6 +26,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, default=ROOT / 'dist/candidate')
     parser.add_argument('--tool-zip', type=Path, help='Optional original Debug_LAN ZIP for real GUI import/integration smoke')
+    parser.add_argument('--upgrade-from', type=Path, help='Optional previous portable EXE for real replacement/old-runtime-removal checks')
     args = parser.parse_args()
     version = (ROOT / 'VERSION').read_text().strip()
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
@@ -144,6 +145,38 @@ def main():
         if refused.returncode != 1:
             raise RuntimeError('Modified component was not rejected.')
         damaged.write_bytes(original)
+        upgrade_from = None
+        if args.upgrade_from:
+            upgrade_home = temporary / '升级 中文 空格'
+            upgrade_home.mkdir()
+            entry = upgrade_home / 'EmbeddedHelper.exe'
+            shutil.copy2(args.upgrade_from, entry)
+            old = subprocess.run([str(entry), '--cli', '--version'], check=True,
+                                 capture_output=True, text=True, env=clean_env, timeout=60)
+            upgrade_from = old.stdout.strip()
+            if not upgrade_from or upgrade_from == version:
+                raise RuntimeError('Upgrade input must report a different product version.')
+            old_runtimes = list((upgrade_home / 'data/runtime').glob(upgrade_from + '-*'))
+            if len(old_runtimes) != 1:
+                raise RuntimeError('Previous portable runtime was not prepared.')
+            saved = upgrade_home / 'data/settings/upgrade-probe.json'
+            saved.parent.mkdir(parents=True, exist_ok=True)
+            saved.write_bytes(b'{"keep":"previous-settings"}')
+            settings_digest = hashlib.sha256(saved.read_bytes()).hexdigest()
+            shutil.copy2(executable, entry)
+            upgrade_env = clean_env | {'EMBEDDED_HELPER_ENTRY': str(entry),
+                                       'EMBEDDED_HELPER_HOME': str(old_runtimes[0])}
+            for remove_old in [False, True]:
+                if remove_old:
+                    old_runtime = old_runtimes[0].resolve()
+                    retired = (temporary / 'retired-runtime').resolve()
+                    if not old_runtime.is_relative_to(temporary.resolve()) or not retired.is_relative_to(temporary.resolve()):
+                        raise RuntimeError('Upgrade trial paths escaped the isolated workspace.')
+                    old_runtime.rename(retired)
+                current = subprocess.run([upgrade_env['EMBEDDED_HELPER_ENTRY'], '--cli', '--version'],
+                                         check=True, capture_output=True, text=True, env=upgrade_env, timeout=60)
+                if current.stdout.strip() != version or hashlib.sha256(saved.read_bytes()).hexdigest() != settings_digest:
+                    raise RuntimeError('Replacement did not select current CLI or preserve settings.')
         # Hash the original ZIP again after testing the extracted copy.
         if hashlib.sha256(package.read_bytes()).hexdigest() != digest:
             raise RuntimeError('Package changed during testing.')
@@ -154,7 +187,7 @@ def main():
                         packageBytes=package.stat().st_size, expandedBytes=sum(p.stat().st_size for p in delivery.rglob('*') if p.is_file()),
                         runtimeExpandedBytes=sum(p.stat().st_size for p in publish.rglob('*') if p.is_file()),
                         sdk=json.loads((ROOT / 'global.json').read_text())['sdk']['version'],
-                        runtime='10.0.12', startupAndSmokeSeconds=startup)
+                        runtime='10.0.12', startupAndSmokeSeconds=startup, upgradeFrom=upgrade_from)
         write_json(output / 'release-manifest.json', manifest)
         (output / 'SHA256SUMS').write_text(f'{digest}  {package.name}\n{exe_digest}  EmbeddedHelper.exe\n', encoding='utf-8')
         (output / 'release-notes.md').write_text(
@@ -172,7 +205,7 @@ def main():
                       ('repository', 'scripts/verify.py --client: repository/Harness checks passed before publishing.'),
                       ('client-static', 'Locked restore, dotnet format verify-no-changes and Release build passed.'),
                       ('client-tests', 'C# tests passed; TRX produced by verify.py. Hardware was not accessed.'),
-                      ('package-smoke', f'Single EXE from original ZIP in Chinese/space path; first/repeat/moved WPF launch, five pages and settings; internal CLI/worker self-tests; corrupted component refused. Elapsed including smoke: {startup}. See qa/smoke.json and page PNGs.')]]
+                      ('package-smoke', f'Single EXE from original ZIP in Chinese/space path; first/repeat/moved WPF launch, five pages and settings; external CLI stdout/stderr/exit codes and internal CLI/worker self-tests; corrupted component refused. Real replacement and old-runtime removal from: {upgrade_from or "not tested"}. Elapsed including smoke: {startup}. See qa/smoke.json and page PNGs.')]]
         evidence = dict(schemaVersion=1, version=version, commit=commit, packageSha256=digest,
                         releaseProfile='developer-preview', checks=checks,
                         deferredChecks=['clean-windows', 'g4-remote-flash', 'g4-local-variables-rtt',

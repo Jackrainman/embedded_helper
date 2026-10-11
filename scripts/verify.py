@@ -26,9 +26,12 @@ SEMVER = re.compile(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
                     r'(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?')
 SOLUTION = 'EmbeddedHelper.slnx'
 CLIENT_PROJECTS = ('src/EmbeddedHelper.App/EmbeddedHelper.App.csproj',
+                   'src/EmbeddedHelper.Core/EmbeddedHelper.Core.csproj',
                    'src/EmbeddedHelper.Worker/EmbeddedHelper.Worker.csproj',
                    'src/EmbeddedHelper.Cli/EmbeddedHelper.Cli.csproj',
+                   'src/EmbeddedHelper.Portable/EmbeddedHelper.Portable.csproj',
                    'tests/EmbeddedHelper.Tests/EmbeddedHelper.Tests.csproj')
+TEST_PROJECT = 'tests/EmbeddedHelper.Tests/EmbeddedHelper.Tests.csproj'
 
 
 def validate_dotnet(root):
@@ -165,10 +168,36 @@ def environment():
         print(f'ENV SDK列表={sdk_list.stdout.strip() or "空，C#客户端未验证"}')
 
 
+def client_structure_errors(root):
+    errors = [f'缺少工程文件: {name}' for name in [SOLUTION, *CLIENT_PROJECTS] if not (root / name).is_file()]
+    if not (root / SOLUTION).is_file():
+        return errors
+    try:
+        solution = ET.parse(root / SOLUTION).getroot()
+        paths = [node.attrib['Path'] for node in solution.findall('.//Project')]
+        resolved = [(root / name).resolve() for name in paths]
+        if len(set(resolved)) != len(resolved):
+            errors.append('解决方案包含重复工程')
+        for required in CLIENT_PROJECTS:
+            if (root / required).resolve() not in resolved:
+                errors.append(f'解决方案未引用必要工程: {required}')
+        for path in resolved:
+            if not path.is_relative_to(root.resolve()) or not path.is_file():
+                errors.append(f'解决方案引用缺失或越界: {path}')
+                continue
+            for node in ET.parse(path).getroot().findall('.//ProjectReference'):
+                target = (path.parent / node.attrib['Include']).resolve()
+                if not target.is_relative_to(root.resolve()) or not target.is_file():
+                    errors.append(f'工程引用缺失或越界: {path.name}: {target}')
+    except (OSError, KeyError, ET.ParseError) as exc:
+        errors.append(f'解决方案或工程格式无效: {exc}')
+    return errors
+
+
 def client_preflight(root):
-    missing = [name for name in [SOLUTION, *CLIENT_PROJECTS] if not (root / name).is_file()]
-    if missing:
-        print('未验证：C#客户端尚未形成完整工程:', ', '.join(missing))
+    errors = client_structure_errors(root)
+    if errors:
+        print('未验证：C#客户端尚未形成完整工程:', '; '.join(errors))
         return 2
     if not shutil.which('dotnet'):
         print('未验证：缺少.NET SDK')
@@ -189,7 +218,7 @@ def verify_client(root, configuration='Release'):
         ['dotnet', 'restore', SOLUTION, '--locked-mode'],
         ['dotnet', 'format', SOLUTION, '--verify-no-changes', '--no-restore'],
         ['dotnet', 'build', SOLUTION, '--configuration', configuration, '--no-restore'],
-        ['dotnet', 'test', CLIENT_PROJECTS[-1], '--configuration', configuration, '--no-build',
+        ['dotnet', 'test', TEST_PROJECT, '--configuration', configuration, '--no-build',
          '--no-restore', '--logger', 'trx', '--results-directory', str(root / 'test-results')],
     ]
     for command in commands:

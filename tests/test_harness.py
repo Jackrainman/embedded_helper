@@ -87,6 +87,36 @@ class HarnessTests(unittest.TestCase):
         (project.parent / 'packages.lock.json').write_text('{"version": 1, "dependencies": {}}')
         self.assertEqual(verify.validate(self.root), [])
 
+    def test_client_preflight_checks_all_solution_and_project_references(self):
+        def solution(paths):
+            (self.root / verify.SOLUTION).write_text('<Solution>' + ''.join(
+                f'<Project Path="{name}" />' for name in paths) + '</Solution>', encoding='utf-8')
+        for name in verify.CLIENT_PROJECTS:
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('<Project />', encoding='utf-8')
+        solution(verify.CLIENT_PROJECTS)
+        self.assertEqual(verify.client_structure_errors(self.root), [])
+        for name in verify.CLIENT_PROJECTS:
+            with self.subTest(missing=name):
+                path = self.root / name
+                path.unlink()
+                with patch.object(verify.subprocess, 'run') as process, patch('builtins.print'):
+                    self.assertEqual(verify.client_preflight(self.root), 2)
+                    process.assert_not_called()
+                path.write_text('<Project />', encoding='utf-8')
+        solution(verify.CLIENT_PROJECTS[:-2] + verify.CLIENT_PROJECTS[-1:])
+        self.assertTrue(verify.client_structure_errors(self.root))
+        solution([*verify.CLIENT_PROJECTS, 'src/Missing/Missing.csproj'])
+        self.assertTrue(verify.client_structure_errors(self.root))
+        solution(verify.CLIENT_PROJECTS)
+        project = self.root / verify.CLIENT_PROJECTS[0]
+        project.write_text('<Project><ItemGroup><ProjectReference Include="../Missing/Missing.csproj" /></ItemGroup></Project>')
+        self.assertTrue(verify.client_structure_errors(self.root))
+        (self.root / verify.SOLUTION).write_text('<broken')
+        with patch('builtins.print'):
+            self.assertEqual(verify.client_preflight(self.root), 2)
+
     def test_workflow_pins_and_release_permissions(self):
         p = self.root / '.github/workflows/verify.yml'
         content = p.read_text(encoding='utf-8')
