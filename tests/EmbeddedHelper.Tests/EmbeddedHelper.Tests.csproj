@@ -5,5 +5,14 @@
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1" />
     <ProjectReference Include="../../src/EmbeddedHelper.Core/EmbeddedHelper.Core.csproj" />
+    <ProjectReference Include="../../src/EmbeddedHelper.Worker/EmbeddedHelper.Worker.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
+  <Target Name="PrepareWorkerForTests" AfterTargets="Build">
+    <MSBuild Projects="../../src/EmbeddedHelper.Worker/EmbeddedHelper.Worker.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">
+      <Output TaskParameter="TargetOutputs" ItemName="WorkerTarget" />
+    </MSBuild>
+    <PropertyGroup><WorkerOutputDirectory>@(WorkerTarget->'%(RootDir)%(Directory)')</WorkerOutputDirectory></PropertyGroup>
+    <ItemGroup><WorkerFiles Include="$(WorkerOutputDirectory)**/*" /></ItemGroup>
+    <Copy SourceFiles="@(WorkerFiles)" DestinationFiles="@(WorkerFiles->'$(OutDir)worker/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
 </Project>

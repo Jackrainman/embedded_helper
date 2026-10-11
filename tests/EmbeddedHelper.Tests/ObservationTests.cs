@@ -1,0 +1,55 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using EmbeddedHelper.Core;
+using Xunit;
+
+namespace EmbeddedHelper.Tests;
+
+[Collection("Offline client")]
+public sealed class ObservationTests : TestWorkspace
+{
+    [Fact]
+    public async Task MissingSdkAndInvalidSerialSettingsFailBeforeDeviceAccess()
+    {
+        await using var session = new ObservationSession();
+        var request = new ObservationRequest(Path.Combine(root, "missing.dll"), 1, "", 19011, "STM32G474VE", "SWD", 8000, 100, false, []);
+        await Assert.ThrowsAsync<FileNotFoundException>(() => session.StartAsync("not-started.exe", request));
+        Assert.Equal("未连接", session.State);
+        await using var serial = new SerialSession();
+        await Assert.ThrowsAsync<ArgumentException>(() => serial.OpenAsync(new SerialSettings("not-a-port", -1), null));
+        Assert.False(serial.Connected);
+    }
+    [Fact]
+    public void ReadPlanBoundaryRejectsOldGenerationAndPreservesPendingValidPlan()
+    {
+        var variable = new Variable("global:value", "value", 0x20000000, "int32", 4, "可读取");
+        var initial = new ReadPlan(1, 100, [variable]); initial.Validate();
+        var mailbox = new ReadPlanMailbox(initial);
+        mailbox.Submit(new ReadPlan(2, 70, [variable with { Address = 0x20000004 }]));
+        Assert.Throws<InvalidDataException>(() => mailbox.Submit(new ReadPlan(3, 70, [variable with { Address = uint.MaxValue }])));
+        Assert.Throws<InvalidDataException>(() => mailbox.Submit(new ReadPlan(2, 70, [variable])));
+        var next = mailbox.Take()!;
+        Assert.Equal(2, next.Generation); Assert.Equal(0x20000004UL, next.Variables[0].Address); Assert.Null(mailbox.Take());
+        Assert.Throws<InvalidDataException>(() => new ReadPlan(3, 100, [variable, variable]).Validate());
+        Assert.Throws<InvalidDataException>(() => new ReadPlan(3, 100, [variable with { Size = 1 }]).Validate());
+    }
+    [Fact]
+    public async Task ActualWorkerRejectsInvalidLibraryAndIsReapedBeforeRetry()
+    {
+        var worker = Path.Combine(AppContext.BaseDirectory, "worker", "EmbeddedHelper.Worker.exe");
+        Assert.True(File.Exists(worker), "Worker output was not prepared by the test build.");
+        var invalidLibrary = Path.Combine(root, "not-a-native-library.dll");
+        File.WriteAllText(invalidLibrary, "This is deliberately invalid; no SEGGER library or hardware is used.");
+        var request = new ObservationRequest(invalidLibrary, 1, "", 19011, "STM32G474VE", "SWD", 8000, 100, false, []);
+        await using var session = new ObservationSession();
+        await Assert.ThrowsAnyAsync<Exception>(() => session.StartAsync(worker, request));
+        Assert.True(session.CanRetry);
+        await session.DisposeAsync();
+        Assert.Equal("已释放", session.State);
+        await using var retry = new ObservationSession();
+        await Assert.ThrowsAnyAsync<Exception>(() => retry.StartAsync(worker, request));
+        await retry.DisposeAsync();
+        Assert.NotEqual(session.SessionId, retry.SessionId);
+        Assert.Equal("已释放", retry.State);
+    }
+}

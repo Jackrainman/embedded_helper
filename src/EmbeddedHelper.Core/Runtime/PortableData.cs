@@ -3,13 +3,6 @@ using System.Text.Json;
 
 namespace EmbeddedHelper.Core;
 
-public static class Product
-{
-    public static string HomeDirectory => RuntimePaths.Current.HomeDirectory;
-    public static string Version => typeof(Product).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()!.InformationalVersion.Split('+')[0];
-    public static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNameCaseInsensitive = true };
-}
-
 public sealed class PortableData(string baseDirectory)
 {
     public string Root { get; } = Path.Combine(Path.GetFullPath(baseDirectory), "data");

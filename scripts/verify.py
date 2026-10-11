@@ -181,15 +181,15 @@ def client_preflight(root):
     return 0
 
 
-def verify_client(root):
+def verify_client(root, configuration='Release'):
     result = client_preflight(root)
     if result:
         return result
     commands = [
         ['dotnet', 'restore', SOLUTION, '--locked-mode'],
         ['dotnet', 'format', SOLUTION, '--verify-no-changes', '--no-restore'],
-        ['dotnet', 'build', SOLUTION, '--configuration', 'Release', '--no-restore'],
-        ['dotnet', 'test', CLIENT_PROJECTS[-1], '--configuration', 'Release', '--no-build',
+        ['dotnet', 'build', SOLUTION, '--configuration', configuration, '--no-restore'],
+        ['dotnet', 'test', CLIENT_PROJECTS[-1], '--configuration', configuration, '--no-build',
          '--no-restore', '--logger', 'trx', '--results-directory', str(root / 'test-results')],
     ]
     for command in commands:
@@ -205,9 +205,12 @@ def main():
     parser.add_argument('--staged', action='store_true')
     parser.add_argument('--client', action='store_true', help='显式执行C#静态检查、构建和测试')
     parser.add_argument('--client-preflight', action='store_true', help='只检查客户端工程与SDK，不构建')
+    parser.add_argument('--configuration', choices=['Debug', 'Release'], default='Release', help='--client构建配置，默认Release')
     args = parser.parse_args()
     if sum([args.install_hooks, args.staged, args.client, args.client_preflight]) > 1:
         parser.error('执行模式不能组合')
+    if args.configuration != 'Release' and not args.client:
+        parser.error('--configuration仅用于--client')
     if args.install_hooks:
         git(ROOT, 'config', '--local', 'core.hooksPath', '.githooks')
         assert git(ROOT, 'config', '--get', 'core.hooksPath').strip() == b'.githooks'
@@ -243,7 +246,7 @@ def main():
     if args.client_preflight:
         return client_preflight(ROOT)
     if args.client:
-        return verify_client(ROOT)
+        return verify_client(ROOT, args.configuration)
     return 0
 
 

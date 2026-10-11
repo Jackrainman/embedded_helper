@@ -53,7 +53,7 @@ SDK 10.0.401锁定在[global.json](global.json)，运行时10.0.12；根[VERSION
 
 统一入口：`python scripts/verify.py`，只运行仓库检查与Harness测试，无pip依赖、不构建、不访问设备。首次克隆运行 `python scripts/verify.py --install-hooks`；提交门仍验证索引快照。开发需要Python 3.12+、Git；客户端开发另需global.json指定的SDK。
 
-`python scripts/verify.py --client-preflight`检查客户端工程和精确SDK，不构建；缺少时返回2。`--client`执行锁定恢复、格式检查、Release构建及C#测试。`python scripts/package_client.py`从干净已提交基线构建ZIP、解压后运行真实GUI/CLI自检并生成同包证据，产物在dist/candidate。旧Qt入口已退出。活动任务见[唯一账本](.harness/todo.json)，证据见详细设计18节。
+`python scripts/verify.py --client-preflight`检查客户端工程和精确SDK，不构建；缺少时返回2。`--client`执行锁定恢复、格式检查、Release构建及C#测试；加`--configuration Debug`验证Debug布局，Worker由测试构建自动准备，不依赖Release目录。`python scripts/package_client.py`从干净已提交基线构建ZIP、解压后运行真实GUI/CLI自检并生成同包证据，产物在dist/candidate。旧Qt入口已退出。活动任务见[唯一账本](.harness/todo.json)，证据见详细设计18节。
 
 Python产品原型、对应测试、requirements.lock及Qt打包探针归档于Git基线 `a7f30e11a86b8a60f15f853202da19bfba99a4c4`，当前工作树移除，不建归档文档或第二套产品实现。需要复现时在tmp隔离副本恢复该提交；[样本](tests/fixtures/manifest.json)保留供C#验证，历史通过不自动成为C#通过。
 

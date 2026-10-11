@@ -188,7 +188,7 @@
     },
     {
       "id": "R-03",
-      "status": "todo",
+      "status": "done",
       "refs": [
         "DEC-01",
         "NFR-05"

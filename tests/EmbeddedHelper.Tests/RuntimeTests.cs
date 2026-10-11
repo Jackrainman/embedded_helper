@@ -5,7 +5,8 @@ using Xunit;
 
 namespace EmbeddedHelper.Tests;
 
-public sealed partial class CoreTests
+[Collection("Offline client")]
+public sealed class RuntimeTests : TestWorkspace
 {
     [Fact]
     public void RuntimeUpgradeKeepsHomeDataAndExternalEntryStable()
