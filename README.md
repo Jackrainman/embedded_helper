@@ -26,7 +26,7 @@ Windows本地小助手配合VS Code/EIDE使用。第一版围绕现有模板工�
 
 新增模板/硬件区分已移植、实机已验证和实验功能，不凭相似目录或驱动接受参数宣布实测通过。接口冻结后记录版本和兼容规则；重大决策在概要设计的ADR表保留依据。
 
-活动批次与剩余能力以账本为准；G4一键VS Code接入、工具版本管理、其他模板与完整P0验收仍待完成。文档中的“拟新增”“候选”“待验证”均不能当作已完成能力。
+G4一键VS Code接入/共享移除及两个已发布工具版本的下载、离线导入、锁定和回退已可用。其他模板、可选EIDE上传切换与完整P0验收仍待完成；当前工具清单限两个核验版本，新上游版本的在线发现尚待扩展。文档中的“拟新增”“候选”“待验证”均不能当作已完成能力。
 
 开发采用关键风险原型验证、小批次迭代交付、稳定版本补丁维护的节奏；集中功能变更留到下一轮更新，详见概要14.1。
 
@@ -63,4 +63,6 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 [Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
 
-当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.3继续完善串口软件流程和采集计划更新；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
+当前开发Pre-release：[0.2.0-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.1)，Windows x64便携ZIP已发布。主线0.2.0-alpha.4补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
+
+远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；重新打开VS Code使用户环境变量生效。远程配置页预览并应用，新增独立LAN烧录/调试条目，本地条目保留。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。

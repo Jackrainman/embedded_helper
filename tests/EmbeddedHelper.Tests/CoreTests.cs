@@ -242,5 +242,87 @@ public sealed class CoreTests : IDisposable
         Assert.NotEqual(session.SessionId, retry.SessionId);
         Assert.Equal("已释放", retry.State);
     }
+    [Theory]
+    [InlineData("../escape.exe")]
+    [InlineData("/absolute.exe")]
+    [InlineData("C:/drive.exe")]
+    [InlineData("a/../escape.exe")]
+    [InlineData("CON.txt")]
+    [InlineData("nested/trailing. ")]
+    public void ToolArchiveRejectsWindowsTraversalAndReservedNames(string name)
+    {
+        using var bytes = new MemoryStream();
+        using (var create = new System.IO.Compression.ZipArchive(bytes, System.IO.Compression.ZipArchiveMode.Create, true)) create.CreateEntry(name);
+        bytes.Position = 0;
+        using var archive = new System.IO.Compression.ZipArchive(bytes, System.IO.Compression.ZipArchiveMode.Read);
+        Assert.Throws<InvalidDataException>(() => ToolCache.ValidateArchive(archive));
+    }
+    [Fact]
+    public async Task ToolCacheRejectsWrongDigestBeforeExecutingAndLocksExactVersion()
+    {
+        var zip = Path.Combine(root, "untrusted.zip"); File.WriteAllText(zip, "invalid");
+        await Assert.ThrowsAsync<InvalidDataException>(() => new ToolCache(root).InstallAsync(zip, ToolRelease.Known[0]));
+        var project = CopyProject();
+        foreach (var release in ToolRelease.Known)
+        {
+            var change = ToolCache.SelectVersion(project, release);
+            ConfigTransaction.Apply(new ConfigPlan(project, [change]), Path.Combine(root, "journal"));
+            Assert.Equal(release, ToolCache.ReadLock(project));
+        }
+        var lockPath = Path.Combine(project, ".embedded_helper", "tools.lock.json");
+        File.WriteAllText(lockPath, File.ReadAllText(lockPath).Replace(ToolRelease.Known[1].Sha256, new string('0', 64)));
+        Assert.Throws<InvalidDataException>(() => ToolCache.ReadLock(project));
+    }
+    [Fact]
+    public void IntegrationIsIdempotentPreservesLocalBytesAndRemovesWithoutPrivateBackups()
+    {
+        var path = CopyProject(); var project = ProjectReader.Read(path);
+        var tasks = Path.Combine(path, ".vscode", "tasks.json");
+        const string original = "{\"version\":\"2.0.0\", /* root */ \"tasks\":[\n// keep , comment\n{\"label\":\"Local build\",\"command\":\"unchanged\",\"unknown\":[1,2]}, // trailing , comment\n]}";
+        File.WriteAllText(tasks, original);
+        var plan = VsCodeIntegration.Plan(project, project.Targets[0], "example.invalid", 19011, 2331, ToolRelease.Known[0]);
+        ConfigTransaction.Apply(plan, Path.Combine(root, "private-journal"));
+        var saved = File.ReadAllText(tasks);
+        Assert.Contains("{\"label\":\"Local build\",\"command\":\"unchanged\",\"unknown\":[1,2]}", saved);
+        Assert.Contains("// keep , comment", saved); Assert.Contains("// trailing , comment", saved);
+        Assert.Empty(VsCodeIntegration.Plan(project, project.Targets[0], "example.invalid", 19011, 2331, ToolRelease.Known[0]).Changes);
+        using var launch = JsonDocument.Parse(File.ReadAllText(Path.Combine(path, ".vscode/launch.json")), ProjectReader.JsonOptions);
+        Assert.Equal(2, launch.RootElement.GetProperty("configurations").GetArrayLength());
+        var remove = VsCodeIntegration.Remove(path);
+        ConfigTransaction.Apply(remove, Path.Combine(root, "another-computer-journal"));
+        using var remaining = JsonDocument.Parse(File.ReadAllText(tasks), ProjectReader.JsonOptions);
+        Assert.Equal("Local build", Assert.Single(remaining.RootElement.GetProperty("tasks").EnumerateArray()).GetProperty("label").GetString());
+        Assert.Contains("// keep , comment", File.ReadAllText(tasks));
+        Assert.Empty(VsCodeIntegration.Remove(path).Changes);
+    }
+    [Fact]
+    public void IntegrationRejectsChangedOwnedEntriesAndRollsBackMultiFileFailure()
+    {
+        var path = CopyProject(); var project = ProjectReader.Read(path);
+        var original = Directory.GetFiles(path, "*", SearchOption.AllDirectories).ToDictionary(p => p, File.ReadAllText);
+        var plan = VsCodeIntegration.Plan(project, project.Targets[0], "example.invalid", 19011, 2331, ToolRelease.Known[0]);
+        Assert.Throws<IOException>(() => ConfigTransaction.Apply(plan, Path.Combine(root, "journal"), count => { if (count == 3) throw new IOException("injected write failure"); }));
+        foreach (var file in original) Assert.Equal(file.Value, File.ReadAllText(file.Key));
+        Assert.False(File.Exists(Path.Combine(path, ".vscode/tasks.json")));
+        ConfigTransaction.Apply(plan, Path.Combine(root, "journal"));
+        var tasks = Path.Combine(path, ".vscode/tasks.json");
+        File.WriteAllText(tasks, File.ReadAllText(tasks).Replace("embedded-helper-cli.exe", "user-owned.exe"));
+        Assert.Throws<InvalidDataException>(() => VsCodeIntegration.Remove(path));
+        Assert.Contains("user-owned.exe", File.ReadAllText(tasks));
+    }
+    [Fact]
+    public void IncompleteTransactionRecoveryPreservesExternalChanges()
+    {
+        var path = Path.Combine(root, "config.json"); var conflict = Path.Combine(root, "other.json");
+        File.WriteAllText(path, "after"); File.WriteAllText(conflict, "external");
+        var plan = new ConfigPlan(root, [new FileChange(path, "before", "after"), new FileChange(conflict, "before2", "after2")]);
+        var journal = Path.Combine(root, "journal"); Directory.CreateDirectory(journal);
+        PortableData.SaveFile(Path.Combine(journal, "interrupted.json"), new { status = "prepared", plan });
+        Assert.Single(ConfigTransaction.Pending(journal));
+        Assert.Equal(conflict, Assert.Single(ConfigTransaction.RecoverIncomplete(root, journal)));
+        Assert.Equal("before", File.ReadAllText(path)); Assert.Equal("external", File.ReadAllText(conflict));
+        File.WriteAllText(conflict, "before2");
+        Assert.Empty(ConfigTransaction.RecoverIncomplete(root, journal)); Assert.Empty(ConfigTransaction.Pending(journal));
+    }
     public void Dispose() => Directory.Delete(root, true);
 }

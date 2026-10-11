@@ -10,6 +10,8 @@ public static class JsonEdit
     // Replace one top-level value while retaining unrelated bytes, comments and formatting.
     public static string Set(string text, string key, JsonNode? value)
     {
+        using var validation = JsonDocument.Parse(text, ProjectReader.JsonOptions);
+        if (validation.RootElement.ValueKind != JsonValueKind.Object || validation.RootElement.EnumerateObject().GroupBy(p => p.Name).Any(g => g.Count() > 1)) throw new InvalidDataException("JSON根对象无效或含重复字段。");
         var bytes = Encoding.UTF8.GetBytes(text);
         var reader = new Utf8JsonReader(bytes, new JsonReaderOptions { AllowTrailingCommas = true, CommentHandling = JsonCommentHandling.Skip });
         var closing = -1;
@@ -45,6 +47,39 @@ public sealed record FileChange(string Path, string? Before, string After);
 public sealed record ConfigPlan(string Root, FileChange[] Changes);
 public static class ConfigTransaction
 {
+    public static string[] Pending(string journalRoot)
+    {
+        if (!Directory.Exists(journalRoot)) return [];
+        return Directory.GetFiles(journalRoot, "*.json").Where(path =>
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            return doc.RootElement.GetProperty("status").GetString() is "prepared" or "conflict";
+        }).ToArray();
+    }
+    public static string[] RecoverIncomplete(string root, string journalRoot)
+    {
+        Directory.CreateDirectory(journalRoot);
+        using var guard = new FileStream(Path.Combine(journalRoot, "write.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        var allConflicts = new List<string>();
+        foreach (var journal in Pending(journalRoot))
+        {
+            using var doc = JsonDocument.Parse(File.ReadAllText(journal));
+            var plan = doc.RootElement.GetProperty("plan").Deserialize<ConfigPlan>(Product.Json) ?? throw new InvalidDataException("事务记录无效。");
+            if (!Path.GetFullPath(plan.Root).Equals(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("事务工程身份不匹配。");
+            var conflicts = new List<string>();
+            foreach (var change in plan.Changes.Reverse())
+            {
+                CheckPath(root, change.Path);
+                var current = File.Exists(change.Path) ? File.ReadAllText(change.Path) : null;
+                if (current == change.Before) continue;
+                if (current != change.After) { conflicts.Add(change.Path); continue; }
+                if (change.Before == null) File.Delete(change.Path); else AtomicText(change.Path, change.Before);
+            }
+            PortableData.SaveFile(journal, new { status = conflicts.Count == 0 ? "rolled-back" : "conflict", conflicts, plan });
+            allConflicts.AddRange(conflicts);
+        }
+        return allConflicts.ToArray();
+    }
     public static string Hash(string? text) => text == null ? "missing" : Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
     public static void Apply(ConfigPlan plan, string journalRoot, Action<int>? afterWrite = null)
     {
@@ -52,6 +87,7 @@ public static class ConfigTransaction
         Directory.CreateDirectory(journalRoot);
         using var guard = new FileStream(Path.Combine(journalRoot, "write.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
         var journal = Path.Combine(journalRoot, Guid.NewGuid().ToString("N") + ".json");
+        if (Pending(journalRoot).Length > 0) throw new IOException("存在未完成事务，请先恢复或处理外部修改。");
         foreach (var change in plan.Changes) CheckBefore(change);
         PortableData.SaveFile(journal, new { status = "prepared", plan });
         var written = new List<FileChange>();

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Ports;
+using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
@@ -53,6 +54,7 @@ public partial class MainWindow : Window
     private long lastReceived, lastSent;
     private double lastSerialTime;
     private bool serialOpening, serialClosing;
+    private bool toolBusy;
     private DateTime elfStamp;
     private bool closing, transition;
     private long samples;
@@ -75,6 +77,7 @@ public partial class MainWindow : Window
         EncodingBox.SelectedItem = settings.SerialEncoding;
         if (EncodingBox.SelectedIndex < 0) EncodingBox.SelectedIndex = 0;
         SendHistoryBox.ItemsSource = settings.SendHistory ?? [];
+        ToolVersionBox.ItemsSource = ToolRelease.Known; ToolVersionBox.SelectedIndex = 0;
         ReadElfPath.Text = string.IsNullOrEmpty(settings.ReadElf) ? ReadElfIndex.FindTool() ?? "" : settings.ReadElf;
         Width = Math.Clamp(settings.Width, MinWidth, Math.Max(MinWidth, SystemParameters.WorkArea.Width));
         Height = Math.Clamp(settings.Height, MinHeight, Math.Max(MinHeight, SystemParameters.WorkArea.Height));
@@ -132,6 +135,7 @@ public partial class MainWindow : Window
         PersistSettings();
         plan = null; ApplyConfigButton.IsEnabled = false;
         Report("已打开 " + loaded.Name + "。请选择 ELF 解析变量，或维护远程配置。");
+        if (ConfigTransaction.Pending(JournalFor(loaded.Root)).Length > 0) Report("该工程有未完成写入，请到远程配置页恢复；外部修改不会被覆盖。");
     }
     private void TargetChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -312,13 +316,46 @@ public partial class MainWindow : Window
         }
         catch (Exception ex) { plan = null; ApplyConfigButton.IsEnabled = false; Report(ex.Message); }
     }
-    private async void ApplyConfig(object? sender, RoutedEventArgs e) => await Guard(async () =>
+    private async void ApplyConfig(object? sender, RoutedEventArgs e) => await Guard(ApplyConfigAsync);
+    private async Task ApplyConfigAsync()
     {
+        if (observation != null || transition) throw new InvalidOperationException("请先停止采集再修改连接配置。");
         if (plan == null) throw new InvalidOperationException("请先预览修改。");
         var ready = plan;
-        var journal = System.IO.Path.Combine(App.Data.Root, "projects", ConfigTransaction.Hash(ready.Root), "transactions");
+        var journal = JournalFor(ready.Root);
         await Task.Run(() => ConfigTransaction.Apply(ready, journal));
-        plan = null; ApplyConfigButton.IsEnabled = false; Report("已保存远程配置，原有未知字段保留。未执行烧录。");
+        plan = null; ApplyConfigButton.IsEnabled = false; Report("已应用预览中的配置。保留本地条目；未执行构建、烧录或调试。VS Code 入口需先在设置页绑定。");
+    }
+    private static string JournalFor(string root) => System.IO.Path.Combine(App.Data.Root, "projects", ConfigTransaction.Hash(root), "transactions");
+    private void PreviewIntegration(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
+            var release = ToolVersionBox.SelectedItem as ToolRelease ?? throw new InvalidOperationException("请在设置页选择工具版本。");
+            new ToolCache(App.Data.Root).Resolve(release);
+            ShowPlan(VsCodeIntegration.Plan(loaded, Target ?? throw new InvalidOperationException("请选择目标。"), RemoteHost.Text, int.Parse(RemotePort.Text, CultureInfo.InvariantCulture), int.Parse(GdbPort.Text, CultureInfo.InvariantCulture), release));
+        }
+        catch (Exception ex) { plan = null; ApplyConfigButton.IsEnabled = false; Report(ex.Message); }
+    }
+    private void PreviewRemoveIntegration(object? sender, RoutedEventArgs e)
+    {
+        try { ShowPlan(VsCodeIntegration.Remove(project?.Root ?? throw new InvalidOperationException("请先打开工程。"))); }
+        catch (Exception ex) { plan = null; ApplyConfigButton.IsEnabled = false; Report(ex.Message); }
+    }
+    private void ShowPlan(ConfigPlan candidate)
+    {
+        plan = candidate;
+        ConfigPreview.Text = candidate.Changes.Length == 0 ? "无需修改；当前配置已一致。" : string.Join("\n\n", candidate.Changes.Select(c => c.Path + "\n原内容：\n" + (c.Before ?? "（不存在）") + "\n修改后：\n" + c.After));
+        ApplyConfigButton.IsEnabled = candidate.Changes.Length > 0;
+    }
+    private async void RecoverConfig(object? sender, RoutedEventArgs e) => await Guard(async () =>
+    {
+        var root = project?.Root ?? throw new InvalidOperationException("请先打开工程。");
+        var conflicts = await Task.Run(() => ConfigTransaction.RecoverIncomplete(root, JournalFor(root)));
+        plan = null; ApplyConfigButton.IsEnabled = false;
+        ConfigPreview.Text = conflicts.Length == 0 ? "已检查未完成事务，能确认归属的写入已恢复。" : "以下文件有外部修改，未覆盖；请按事务备份人工处理：\n" + string.Join("\n", conflicts) + "\n备份：" + JournalFor(root);
+        Report(ConfigPreview.Text);
     });
     private void OpenWeb(object? sender, RoutedEventArgs e)
     {
@@ -408,6 +445,57 @@ public partial class MainWindow : Window
     { var dialog = new OpenFileDialog { Filter = "SEGGER 64 位库|JLink_x64.dll|DLL|*.dll" }; if (dialog.ShowDialog(this) == true) DllPath.Text = dialog.FileName; }
     private void SaveSettings(object? sender, RoutedEventArgs e)
     { try { PersistSettings(); Report("设置已保存。升级时保留程序目录下的 data。"); } catch (Exception ex) { Report("设置保存失败：" + ex.Message); } }
+    private async void ImportTool(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFileDialog { Filter = "Debug_LAN 发布包|DebugLAN-*.zip|ZIP|*.zip" };
+        if (dialog.ShowDialog(this) == true) await Guard(() => PrepareToolAsync(dialog.FileName));
+    }
+    private async void DownloadTool(object? sender, RoutedEventArgs e) => await Guard(() => PrepareToolAsync(null));
+    private async Task PrepareToolAsync(string? zip)
+    {
+        if (toolBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
+        var release = ToolVersionBox.SelectedItem as ToolRelease ?? throw new InvalidOperationException("请选择工具版本。");
+        toolBusy = true; string? download = null;
+        ToolStatus.Text = "正在校验并准备 " + release.Version + "；仅运行无硬件版本检查。";
+        try
+        {
+            if (zip == null)
+            {
+                var directory = System.IO.Path.Combine(App.Data.Root, "downloads"); Directory.CreateDirectory(directory);
+                download = System.IO.Path.Combine(directory, Guid.NewGuid().ToString("N") + ".zip");
+                using var client = new HttpClient { Timeout = TimeSpan.FromMinutes(2) };
+                client.DefaultRequestHeaders.UserAgent.ParseAdd("EmbeddedHelper/" + Product.Version);
+                using var response = await client.GetAsync(release.DownloadUrl, HttpCompletionOption.ResponseHeadersRead); response.EnsureSuccessStatusCode();
+                await using var source = await response.Content.ReadAsStreamAsync();
+                await using (var output = File.Create(download))
+                {
+                    var buffer = new byte[65536]; long total = 0; int count;
+                    using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
+                    while ((count = await source.ReadAsync(buffer, timeout.Token)) > 0)
+                    {
+                        total += count; if (total > 128L * 1024 * 1024) throw new IOException("工具下载超过128MiB上限。");
+                        await output.WriteAsync(buffer.AsMemory(0, count), timeout.Token);
+                    }
+                }
+                zip = download;
+            }
+            var file = zip;
+            var executable = await Task.Run(() => new ToolCache(App.Data.Root).InstallAsync(file, release));
+            ToolStatus.Text = "已准备 " + release.Version + "\n" + executable + "\n工程版本尚未改变；到远程配置页预览接入或回退。";
+        }
+        catch (Exception ex) { ToolStatus.Text = "工具准备失败：" + ex.Message; throw; }
+        finally { toolBusy = false; if (download != null && File.Exists(download)) File.Delete(download); }
+    }
+    private void BindCli(object? sender, RoutedEventArgs e)
+    {
+        try
+        {
+            Environment.SetEnvironmentVariable("EMBEDDED_HELPER_HOME", AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar), EnvironmentVariableTarget.User);
+            Environment.SetEnvironmentVariable("EMBEDDED_HELPER_HOME", AppContext.BaseDirectory.TrimEnd(System.IO.Path.DirectorySeparatorChar));
+            Report("已绑定本机入口；请完全退出并重新打开 VS Code 使环境变量生效。搬迁本软件后再次点击此按钮即可。");
+        }
+        catch (Exception ex) { Report("入口绑定失败：" + ex.Message); }
+    }
     private void PersistSettings()
     {
         settings = settings with { Dll = DllPath.Text, ReadElf = ReadElfPath.Text, Probe = ProbeSerial.Text, Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, Serial = ReadSerialSettings(), SerialEncoding = EncodingBox.SelectedItem as string ?? "utf-8" };
@@ -421,6 +509,7 @@ public partial class MainWindow : Window
     {
         if (closing) return;
         e.Cancel = true;
+        if (toolBusy) { Report("正在准备工具，请等待下载或校验完成后关闭。"); return; }
         if (transition) { Report("正在切换连接，请稍后关闭。"); return; }
         await Guard(async () => { await CloseSerialAsync(); await StopObservationAsync(); try { PersistSettings(); } catch (Exception ex) { Report("输入无效，保留上次设置：" + ex.Message); } refresh.Stop(); closing = true; Close(); });
     }
@@ -435,6 +524,19 @@ public partial class MainWindow : Window
             if (Variables.Count(v => v.Variable.Supported) != 7) throw new InvalidDataException("标量类型自检失败。");
             RemoteHost.Text = "test.example.invalid"; PreviewConfig(null, null!);
             if (plan == null) throw new InvalidDataException("远程配置预览失败。");
+            var toolPackage = System.IO.Path.Combine(directory, "debug-lan.zip");
+            if (File.Exists(toolPackage))
+            {
+                await PrepareToolAsync(toolPackage);
+                PreviewIntegration(null, null!);
+                if (plan == null || plan.Changes.Length == 0) throw new InvalidDataException("一键接入预览失败。");
+                await ApplyConfigAsync();
+                PreviewIntegration(null, null!);
+                if (plan == null || plan.Changes.Length != 0) throw new InvalidDataException("重复接入非幂等。");
+                PreviewRemoveIntegration(null, null!);
+                if (plan == null || plan.Changes.Length == 0) throw new InvalidDataException("共享移除预览失败。");
+                await ApplyConfigAsync();
+            }
             PersistSettings();
             var restored = App.Data.Load("settings/window.json", () => new AppSettings());
             if (restored.Recent?.Contains(project!.Root) != true) throw new InvalidDataException("设置回读失败。");
@@ -456,7 +558,7 @@ public partial class MainWindow : Window
                 var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
                 using var output = File.Create(System.IO.Path.Combine(directory, $"page-{i}.png")); encoder.Save(output);
             }
-            PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, scalarCount = Variables.Count, method = "automated", hardware = "not-tested" });
+            PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, scalarCount = Variables.Count, toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested" });
             closing = true; refresh.Stop(); Application.Current.Shutdown(0);
         }
         catch (Exception ex)

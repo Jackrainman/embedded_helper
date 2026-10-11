@@ -1,0 +1,95 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace EmbeddedHelper.Core;
+
+public sealed record ManagedEntry(string File, string Array, string Key, string Identity, JsonObject Value);
+public sealed record IntegrationState(int SchemaVersion, string Target, ManagedEntry[] Entries);
+
+public static class VsCodeIntegration
+{
+    private const string OwnerFile = ".embedded_helper/integration.json";
+    private static IntegrationState? ReadState(string root)
+    {
+        var path = Path.Combine(root, OwnerFile);
+        if (!File.Exists(path)) return null;
+        var state = JsonSerializer.Deserialize<IntegrationState>(File.ReadAllText(path), Product.Json) ?? throw new InvalidDataException("接入归属记录无效。");
+        if (state.SchemaVersion != 1 || state.Entries.Any(e => (e.File, e.Array, e.Key) is not ((".vscode/tasks.json", "tasks", "label") or (".vscode/launch.json", "configurations", "name")))) throw new InvalidDataException("接入归属记录包含不支持的条目。");
+        return state;
+    }
+    public static ConfigPlan Plan(ProjectInfo project, BuildTarget target, string host, int port, int gdbPort, ToolRelease tool)
+    {
+        if (gdbPort is < 1 or > 65533) throw new ArgumentException("本机GDB端口须为1～65533，并为相邻两个端口留出空间。");
+        var remote = RemoteConfiguration.Plan(project, target, host, port);
+        var relativeElf = Path.GetRelativePath(project.Root, target.ElfPath).Replace('\\', '/');
+        if (Path.IsPathRooted(relativeElf) || relativeElf.StartsWith("../")) throw new InvalidDataException("共享调试配置要求ELF位于工程内。");
+        var suffix = target.Name;
+        var flashLabel = "Embedded Helper: LAN flash (" + suffix + ")";
+        var gdbLabel = "Embedded Helper: LAN GDB (" + suffix + ")";
+        var debugName = "Embedded Helper: LAN debug (" + suffix + ")";
+        JsonObject Task(string label, params string[] arguments) => new()
+        {
+            ["label"] = label,
+            ["type"] = "process",
+            ["command"] = "${env:EMBEDDED_HELPER_HOME}/embedded-helper-cli.exe",
+            ["args"] = new JsonArray(arguments.Select(a => (JsonNode?)JsonValue.Create(a)).ToArray()),
+            ["options"] = new JsonObject { ["cwd"] = "${workspaceFolder}" },
+            ["problemMatcher"] = new JsonArray()
+        };
+        var flash = Task(flashLabel, "--project", "${workspaceFolder}", "flash", "--program", "${workspaceFolder}/" + relativeElf);
+        var gdb = Task(gdbLabel, "--project", "${workspaceFolder}", "gdb-server", "--gdb-port", gdbPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        gdb["isBackground"] = true; gdb["runOptions"] = new JsonObject { ["instanceLimit"] = 1 };
+        gdb["problemMatcher"] = new JsonObject
+        {
+            ["owner"] = "embedded-helper",
+            ["pattern"] = new JsonObject { ["regexp"] = "^(.*):(\\d+):(\\d+): (.*)$", ["file"] = 1, ["line"] = 2, ["column"] = 3, ["message"] = 4 },
+            ["background"] = new JsonObject { ["activeOnStart"] = true, ["beginsPattern"] = "^\\[remote-jlink\\] GDB STARTING$", ["endsPattern"] = "^\\[remote-jlink\\] GDB READY$" }
+        };
+        var launch = new JsonObject
+        {
+            ["name"] = debugName,
+            ["type"] = "cortex-debug",
+            ["request"] = "launch",
+            ["cwd"] = "${workspaceFolder}",
+            ["servertype"] = "external",
+            ["gdbTarget"] = "127.0.0.1:" + gdbPort,
+            ["preLaunchTask"] = gdbLabel,
+            ["executable"] = "${workspaceFolder}/" + relativeElf,
+            ["device"] = target.Device,
+            ["runToEntryPoint"] = "main",
+            ["overrideLaunchCommands"] = new JsonArray("monitor halt", "load", "monitor reset"),
+            ["overrideRestartCommands"] = new JsonArray("monitor reset")
+        };
+        var launchPath = Path.Combine(project.Root, ".vscode/launch.json");
+        if (File.Exists(launchPath))
+        {
+            using var existing = JsonDocument.Parse(File.ReadAllText(launchPath), ProjectReader.JsonOptions);
+            var local = existing.RootElement.GetProperty("configurations").EnumerateArray().Where(e => e.TryGetProperty("servertype", out var type) && type.GetString() == "jlink").ToArray();
+            if (local.Length == 1 && local[0].TryGetProperty("svdFile", out var svd)) launch["svdFile"] = svd.GetString();
+        }
+        ManagedEntry[] desired = [new(".vscode/tasks.json", "tasks", "label", flashLabel, flash), new(".vscode/tasks.json", "tasks", "label", gdbLabel, gdb), new(".vscode/launch.json", "configurations", "name", debugName, launch)];
+        return MakePlan(project.Root, target.Name, desired, remote.Changes.Append(ToolCache.SelectVersion(project.Root, tool)).ToArray());
+    }
+    public static ConfigPlan Remove(string root) => MakePlan(root, "", [], []);
+    private static ConfigPlan MakePlan(string root, string target, ManagedEntry[] desired, FileChange[] additional)
+    {
+        var state = ReadState(root);
+        if (desired.Length == 0 && state == null) throw new InvalidDataException("没有共享接入归属记录，无法确认可移除条目；原配置保持不变。");
+        var changes = new List<FileChange>(additional);
+        var old = state?.Entries ?? [];
+        foreach (var file in old.Select(e => e.File).Concat(desired.Select(e => e.File)).Distinct())
+        {
+            var path = Path.Combine(root, file); ConfigTransaction.CheckPath(root, path);
+            var before = File.Exists(path) ? File.ReadAllText(path) : null;
+            var text = before ?? (file.EndsWith("tasks.json") ? "{\"version\":\"2.0.0\",\"tasks\":[]}" : "{\"version\":\"0.2.0\",\"configurations\":[]}");
+            foreach (var previous in old.Where(e => e.File == file && !desired.Any(d => d.File == file && d.Identity == e.Identity)))
+                text = JsonArrayEdit.Change(text, previous.Array, previous.Key, previous.Identity, null, previous.Value);
+            foreach (var entry in desired.Where(e => e.File == file))
+                text = JsonArrayEdit.Change(text, entry.Array, entry.Key, entry.Identity, entry.Value, old.SingleOrDefault(e => e.File == file && e.Identity == entry.Identity)?.Value);
+            changes.Add(new FileChange(path, before, text));
+        }
+        var owner = Path.Combine(root, OwnerFile); ConfigTransaction.CheckPath(root, owner);
+        changes.Add(new FileChange(owner, File.Exists(owner) ? File.ReadAllText(owner) : null, JsonSerializer.Serialize(new IntegrationState(1, target, desired), Product.Json)));
+        return new ConfigPlan(root, changes.Where(c => c.Before != c.After).ToArray());
+    }
+}
