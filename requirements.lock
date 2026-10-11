@@ -1,5 +1,0 @@
-# 已验证的离线原型依赖；Qt/打包候选尚未完成下载，不纳入本锁。
-pyelftools==0.32
-pyserial==3.5
-ruamel.yaml==0.18.16
-ruamel.yaml.clib==0.2.15

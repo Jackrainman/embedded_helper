@@ -8,67 +8,145 @@
         "NFR-05"
       ],
       "dependsOn": [],
-      "doneWhen": "统一检查与反例退出正确；隔离仓库真实 commit 拒绝坏输入、接受好输入；本仓钩子生效"
+      "doneWhen": "统一检查与反例退出正确；隔离仓库真实commit拒绝坏输入、接受好输入；本仓钩子生效"
     },
     {
-      "id": "M0-01",
-      "status": "in_progress",
-      "refs": [
-        "AC-08",
-        "Q-07",
-        "DEC-07"
-      ],
-      "dependsOn": [
-        "H-01"
-      ],
-      "doneWhen": "两版本离线安装、精确选择、回退、坏包拒绝及移动路径原型通过；正式 Release 范围单列"
-    },
-    {
-      "id": "M0-02",
-      "status": "blocked",
+      "id": "H-02",
+      "status": "done",
       "refs": [
         "DEC-01",
-        "DEC-02",
-        "AC-07",
-        "VIS-02",
-        "SER-04"
+        "REL-10",
+        "REL-11",
+        "AC-13"
       ],
       "dependsOn": [
         "H-01"
       ],
-      "doneWhen": "ELF、SDK隔离、串口记录和发布原型形成可复现证据，依据测量选择技术栈",
-      "blocker": "Qt下载超时/镜像无进展；ELF、配置与记录离线测试完成，GUI/打包/真实SDK未验证，无法完成技术选型"
+      "doneWhen": "C#路线与内测/依赖文档一致；Python产品原型归档；标准库仓库检查及发布门反例退出正确；缺客户端预检返回2；本批不构建"
     },
     {
-      "id": "M0-03",
-      "status": "in_progress",
-      "refs": [
-        "Q-04",
-        "Q-06",
-        "DEC-05",
-        "AC-12"
-      ],
-      "dependsOn": [
-        "H-01"
-      ],
-      "doneWhen": "G4样本读取优先级及读计划生命周期测试通过；EIDE真实读回与上传单列"
-    },
-    {
-      "id": "M0-04",
+      "id": "C-01",
       "status": "todo",
       "refs": [
-        "DEC-03",
-        "DEC-04",
-        "DEC-06",
-        "Q-05",
-        "Q-08",
-        "AC-04",
+        "DEC-01",
+        "VIS-02",
+        "VIS-03",
+        "NFR-01"
+      ],
+      "dependsOn": [
+        "H-02"
+      ],
+      "doneWhen": "建立同一C#解决方案及锁定依赖；真实G4与自有ELF的标量索引、受限类型和静态变量身份通过；WPF启动入口可用，历史Python通过不替代C#结果"
+    },
+    {
+      "id": "C-02",
+      "status": "todo",
+      "refs": [
+        "REM-01",
+        "REM-07",
+        "AC-02",
+        "AC-11",
+        "AC-12",
+        "AC-13"
+      ],
+      "dependsOn": [
+        "C-01"
+      ],
+      "doneWhen": "G4一键准备版本化工具及.vscode远程烧录/调试入口，重复接入、保留本地条目、失败恢复及共享移除通过；VS Code真实烧录单列C-05"
+    },
+    {
+      "id": "C-03",
+      "status": "todo",
+      "refs": [
+        "DEC-02",
+        "CON-03",
+        "VIS-07",
+        "VIS-09",
+        "AC-05",
+        "AC-10",
+        "AC-13"
+      ],
+      "dependsOn": [
+        "C-01"
+      ],
+      "doneWhen": "真实SEGGER工作进程支持本地变量与RTT通道0、绘图及计划手动更新；旧进程退出后重试；正常停止释放和调试恢复实机结果留C-05"
+    },
+    {
+      "id": "C-04",
+      "status": "todo",
+      "refs": [
+        "SER-01",
+        "SER-04",
+        "SER-05",
         "AC-06"
       ],
       "dependsOn": [
-        "M0-02"
+        "C-01"
       ],
-      "doneWhen": "落实设备及具体操作授权后执行本地远程采集与串口实测，记录速率、释放和未覆盖范围"
+      "doneWhen": "独立C#串口收发、编码/HEX、发送取消、双向顺序分段记录及背压可执行验证通过；物理1Mbps验收留C-05"
+    },
+    {
+      "id": "H-03",
+      "status": "todo",
+      "refs": [
+        "REL-01",
+        "REL-09",
+        "REL-11",
+        "AC-07",
+        "AC-13"
+      ],
+      "dependsOn": [
+        "C-01"
+      ],
+      "doneWhen": "接入实际dotnet发布/打包、成品自检、candidate-win-x64上传与结构化证据执行器；验证同包传递及缺项拒绝；真实发布须在C-05同包验收后另行授权执行"
+    },
+    {
+      "id": "C-05",
+      "status": "todo",
+      "refs": [
+        "AC-06",
+        "AC-07",
+        "AC-13"
+      ],
+      "dependsOn": [
+        "C-02",
+        "C-03",
+        "C-04",
+        "H-03"
+      ],
+      "doneWhen": "落实具体设备/操作授权，从最终ZIP通过G4真实远程烧录、变量/RTT30分钟及调试恢复、串口1Mbps双向30分钟、纯净Windows；报告绑定提交和包摘要，形成可用内测"
+    },
+    {
+      "id": "D-01",
+      "status": "todo",
+      "refs": [
+        "REL-02",
+        "REL-03",
+        "AC-08",
+        "DEC-07"
+      ],
+      "dependsOn": [
+        "H-02"
+      ],
+      "doneWhen": "Template单一来源发布两个真实Debug_LAN工具版本；稳定CLI精确锁定、离线调用及回退通过，合成缓存历史不算AC-08"
+    },
+    {
+      "id": "C-06",
+      "status": "todo",
+      "refs": [
+        "AC-01",
+        "AC-03",
+        "AC-04",
+        "AC-09",
+        "AC-11",
+        "AC-12",
+        "DEC-05"
+      ],
+      "dependsOn": [
+        "C-05",
+        "D-01"
+      ],
+      "doneWhen": "补齐远程变量与网页RTT手动切换、H7/F4/F1RTOS样本移植、可选EIDE上传按钮及兼容验收，按全部P0门发布；无硬件系列注明未实测"
     }
   ]
 }

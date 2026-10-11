@@ -1,8 +1,6 @@
 """唯一离线验证编排；提交时检查索引快照而非未暂存工作树。"""
 import argparse
 import hashlib
-import importlib.metadata
-import importlib.util
 import json
 import os
 from pathlib import Path
@@ -12,6 +10,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+import xml.etree.ElementTree as ET
 
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
@@ -19,6 +18,74 @@ if hasattr(sys.stdout, 'reconfigure'):
 ROOT = Path(__file__).resolve().parents[1]
 DOCS = {'README.md', 'AGENTS.md', '01_需求规格说明书.md',
         '02_概要设计说明书.md', '03_详细设计说明书.md'}
+GENERATED = {'.git', 'tmp', '.venv', '__pycache__', 'build', 'dist', '.ruff_cache',
+             'bin', 'obj', 'TestResults', 'test-results', '.vs'}
+FORBIDDEN = {'data', 'node_modules', '.codex', '.claude'} | (GENERATED - {'.git'})
+SEMVER = re.compile(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
+                    r'(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)'
+                    r'(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?')
+SOLUTION = 'EmbeddedHelper.slnx'
+CLIENT_PROJECTS = ('src/EmbeddedHelper.App/EmbeddedHelper.App.csproj',
+                   'src/EmbeddedHelper.Worker/EmbeddedHelper.Worker.csproj',
+                   'src/EmbeddedHelper.Cli/EmbeddedHelper.Cli.csproj',
+                   'tests/EmbeddedHelper.Tests/EmbeddedHelper.Tests.csproj')
+
+
+def validate_dotnet(root):
+    errors = []
+    try:
+        version = (root / 'VERSION').read_text(encoding='utf-8').strip()
+        if not SEMVER.fullmatch(version):
+            raise ValueError('VERSION不是受支持的SemVer')
+        sdk = json.loads((root / 'global.json').read_text(encoding='utf-8'))['sdk']
+        if not re.fullmatch(r'10\.\d+\.\d+', sdk['version']):
+            raise ValueError('SDK必须锁定.NET 10的具体版本')
+        if sdk.get('rollForward') != 'disable' or sdk.get('allowPrerelease') is not False:
+            raise ValueError('SDK禁止静默漂移或预览版')
+        props = ET.parse(root / 'Directory.Build.props').getroot()
+        versions = props.findall('.//Version')
+        if len(versions) != 1 or versions[0].text != "$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)VERSION').Trim())":
+            raise ValueError('构建版本必须读取唯一VERSION')
+        for name in ['Nullable', 'Deterministic', 'TreatWarningsAsErrors', 'RestorePackagesWithLockFile']:
+            expected = 'enable' if name == 'Nullable' else 'true'
+            if props.findtext(f'.//{name}') != expected:
+                raise ValueError(f'缺少构建约束: {name}')
+    except (OSError, ValueError, KeyError, TypeError, ET.ParseError) as exc:
+        errors.append(f'C#基线无效: {exc}')
+    for project in list((root / 'src').rglob('*.csproj')) + list((root / 'tests').rglob('*.csproj')):
+        if any(part in GENERATED for part in project.relative_to(root).parts):
+            continue
+        try:
+            tree = ET.parse(project).getroot()
+            if any(tree.findall(f'.//{name}') for name in ['Version', 'VersionPrefix', 'VersionSuffix']):
+                raise ValueError('项目不允许另设产品版本')
+            lock = json.loads((project.parent / 'packages.lock.json').read_text(encoding='utf-8'))
+            if lock.get('version') not in {1, 2} or not isinstance(lock.get('dependencies'), dict):
+                raise ValueError('NuGet锁文件结构不正确')
+        except (OSError, ValueError, ET.ParseError) as exc:
+            errors.append(f'C#项目约束无效: {project.relative_to(root)}: {exc}')
+    return errors
+
+
+def validate_workflows(root):
+    errors = []
+    for name in ['verify.yml', 'release.yml']:
+        path = root / '.github/workflows' / name
+        try:
+            content = path.read_text(encoding='utf-8')
+            for action in re.findall(r'^\s*- uses:\s*(\S+)', content, re.MULTILINE):
+                if not re.fullmatch(r'actions/[a-z-]+@[0-9a-f]{40}', action):
+                    errors.append(f'Action未锁定官方完整SHA: {name}: {action}')
+            if 'pull_request_target' in content or 'continue-on-error: true' in content:
+                errors.append(f'工作流不允许高权限PR或忽略失败: {name}')
+            if name == 'verify.yml' and ('contents: write' in content or 'gh release create' in content):
+                errors.append('普通验证不得发布或具有仓库写权限')
+            if name == 'release.yml':
+                if not re.search(r'^on:\s*\n  workflow_dispatch:', content, re.MULTILINE) or 'needs: gate' not in content:
+                    errors.append('发布必须显式触发且依赖输入门')
+        except OSError as exc:
+            errors.append(f'缺少工作流: {exc}')
+    return errors
 
 
 def git(root, *args):
@@ -29,13 +96,13 @@ def validate(root):
     errors = []
     files = []
     for directory, dirs, names in os.walk(root):
-        dirs[:] = [d for d in dirs if d not in {'.git', 'tmp', '.venv', '__pycache__', 'build', 'dist', '.ruff_cache'}]
+        dirs[:] = [d for d in dirs if d not in GENERATED]
         files.extend(Path(directory) / name for name in names)
     for p in files:
         rel = p.relative_to(root).as_posix()
         if p.suffix == '.md' and rel not in DOCS and not rel.startswith('.agents/skills/'):
             errors.append(f'文档不在单源清单: {rel}')
-        if any(x in {'data', 'node_modules', '.codex', '.claude'} for x in p.relative_to(root).parts):
+        if any(x in FORBIDDEN for x in p.relative_to(root).parts):
             errors.append(f'本机文件越界: {rel}')
     for name in DOCS:
         p = root / name
@@ -85,7 +152,7 @@ def validate(root):
             assert hashlib.sha256(p.read_bytes()).hexdigest() == digest, name
     except (OSError, ValueError, KeyError, AssertionError) as e:
         errors.append(f'样本身份无效: {e}')
-    return errors
+    return errors + validate_dotnet(root) + validate_workflows(root)
 
 
 def environment():
@@ -93,39 +160,64 @@ def environment():
     print('未验证: J-Link/目标板/远程服务/COM实物链路；离线检查不访问设备')
     for command in ['dotnet', 'arm-none-eabi-gcc']:
         print(f'ENV {command}={shutil.which(command) or "缺失，相关试验未验证"}')
+    if shutil.which('dotnet'):
+        sdk_list = subprocess.run(['dotnet', '--list-sdks'], capture_output=True, text=True, check=False)
+        print(f'ENV SDK列表={sdk_list.stdout.strip() or "空，C#客户端未验证"}')
+
+
+def client_preflight(root):
+    missing = [name for name in [SOLUTION, *CLIENT_PROJECTS] if not (root / name).is_file()]
+    if missing:
+        print('未验证：C#客户端尚未形成完整工程:', ', '.join(missing))
+        return 2
+    if not shutil.which('dotnet'):
+        print('未验证：缺少.NET SDK')
+        return 2
+    sdk = json.loads((root / 'global.json').read_text(encoding='utf-8'))['sdk']['version']
+    result = subprocess.run(['dotnet', '--version'], cwd=root, capture_output=True, text=True, check=False)
+    if result.returncode or result.stdout.strip() != sdk:
+        print(f'未验证：要求SDK {sdk}，无法使用该SDK')
+        return 2
+    return 0
+
+
+def verify_client(root):
+    result = client_preflight(root)
+    if result:
+        return result
+    commands = [
+        ['dotnet', 'restore', SOLUTION, '--locked-mode'],
+        ['dotnet', 'format', SOLUTION, '--verify-no-changes', '--no-restore'],
+        ['dotnet', 'build', SOLUTION, '--configuration', 'Release', '--no-restore'],
+        ['dotnet', 'test', CLIENT_PROJECTS[-1], '--configuration', 'Release', '--no-build',
+         '--no-restore', '--logger', 'trx', '--results-directory', str(root / 'test-results')],
+    ]
+    for command in commands:
+        result = subprocess.run(command, cwd=root, check=False)
+        if result.returncode:
+            return result.returncode
+    return 0
 
 
 def main():
-    local_python = ROOT / '.venv/Scripts/python.exe'
-    if local_python.exists() and Path(sys.executable).resolve() != local_python.resolve():
-        return subprocess.call([str(local_python), str(Path(__file__).resolve()), *sys.argv[1:]])
     parser = argparse.ArgumentParser()
     parser.add_argument('--install-hooks', action='store_true')
     parser.add_argument('--staged', action='store_true')
-    parser.add_argument('--build', action='store_true')
+    parser.add_argument('--client', action='store_true', help='显式执行C#静态检查、构建和测试')
+    parser.add_argument('--client-preflight', action='store_true', help='只检查客户端工程与SDK，不构建')
     args = parser.parse_args()
+    if sum([args.install_hooks, args.staged, args.client, args.client_preflight]) > 1:
+        parser.error('执行模式不能组合')
     if args.install_hooks:
         git(ROOT, 'config', '--local', 'core.hooksPath', '.githooks')
         assert git(ROOT, 'config', '--get', 'core.hooksPath').strip() == b'.githooks'
         print('已安装 core.hooksPath=.githooks；运行完整验证检查真实提交触发')
         return 0
     environment()
-    if (ROOT / 'requirements.lock').exists():
-        for line in (ROOT / 'requirements.lock').read_text(encoding='utf-8').splitlines():
-            if not line or line.startswith('#'):
-                continue
-            name, version = line.split('==')
-            try:
-                actual = importlib.metadata.version(name)
-            except importlib.metadata.PackageNotFoundError:
-                actual = 'missing'
-            if actual != version:
-                print(f'未验证：依赖 {name} 需要 {version}，实际 {actual}；请安装 requirements.lock')
-                return 2
     if args.staged:
         git(ROOT, 'diff', '--cached', '--check')
         for name in git(ROOT, 'ls-files', '-z').decode('utf-8').split('\0'):
-            if name and name.split('/')[0] in {'data', 'dist', 'build', 'tmp', '.venv', '.codex'}:
+            if name and any(part in FORBIDDEN for part in Path(name).parts):
                 print('FAIL 暂存本机产物:', name)
                 return 1
         (ROOT / 'tmp').mkdir(exist_ok=True)
@@ -139,7 +231,7 @@ def main():
         print('FAIL', error)
     if errors:
         return 1
-    for directory in ['scripts', 'prototypes', 'tests']:
+    for directory in ['scripts', 'tests']:
         for source in (ROOT / directory).rglob('*.py'):
             compile(source.read_text(encoding='utf-8'), str(source), 'exec')
     suite = unittest.defaultTestLoader.discover(str(ROOT / 'tests'), pattern='test_*.py')
@@ -147,12 +239,11 @@ def main():
     print('PASS 离线验证' if result.wasSuccessful() else 'FAIL 测试')
     if not result.wasSuccessful():
         return 1
-    if args.build:
-        missing = [m for m in ['PySide6', 'pyqtgraph', 'PyInstaller'] if importlib.util.find_spec(m) is None]
-        if missing:
-            print('未验证：构建依赖缺失', ', '.join(missing))
-            return 2
-        return subprocess.call([sys.executable, str(ROOT / 'scripts/build_probe.py')], cwd=ROOT)
+    print('未验证：客户端构建、成品启动和实机验收；仓库检查通过不代表产品通过')
+    if args.client_preflight:
+        return client_preflight(ROOT)
+    if args.client:
+        return verify_client(ROOT)
     return 0
 
 

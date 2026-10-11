@@ -18,3 +18,10 @@ node_modules/
 .vscode/*.local.json
 .eide/*.log
 .embedded_helper/transactions/
+bin/
+obj/
+TestResults/
+/test-results/
+.vs/
+*.user
+*.suo
