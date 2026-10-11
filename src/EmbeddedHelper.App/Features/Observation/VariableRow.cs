@@ -1,0 +1,20 @@
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using EmbeddedHelper.Core;
+
+namespace EmbeddedHelper.App;
+
+public sealed class VariableRow(Variable variable) : INotifyPropertyChanged
+{
+    public Variable Variable { get; } = variable;
+    public string Label => Variable.Name + " / " + Variable.Type;
+    public string Address => Variable.AddressText;
+    public bool Selected { get; set; }
+    public Queue<double> History { get; } = new();
+    public string? LatestValue { get; set; }
+    public DateTimeOffset? LastObservedAt { get; set; }
+    private string value = variable.Supported ? "未采集" : variable.Status;
+    public string Value { get => value; set { this.value = value; Changed(); } }
+    public event PropertyChangedEventHandler? PropertyChanged;
+    private void Changed([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
+}

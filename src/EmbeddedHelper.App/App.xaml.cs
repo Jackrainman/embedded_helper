@@ -26,6 +26,13 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
+            try { Data.Log(ex.ToString()); } catch (IOException) { }
+            if (e.Args is ["--smoke", var directory])
+            {
+                PortableData.SaveFile(Path.Combine(directory, "smoke.json"), new { status = "failed", exitCode = 1, error = ex.ToString() });
+                Shutdown(1);
+                return;
+            }
             MessageBox.Show("无法启动，请将完整程序目录移动到可写位置。\n" + ex.Message, "Embedded Helper 启动失败", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(1);
         }

@@ -175,7 +175,7 @@
     },
     {
       "id": "R-02",
-      "status": "todo",
+      "status": "done",
       "refs": [
         "DEC-01",
         "VIS-02",
