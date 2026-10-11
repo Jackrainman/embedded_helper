@@ -1,0 +1,4 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup><OutputType>Exe</OutputType><TargetFramework>net10.0</TargetFramework><AssemblyName>embedded-helper-cli</AssemblyName></PropertyGroup>
+  <ItemGroup><ProjectReference Include="../EmbeddedHelper.Core/EmbeddedHelper.Core.csproj" /></ItemGroup>
+</Project>

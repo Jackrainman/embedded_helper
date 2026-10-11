@@ -45,11 +45,15 @@ jobs:
       - uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
         with:
           global-json-file: global.json
-      - run: python scripts/verify.py --client
+      - run: python scripts/package_client.py
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
           name: client-test-results
           path: test-results/
           if-no-files-found: warn
-      # 成品打包与candidate-win-x64上传由H-03接入，当前不上传占位包。
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: candidate-win-x64
+          path: dist/candidate/
+          if-no-files-found: error

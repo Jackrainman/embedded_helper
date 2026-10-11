@@ -1,4 +1,6 @@
 * text=auto
+*.xaml text eol=lf
+*.txt text eol=lf
 *.md text eol=lf
 *.py text eol=lf
 *.c text eol=lf

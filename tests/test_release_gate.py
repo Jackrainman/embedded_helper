@@ -51,6 +51,19 @@ class ReleaseGateTests(unittest.TestCase):
         self.evidence['checks'] = [x for x in self.evidence['checks'] if x['id'] != 'g4-remote-flash']
         self.assertTrue(any('g4-remote-flash' in x for x in self.validate()))
 
+    def test_developer_preview_requires_explicit_deferred_evidence(self):
+        self.manifest['releaseProfile'] = 'developer-preview'
+        (self.root / 'release-manifest.json').write_text(json.dumps(self.manifest), encoding='utf-8')
+        self.evidence['releaseProfile'] = 'developer-preview'
+        self.evidence['checks'] = [x for x in self.evidence['checks'] if x['id'] not in HARDWARE | {'clean-windows'}]
+        self.assertTrue(self.validate())
+        self.evidence['deferredChecks'] = sorted(HARDWARE | {'clean-windows'})
+        with (self.root / 'release-notes.md').open('a', encoding='utf-8') as stream:
+            stream.write('\n开发内测；硬件未验收')
+        self.assertEqual(self.validate(), [])
+        self.evidence['checks'] = [x for x in self.evidence['checks'] if x['id'] != 'package-smoke']
+        self.assertTrue(any('package-smoke' in x for x in self.validate()))
+
     def test_old_commit_and_changed_package_rejected(self):
         self.evidence['commit'] = 'b' * 40
         self.assertTrue(any('同一版本' in x for x in self.validate()))

@@ -26,7 +26,7 @@
     },
     {
       "id": "C-01",
-      "status": "todo",
+      "status": "done",
       "refs": [
         "DEC-01",
         "VIS-02",
@@ -40,7 +40,7 @@
     },
     {
       "id": "C-02",
-      "status": "todo",
+      "status": "in_progress",
       "refs": [
         "REM-01",
         "REM-07",
@@ -56,7 +56,7 @@
     },
     {
       "id": "C-03",
-      "status": "todo",
+      "status": "in_progress",
       "refs": [
         "DEC-02",
         "CON-03",
@@ -73,7 +73,7 @@
     },
     {
       "id": "C-04",
-      "status": "todo",
+      "status": "in_progress",
       "refs": [
         "SER-01",
         "SER-04",
@@ -87,18 +87,19 @@
     },
     {
       "id": "H-03",
-      "status": "todo",
+      "status": "in_progress",
       "refs": [
         "REL-01",
         "REL-09",
         "REL-11",
         "AC-07",
-        "AC-13"
+        "AC-13",
+        "AC-14"
       ],
       "dependsOn": [
         "C-01"
       ],
-      "doneWhen": "接入实际dotnet发布/打包、成品自检、candidate-win-x64上传与结构化证据执行器；验证同包传递及缺项拒绝；真实发布须在C-05同包验收后另行授权执行"
+      "doneWhen": "实际dotnet发布、最终ZIP真实GUI/CLI自检及同包证据门通过，按用户授权AC-14先发布开发Pre-release；硬件和纯净Windows明确未验证，C-05由用户后续验收"
     },
     {
       "id": "C-05",

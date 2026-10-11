@@ -59,6 +59,20 @@ def validate_release(candidate, evidence_path, version, commit):
         if (evidence.get('schemaVersion'), evidence.get('version'), evidence.get('commit'),
                 evidence.get('packageSha256')) != (1, version, commit, digest):
             raise ValueError('验收证据未绑定同一版本、提交和包')
+        profile = manifest.get('releaseProfile', 'tested-prerelease')
+        if profile not in {'developer-preview', 'tested-prerelease'}:
+            raise ValueError('未知发布范围')
+        if evidence.get('releaseProfile', 'tested-prerelease') != profile:
+            raise ValueError('发布范围与证据不一致')
+        required = REQUIRED
+        if profile == 'developer-preview':
+            required = AUTOMATED
+            deferred = evidence.get('deferredChecks')
+            if not isinstance(deferred, list) or set(deferred) != HARDWARE | {'clean-windows'}:
+                raise ValueError('开发内测必须明确列出未执行的硬件和纯净系统验收')
+            notes = (candidate / 'release-notes.md').read_text(encoding='utf-8')
+            if '开发内测' not in notes or '硬件未验收' not in notes:
+                raise ValueError('开发内测说明必须明确硬件未验收')
         checks = evidence.get('checks')
         if not isinstance(checks, list):
             raise ValueError('验收checks必须为列表')
@@ -67,7 +81,7 @@ def validate_release(candidate, evidence_path, version, commit):
             if not isinstance(check, dict) or not isinstance(check.get('id'), str) or check['id'] in by_id:
                 raise ValueError('验收项无效或重复')
             by_id[check['id']] = check
-        for identifier in sorted(REQUIRED):
+        for identifier in sorted(required):
             check = by_id.get(identifier, {})
             if check.get('status') != 'passed' or type(check.get('exitCode')) is not int or check['exitCode'] != 0:
                 errors.append(f'缺少真实通过结果: {identifier}')

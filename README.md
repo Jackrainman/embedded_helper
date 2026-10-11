@@ -1,6 +1,6 @@
 # Embedded Helper 设计文档
 
-文档版本0.7，2026-10-11。产品路线确定为C#、WPF和.NET 10 LTS，Windows x64自包含目录式便携ZIP。当前只有仓库Harness和历史离线验证证据，尚无C#客户端、可用发布包或硬件验收结果。
+文档版本0.8，2026-10-11。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含目录式便携ZIP按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
 
 ## 阅读顺序
 
@@ -26,13 +26,13 @@ Windows本地小助手配合VS Code/EIDE使用。第一版围绕现有模板工�
 
 新增模板/硬件区分已移植、实机已验证和实验功能，不凭相似目录或驱动接受参数宣布实测通过。接口冻结后记录版本和兼容规则；重大决策在概要设计的ADR表保留依据。
 
-下一批从账本中的C#工程与G4一键远程接入任务开始。当前文档中的“拟新增”“候选”“待验证”均不能当作已完成能力。
+活动批次与剩余能力以账本为准；G4一键VS Code接入、工具版本管理、其他模板与完整P0验收仍待完成。文档中的“拟新增”“候选”“待验证”均不能当作已完成能力。
 
 开发采用关键风险原型验证、小批次迭代交付、稳定版本补丁维护的节奏；集中功能变更留到下一轮更新，详见概要14.1。
 
 ## 开发与验证
 
-保留标准库Python Harness作为开发工具，不进入客户端运行依赖；产品及其测试采用C#。本轮只维护文档与Harness，不执行客户端构建。
+标准库Python Harness仅用于开发与打包，不进入客户端运行依赖；产品及其测试采用C#。本任务已授权客户端构建、推送、打标签与发布；不操作硬件。
 
 | 准备项 | 必要内容 |
 | --- | --- |
@@ -43,7 +43,7 @@ Windows本地小助手配合VS Code/EIDE使用。第一版围绕现有模板工�
 | 验证与环境检查 | 用一个入口编排文档链接、任务结构、文件边界和环境检查；失败返回非零，缺工具/硬件报告未验证；用正例、反例确认检查有效，再接提交钩子并验证真实触发。 |
 | M0隔离样本 | 配置试验用工程副本；记录上游SHA、脱敏范围和已知预期，覆盖中文空格路径、未知字段、ELF及串口字节；结果记录代码基线、工具版本、输入/硬件、退出结果和未覆盖项。 |
 
-SDK锁定在[global.json](global.json)，根[VERSION](VERSION)通过[scripts/bump_version.py](scripts/bump_version.py)更新，构建属性读取唯一版本。当前初始版本0.1.0-alpha.0只是开发基线，不代表已经发布。C#工程创建后提交NuGet锁文件；SDK与库更新必须显式修改并重新验证。
+SDK 10.0.401锁定在[global.json](global.json)，运行时10.0.12；根[VERSION](VERSION)通过[scripts/bump_version.py](scripts/bump_version.py)更新。C#工程已有NuGet锁文件：LibObjectFile 2.3.1、YamlDotNet 18.1.0、System.IO.Ports 10.0.12；测试使用xUnit。SDK与库更新须显式修改并重新验证。
 
 `.agents/skills`用于稳定、可复用的项目流程；已有EIDE/J-Link/LAN技能按任务复用，缺失时明确说明，不复制个人技能形成双源，也不预建空技能目录。真实工程写入、烧录/复位/停核和服务部署按具体任务授权执行，文档研究不扩大设备操作范围。
 
@@ -53,12 +53,12 @@ SDK锁定在[global.json](global.json)，根[VERSION](VERSION)通过[scripts/bum
 
 统一入口：`python scripts/verify.py`，只运行仓库检查与Harness测试，无pip依赖、不构建、不访问设备。首次克隆运行 `python scripts/verify.py --install-hooks`；提交门仍验证索引快照。开发需要Python 3.12+、Git；客户端开发另需global.json指定的SDK。
 
-`python scripts/verify.py --client-preflight`只检查客户端工程和SDK，不构建；缺少时返回2。`--client`是未来显式C#静态检查、构建和测试入口，当前缺工程将返回2。旧Qt的`--build`入口已退出活动流程。活动任务见[唯一账本](.harness/todo.json)，证据见详细设计18节。
+`python scripts/verify.py --client-preflight`检查客户端工程和精确SDK，不构建；缺少时返回2。`--client`执行锁定恢复、格式检查、Release构建及C#测试。`python scripts/package_client.py`从干净已提交基线构建ZIP、解压后运行真实GUI/CLI自检并生成同包证据，产物在dist/candidate。旧Qt入口已退出。活动任务见[唯一账本](.harness/todo.json)，证据见详细设计18节。
 
 Python产品原型、对应测试、requirements.lock及Qt打包探针归档于Git基线 `a7f30e11a86b8a60f15f853202da19bfba99a4c4`，当前工作树移除，不建归档文档或第二套产品实现。需要复现时在tmp隔离副本恢复该提交；[样本](tests/fixtures/manifest.json)保留供C#验证，历史通过不自动成为C#通过。
 
 ## 启动、产物与发布
 
-计划交付 `EmbeddedHelper-<版本>-win-x64.zip`、release-manifest.json、SHA256SUMS及包内说明/许可。用户解压到可写目录并双击EmbeddedHelper.exe，无需Python、.NET运行时或SDK；J-Link软件和设备驱动由用户安装。软件在自身目录创建data，工程状态保存到工程的.embedded_helper；升级保留data。当前没有可执行客户端，不能照此启动现有工作区。
+交付 `EmbeddedHelper-<版本>-win-x64.zip`、release-manifest.json、SHA256SUMS及包内说明/许可。完整解压到可写目录并双击EmbeddedHelper.exe，无需Python或预装.NET；J-Link软件和设备驱动由用户安装。DWARF4内置解析，DWARF5调用已有ARM readelf（自动定位EIDE工具链，亦可在设置中填写）。软件在自身目录创建data；升级保留data，工程观察设置保存到.embedded_helper/watch.json。
 
-[Windows工作流](.github/workflows/verify.yml)运行仓库检查；C#工程存在时接入`--client`，无工程时明确跳过产品验证。[内测发布工作流](.github/workflows/release.yml)只由用户显式触发，核对候选运行来源、同包证据后上传原包，不重新构建。发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查，契约见详细设计12.4。成品生成、candidate-win-x64上传、纯净Windows和硬件测试执行器仍待H-03及产品任务，缺包/证据不能发布。本轮未推送，远端Actions、分支保护和发布权限尚未验证。
+[Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
