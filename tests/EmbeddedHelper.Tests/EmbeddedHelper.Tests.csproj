@@ -12,7 +12,7 @@
       <Output TaskParameter="TargetOutputs" ItemName="WorkerTarget" />
     </MSBuild>
     <PropertyGroup><WorkerOutputDirectory>@(WorkerTarget->'%(RootDir)%(Directory)')</WorkerOutputDirectory></PropertyGroup>
-    <ItemGroup><WorkerFiles Include="$(WorkerOutputDirectory)**/*" /></ItemGroup>
+    <ItemGroup><WorkerFiles Include="$(WorkerOutputDirectory)*;$(WorkerOutputDirectory)runtimes/**/*" /></ItemGroup>
     <Copy SourceFiles="@(WorkerFiles)" DestinationFiles="@(WorkerFiles->'$(OutDir)worker/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
 </Project>

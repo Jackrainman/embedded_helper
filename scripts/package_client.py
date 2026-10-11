@@ -168,7 +168,14 @@ def main():
             saved.parent.mkdir(parents=True, exist_ok=True)
             saved.write_bytes(b'{"keep":"previous-settings"}')
             settings_digest = hashlib.sha256(saved.read_bytes()).hexdigest()
-            shutil.copy2(executable, entry)
+            for attempt in range(11):
+                try:
+                    shutil.copy2(executable, entry)
+                    break
+                except PermissionError:
+                    if attempt == 10:
+                        raise
+                    time.sleep(0.5)
             upgrade_env = clean_env | {'EMBEDDED_HELPER_ENTRY': str(entry),
                                        'EMBEDDED_HELPER_HOME': str(old_runtimes[0])}
             for remove_old in [False, True]:
