@@ -48,12 +48,22 @@ class HarnessTests(unittest.TestCase):
                            ('core.hooksPath', '.githooks'), ('commit.gpgsign', 'false')]:
             self.assertEqual(run('config', key, value).returncode, 0)
         for name in ['.vscode/launch.json', '.eide/eide.yml', '.embedded_helper/project.json',
-                     '.agents/skills/example/SKILL.md', 'tests/fixtures/example.elf']:
+                     '.agents/skills/example/SKILL.md', '.agents/skills/ui-ux-pro-max/data/styles.csv',
+                     '.agents/skills/impeccable/scripts/data/font-index.json',
+                     '.agents/skills/impeccable/source.json', '.agents/skills/impeccable/LICENSE',
+                     'tests/fixtures/example.elf']:
             self.assertEqual(run('check-ignore', '--no-index', name).returncode, 1, name)
         for name in ['data/local.json', 'tmp/test.bin', '.venv/example', '.codex/state',
+                     '.impeccable/critique/session.json', '.impeccable/live/cache/preview.png',
+                     '.agents/skills/ui-ux-pro-max/scripts/__pycache__/core.pyc',
                      'src/App/bin/example.dll', 'src/App/obj/example.json',
                      'test-results/example.trx', '.vs/example', 'tests/Example/TestResults/example.trx']:
             self.assertEqual(run('check-ignore', '--no-index', name).returncode, 0, name)
+        for name in ['.agents/skills/ui-ux-pro-max/data/styles.csv',
+                     '.agents/skills/impeccable/scripts/data/font-index.json']:
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('upstream dataset', encoding='utf-8')
         bad = self.root / 'plan.md'
         bad.write_text('must reject')
         self.assertEqual(run('add', '.').returncode, 0)
@@ -131,6 +141,23 @@ class HarnessTests(unittest.TestCase):
         output.parent.mkdir(parents=True)
         output.write_text('generated dependency documentation')
         self.assertEqual(verify.validate(self.root), [])
+
+    def test_skill_datasets_do_not_allow_runtime_or_nested_dependencies(self):
+        for name in ['.agents/skills/ui-ux-pro-max/data/styles.csv',
+                     '.agents/skills/impeccable/scripts/data/font-index.json']:
+            path = self.root / name
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text('upstream dataset', encoding='utf-8')
+        self.assertEqual(verify.validate(self.root), [])
+        for name in ['data/settings/window.json', '.agents/skills/unknown/data/local.json',
+                     '.agents/skills/ui-ux-pro-max/data/node_modules/dependency.json',
+                     '.agents/skills/impeccable/scripts/data/data/local.json']:
+            with self.subTest(forbidden=name):
+                path = self.root / name
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_text('must reject', encoding='utf-8')
+                self.assertIn(f'本机文件越界: {name}', verify.validate(self.root))
+                path.unlink()
 
 
 if __name__ == '__main__':

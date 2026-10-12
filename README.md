@@ -1,6 +1,6 @@
 # Embedded Helper 设计文档
 
-文档版本0.10，2026-10-12。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含单EXE按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
+文档版本0.11，2026-10-12。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含单EXE按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
 
 ## 阅读顺序
 
@@ -46,6 +46,8 @@ G4一键VS Code接入/共享移除及两个已发布工具版本的下载、离�
 SDK 10.0.401锁定在[global.json](global.json)，运行时10.0.12；根[VERSION](VERSION)通过[scripts/bump_version.py](scripts/bump_version.py)更新。C#工程已有NuGet锁文件：LibObjectFile 2.3.1、YamlDotNet 18.1.0、System.IO.Ports 10.0.12；测试使用xUnit。SDK与库更新须显式修改并重新验证。
 
 `.agents/skills`用于稳定、可复用的项目流程；已有EIDE/J-Link/LAN技能按任务复用，缺失时明确说明，不复制个人技能形成双源，也不预建空技能目录。真实工程写入、烧录/复位/停核和服务部署按具体任务授权执行，文档研究不扩大设备操作范围。
+
+已按用户要求安装UI UX Pro Max和Impeccable到`.agents/skills/`；各自`source.json`记录上游仓库与固定提交，保留原始许可及依赖文件。它们只用于开发审查，不进入客户端运行包。WPF界面评估见概要7.5，安装和验证边界见详细18.17。
 
 必须学习本地`D:/01_Workspace/04_MyProjects/TeamHub`的AGENTS工作流与验证门、`.gitignore`、D-091文档单源、提交钩子安装及验证脚本；定向阅读ARC-DEC-004、ARC-MILE-006、ARC-INC-007，吸取钩子未接通、技能副本漂移和文档反弹的教训。采用其单源与真实验证原则，具体技术栈、CI平台、版本脚本和Git授权依据本项目实施。
 

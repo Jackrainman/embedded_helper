@@ -1,5 +1,7 @@
 .codex/
 .claude/
+# Design skill sources stay tracked in .agents/skills; only runtime output is local.
+/.impeccable/
 .idea/
 .env
 .env.*

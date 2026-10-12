@@ -21,6 +21,9 @@ DOCS = {'README.md', 'AGENTS.md', '01_需求规格说明书.md',
 GENERATED = {'.git', 'tmp', '.venv', '__pycache__', 'build', 'dist', '.ruff_cache',
              'bin', 'obj', 'TestResults', 'test-results', '.vs'}
 FORBIDDEN = {'data', 'node_modules', '.codex', '.claude'} | (GENERATED - {'.git'})
+# These upstream skill datasets are source inputs, not portable client runtime data.
+SKILL_DATA_ROOTS = {'.agents/skills/ui-ux-pro-max/data',
+                    '.agents/skills/impeccable/scripts/data'}
 SEMVER = re.compile(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
                     r'(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)'
                     r'(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?')
@@ -95,6 +98,12 @@ def git(root, *args):
     return subprocess.run(['git', '-C', str(root), *args], capture_output=True, check=True).stdout
 
 
+def forbidden_path(path):
+    parts = Path(path).parts
+    return any(x in FORBIDDEN and not (x == 'data' and '/'.join(parts[:i + 1]) in SKILL_DATA_ROOTS)
+               for i, x in enumerate(parts))
+
+
 def validate(root):
     errors = []
     files = []
@@ -105,7 +114,7 @@ def validate(root):
         rel = p.relative_to(root).as_posix()
         if p.suffix == '.md' and rel not in DOCS and not rel.startswith('.agents/skills/'):
             errors.append(f'文档不在单源清单: {rel}')
-        if any(x in FORBIDDEN for x in p.relative_to(root).parts):
+        if forbidden_path(rel):
             errors.append(f'本机文件越界: {rel}')
     for name in DOCS:
         p = root / name
@@ -249,7 +258,7 @@ def main():
     if args.staged:
         git(ROOT, 'diff', '--cached', '--check')
         for name in git(ROOT, 'ls-files', '-z').decode('utf-8').split('\0'):
-            if name and any(part in FORBIDDEN for part in Path(name).parts):
+            if name and forbidden_path(name):
                 print('FAIL 暂存本机产物:', name)
                 return 1
         (ROOT / 'tmp').mkdir(exist_ok=True)

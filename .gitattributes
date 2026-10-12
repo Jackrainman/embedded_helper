@@ -17,6 +17,9 @@
 .editorconfig text eol=lf
 VERSION text eol=lf
 .githooks/* text eol=lf
+# Keep vendored skill sources in LF and preserve upstream example whitespace.
+.agents/skills/ui-ux-pro-max/** text=auto eol=lf -whitespace
+.agents/skills/impeccable/** text=auto eol=lf -whitespace
 *.elf binary
 *.bin binary
 *.zip binary
