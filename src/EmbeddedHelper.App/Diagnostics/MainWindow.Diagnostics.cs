@@ -51,10 +51,13 @@ public partial class MainWindow
             SerialPage.SerialPortBox.Text = "";
             await Guard(ConnectSerialAsync);
             if (serial != null || SerialPage.ConnectSerialButton.Content?.ToString() != "打开串口" || !SerialPage.ConnectSerialButton.IsEnabled || SerialPage.SerialConnectionLabel.Text != "未连接" || SerialPage.SerialConnectionLight.Fill != Brushes.Firebrick) throw new InvalidDataException("打开失败后串口按钮和红灯未恢复。");
+            await SmokeObservationSettingsAsync(directory);
             Report("离线 GUI 自检：工程、ELF、设置与错误反馈通过；硬件未验收。");
+            ProjectSections.SelectedIndex = 0;
             for (int i = 0; i < Pages.Items.Count; i++)
             {
                 Pages.SelectedIndex = i;
+                if (i == 1) await viewerPreparation;
                 await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
                 SaveSmokeScreenshot(directory, $"page-{i}.png");
             }
@@ -65,7 +68,23 @@ public partial class MainWindow
                 await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
                 SaveSmokeScreenshot(directory, $"project-section-{i}.png");
             }
-            PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, scalarCount = Variables.Count, toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested" });
+            ProjectSections.SelectedIndex = 0;
+            Width = MinWidth; Height = MinHeight;
+            for (int i = 0; i < Pages.Items.Count; i++)
+            {
+                Pages.SelectedIndex = i;
+                if (i == 1) await viewerPreparation;
+                await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+                SaveSmokeScreenshot(directory, $"page-{i}-minimum.png");
+            }
+            Pages.SelectedIndex = 0;
+            for (int i = 0; i < ProjectSections.Items.Count; i++)
+            {
+                ProjectSections.SelectedIndex = i;
+                await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+                SaveSmokeScreenshot(directory, $"project-section-{i}-minimum.png");
+            }
+            PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, projectSections = ProjectSections.Items.Count, scalarCount = Variables.Count, observationSettings = "roundtrip-and-missing-config-passed", toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested" });
             Close();
         }
         catch (Exception ex)
@@ -75,11 +94,89 @@ public partial class MainWindow
         }
     }
 
+    private async Task SmokeObservationSettingsAsync(string directory)
+    {
+        var root = project!.Root;
+        // All files below belong to the caller's isolated smoke project; no SDK is loaded.
+        var watchPath = System.IO.Path.Combine(root, ".embedded_helper", "watch.json");
+        if (File.Exists(watchPath)) File.Delete(watchPath);
+        Pages.SelectedIndex = 1;
+        await viewerPreparation;
+        if (preparedWatch != null || ObservationPage.StartButton.IsEnabled || ObservationPage.ConfigurationRequired.Visibility != Visibility.Visible) throw new InvalidDataException("缺少工程观察设置时未阻止采集。");
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+        SaveSmokeScreenshot(directory, "page-1-missing.png");
+        ConfigureObservation(null, null!);
+        if (Pages.SelectedIndex != 0 || ProjectSections.SelectedIndex != 1) throw new InvalidDataException("工程设置入口未导航到观察设置。");
+        ObservationSetupPage.ProbeSerial.Text = "123456";
+        ObservationSetupPage.SampleRate.Text = "75";
+        foreach (var row in Variables) row.Selected = false;
+        foreach (var row in Variables.Where(v => v.Variable.Supported).Take(2)) row.Selected = true;
+        SaveObservationSettings(null, null!);
+        var saved = await WatchSettingsStore.LoadAsync(root) ?? throw new InvalidDataException("工程观察设置未保存。");
+        if (saved.ProbeSerial != "123456" || saved.Rate != 75 || saved.Identities.Length != 2) throw new InvalidDataException("工程观察设置保存值错误。");
+        var sdk = System.IO.Path.Combine(directory, "not-a-native-library.dll");
+        File.WriteAllText(sdk, "UI readiness test only. This file is never loaded and no worker is started.");
+        SettingsPage.DllPath.Text = sdk;
+        ObservationSetupPage.ProbeSerial.Text = "999";
+        ObservationSetupPage.SampleRate.Text = "999";
+        foreach (var row in Variables) row.Selected = false;
+        await PrepareViewerAsync();
+        if (preparedWatch == null || !ObservationPage.StartButton.IsEnabled || ObservationSetupPage.ProbeSerial.Text != "123456" || ObservationSetupPage.SampleRate.Text != "75" || Variables.Count(v => v.Selected) != 2) throw new InvalidDataException("查看页未读取保存值，或使用了未保存的界面值。");
+        var remotePath = project.RemotePath;
+        var remoteText = File.Exists(remotePath) ? await File.ReadAllTextAsync(remotePath) : null;
+        File.Delete(remotePath);
+        WatchSettingsStore.Save(root, saved with { Transport = "remote", EnableRtt = false });
+        await PrepareViewerAsync();
+        if (preparedWatch != null || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("缺少远程配置时未阻止采集。");
+        await SaveObservationSmokeStateAsync(directory, "page-1-missing-remote.png");
+        ConfigureObservation(null, null!);
+        if (Pages.SelectedIndex != 0 || ProjectSections.SelectedIndex != 2) throw new InvalidDataException("缺少远程配置时恢复入口未到远程配置。");
+        await File.WriteAllTextAsync(remotePath, "{\"ServerName\":\"saved.example.invalid\",\"Port\":19011}");
+        RemotePage.RemoteHost.Text = "unsaved.example.invalid";
+        await PrepareViewerAsync();
+        if (preparedWatch == null || RemotePage.RemoteHost.Text != "saved.example.invalid" || ObservationSetupPage.EnableRtt.IsChecked == true) throw new InvalidDataException("未读取工程远程参数或远程RTT状态错误。");
+        if (remoteText == null) File.Delete(remotePath); else await File.WriteAllTextAsync(remotePath, remoteText);
+        WatchSettingsStore.Save(root, saved with { Identities = ["missing:variable"] });
+        await PrepareViewerAsync();
+        if (preparedWatch != null || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("ELF缺少保存变量时未阻止采集。");
+        WatchSettingsStore.Save(root, saved with { Rate = 1001 });
+        await PrepareViewerAsync();
+        if (preparedWatch != null) throw new InvalidDataException("无效采样率未阻止采集。");
+        WatchSettingsStore.Save(root, saved);
+        SettingsPage.DllPath.Text = System.IO.Path.Combine(directory, "missing-sdk.dll");
+        await PrepareViewerAsync();
+        if (preparedWatch != null || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("缺少本机SDK时未阻止采集。");
+        await SaveObservationSmokeStateAsync(directory, "page-1-missing-sdk.png");
+        ConfigureObservation(null, null!);
+        if (Pages.SelectedIndex != 3) throw new InvalidDataException("缺少SDK时恢复入口未到设置与诊断。");
+        SettingsPage.DllPath.Text = sdk;
+        WatchSettingsStore.Save(root, saved with { Identities = [], EnableRtt = true });
+        await PrepareViewerAsync();
+        if (preparedWatch == null || !ObservationPage.StartButton.IsEnabled || !ObservationPage.VariablesEmpty.Text.Contains("仅观察 RTT") || !ObservationPage.PlotEmpty.Text.Contains("未启用变量曲线")) throw new InvalidDataException("仅RTT配置被误报为缺少变量。");
+        await SaveObservationSmokeStateAsync(directory, "page-1-rtt-only.png");
+        var width = Width; var height = Height;
+        Width = MinWidth; Height = MinHeight;
+        await SaveObservationSmokeStateAsync(directory, "page-1-rtt-only-minimum.png");
+        Width = width; Height = height;
+        WatchSettingsStore.Save(root, saved);
+        await PrepareViewerAsync();
+        if (preparedWatch == null || observation != null) throw new InvalidDataException("配置读回失败或自检意外创建了采集会话。");
+    }
+
+    private async Task SaveObservationSmokeStateAsync(string directory, string file)
+    {
+        Pages.SelectedIndex = 1;
+        await viewerPreparation;
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+        SaveSmokeScreenshot(directory, file);
+    }
+
     private void SaveSmokeScreenshot(string directory, string file)
     {
         UpdateLayout();
-        var bitmap = new RenderTargetBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Pbgra32);
-        bitmap.Render(this);
+        var content = (FrameworkElement)Content;
+        var bitmap = new RenderTargetBitmap((int)content.ActualWidth, (int)content.ActualHeight, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(content);
         var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
         using var output = File.Create(System.IO.Path.Combine(directory, file)); encoder.Save(output);
     }

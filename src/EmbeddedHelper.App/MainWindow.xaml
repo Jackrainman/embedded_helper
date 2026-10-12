@@ -1,5 +1,5 @@
 <Window x:Class="EmbeddedHelper.App.MainWindow" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:EmbeddedHelper.App" Title="Embedded Helper" Icon="Assets/EmbeddedHelper.png" Width="1280" Height="860" MinWidth="1000" MinHeight="720" WindowStartupLocation="CenterScreen" Closing="WindowClosing">
-  <DockPanel>
+  <DockPanel Background="{StaticResource MainBackground}">
     <Border DockPanel.Dock="Top" Background="{StaticResource HeaderBrush}" Padding="18,12">
       <Grid><Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
         <StackPanel Orientation="Horizontal"><Image Source="Assets/EmbeddedHelper.png" Width="30" Height="30" Margin="0,0,10,0"/><TextBlock Text="Embedded Helper" FontSize="16" FontWeight="SemiBold" Foreground="White" VerticalAlignment="Center"/><TextBlock Text="嵌入式开发工作台" Foreground="{StaticResource HeaderMuted}" Margin="18,0,0,0" VerticalAlignment="Center"/></StackPanel>
@@ -7,12 +7,13 @@
       </Grid>
     </Border>
     <Border DockPanel.Dock="Bottom" Background="{StaticResource Surface}" BorderBrush="{StaticResource LineBrush}" BorderThickness="0,1,0,0" Padding="16,9"><TextBlock x:Name="StatusLabel" Text="就绪 · 打开工程，或直接使用串口助手。" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/></Border>
-    <TabControl x:Name="Pages" Style="{StaticResource NavigationTabs}">
+    <TabControl x:Name="Pages" Style="{StaticResource NavigationTabs}" SelectionChanged="PagesChanged">
       <TabItem Header="工程"><TabControl x:Name="ProjectSections" Margin="18,16,18,0">
         <TabItem Header="工程概览"><local:ProjectView x:Name="ProjectPage" BrowseProjectRequested="BrowseProject" OpenProjectRequested="OpenProject" TargetChangedRequested="TargetChanged" BrowseElfRequested="BrowseElf" ParseElfRequested="ParseElf" OpenRecentRequested="OpenRecent"/></TabItem>
+        <TabItem Header="观察设置"><local:ObservationSetupView x:Name="ObservationSetupPage" SaveRequested="SaveObservationSettings" ParseElfRequested="ParseElf"/></TabItem>
         <TabItem Header="远程配置"><local:RemoteView x:Name="RemotePage" OpenWebRequested="OpenWeb" PreviewIntegrationRequested="PreviewIntegration" PreviewConfigRequested="PreviewConfig" PreviewRemoveIntegrationRequested="PreviewRemoveIntegration" RecoverConfigRequested="RecoverConfig" ApplyConfigRequested="ApplyConfig"/></TabItem>
       </TabControl></TabItem>
-      <TabItem Header="查看变量"><local:ObservationView x:Name="ObservationPage" StartObservationRequested="StartObservation" StopObservationRequested="StopObservation" ParseElfRequested="ParseElf" PlotSizeChangedRequested="PlotSizeChanged" ClearRttRequested="ClearRtt"/></TabItem>
+      <TabItem Header="查看变量"><local:ObservationView x:Name="ObservationPage" StartObservationRequested="StartObservation" StopObservationRequested="StopObservation" ParseElfRequested="ParseElf" PlotSizeChangedRequested="PlotSizeChanged" ClearRttRequested="ClearRtt" ConfigureRequested="ConfigureObservation"/></TabItem>
       <TabItem Header="串口助手"><local:SerialView x:Name="SerialPage" RefreshPortsRequested="RefreshPorts" ToggleSerialRequested="ToggleSerial" SerialEncodingChangedRequested="SerialEncodingChanged" ClearSerialRequested="ClearSerial" SelectSendHistoryRequested="SelectSendHistory" SendSerialRequested="SendSerial" StartPeriodicRequested="StartPeriodic" StopPeriodicRequested="StopPeriodic" OpenRecordsRequested="OpenRecords"/></TabItem>
       <TabItem Header="设置与诊断"><local:SettingsView x:Name="SettingsPage" BrowseDllRequested="BrowseDll" SaveSettingsRequested="SaveSettings" EnvironmentCheckRequested="EnvironmentCheck" OpenLogsRequested="OpenLogs" RefreshToolsRequested="RefreshTools" DownloadToolRequested="DownloadTool" ImportToolRequested="ImportTool" BindCliRequested="BindCli"/></TabItem>
     </TabControl>

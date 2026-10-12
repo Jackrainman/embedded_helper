@@ -9,7 +9,8 @@ public sealed class VariableRow(Variable variable) : INotifyPropertyChanged
     public Variable Variable { get; } = variable;
     public string Label => Variable.Name + " / " + Variable.Type;
     public string Address => Variable.AddressText;
-    public bool Selected { get; set; }
+    private bool selected;
+    public bool Selected { get => selected; set { selected = value; Changed(); } }
     public Queue<double> History { get; } = new();
     public string? LatestValue { get; set; }
     public DateTimeOffset? LastObservedAt { get; set; }

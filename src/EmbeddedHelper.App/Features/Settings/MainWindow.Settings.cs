@@ -71,7 +71,7 @@ public partial class MainWindow
     }
     private void PersistSettings()
     {
-        settings = settings with { Dll = SettingsPage.DllPath.Text, ReadElf = SettingsPage.ReadElfPath.Text, Probe = ObservationPage.ProbeSerial.Text, Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, Serial = ReadSerialSettings(), SerialEncoding = SerialPage.EncodingBox.SelectedItem as string ?? "utf-8" };
+        settings = settings with { Dll = SettingsPage.DllPath.Text, ReadElf = SettingsPage.ReadElfPath.Text, Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, Serial = ReadSerialSettings(), SerialEncoding = SerialPage.EncodingBox.SelectedItem as string ?? "utf-8" };
         settingsStore.Save(settings);
     }
     private void EnvironmentCheck(object? sender, RoutedEventArgs e)
@@ -85,7 +85,7 @@ public partial class MainWindow
         SerialPage.FlowBox.ItemsSource = Enum.GetValues<Handshake>(); SerialPage.FlowBox.SelectedItem = Handshake.None;
         try { settings = settingsStore.Load(); }
         catch (Exception ex) { Report("设置读取失败，保留原文件并使用默认值：" + ex.Message); }
-        SettingsPage.DllPath.Text = settings.Dll; ObservationPage.ProbeSerial.Text = settings.Probe;
+        SettingsPage.DllPath.Text = settings.Dll;
         SerialPage.EncodingBox.ItemsSource = new[] { "utf-8", "gb18030", "us-ascii", "utf-16" };
         SerialPage.EncodingBox.SelectedItem = settings.SerialEncoding;
         if (SerialPage.EncodingBox.SelectedIndex < 0) SerialPage.EncodingBox.SelectedIndex = 0;

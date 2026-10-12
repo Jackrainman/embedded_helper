@@ -23,7 +23,7 @@ public partial class MainWindow
     { if (ProjectPage.RecentProjects.SelectedItem is string path) { ProjectPage.ProjectPath.Text = path; await Guard(() => LoadProjectAsync(path)); } }
     private async Task LoadProjectAsync(string path)
     {
-        if (observation != null || transition) throw new InvalidOperationException("请先停止采集再切换工程。");
+        if (observation != null || transition || !viewerPreparation.IsCompleted) throw new InvalidOperationException("请先停止采集并等待设置读取完成，再切换工程。");
         var loaded = await Task.Run(() => ProjectReader.Read(path));
         project = loaded;
         ProjectPage.ProjectPath.Text = loaded.Root;
@@ -37,6 +37,7 @@ public partial class MainWindow
         {
             ProjectPage.TargetBox.SelectedItem = loaded.Targets.FirstOrDefault(t => t.Name == watch?.Target);
         }
+        ApplyWatchToSetup(watch);
         RemotePage.RemoteHost.Text = ""; RemotePage.RemotePort.Text = "19011"; RemotePage.WebAddress.Text = "";
         var integration = VsCodeIntegration.ReadState(loaded.Root);
         RemotePage.GdbPort.Text = (integration?.GdbPort ?? 2331).ToString(CultureInfo.InvariantCulture);
@@ -59,6 +60,8 @@ public partial class MainWindow
     }
     private void TargetChanged(object? sender, SelectionChangedEventArgs e)
     {
+        InvalidateViewer();
+        Variables.Clear();
         if (Target is not { } target) { ProjectPage.ElfPath.Text = ""; return; }
         ProjectPage.ElfPath.Text = target.ElfPath;
         Variables.Clear();

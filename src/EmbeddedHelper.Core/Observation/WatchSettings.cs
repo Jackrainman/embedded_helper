@@ -2,7 +2,12 @@ using System.Text.Json;
 
 namespace EmbeddedHelper.Core;
 
-public sealed record WatchSettings(string Target, string[] Identities, int Rate);
+public sealed record WatchSettings(string Target, string[] Identities, int Rate)
+{
+    public string Transport { get; init; } = "local";
+    public string ProbeSerial { get; init; } = "";
+    public bool EnableRtt { get; init; } = true;
+}
 
 public static class WatchSettingsStore
 {

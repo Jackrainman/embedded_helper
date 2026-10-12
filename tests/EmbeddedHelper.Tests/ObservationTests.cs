@@ -9,6 +9,25 @@ namespace EmbeddedHelper.Tests;
 public sealed class ObservationTests : TestWorkspace
 {
     [Fact]
+    public async Task LegacyWatchSettingsRequireExplicitProbeAndNewFieldsRoundTripPerProject()
+    {
+        var legacy = JsonSerializer.Deserialize<WatchSettings>("{\"Target\":\"Debug\",\"Identities\":[\"global:value\"],\"Rate\":70}", Product.Json)!;
+        Assert.Equal("local", legacy.Transport);
+        Assert.Equal("", legacy.ProbeSerial);
+        Assert.True(legacy.EnableRtt);
+        var saved = legacy with { Transport = "remote", ProbeSerial = "123456", EnableRtt = false };
+        WatchSettingsStore.Save(root, saved);
+        var restored = (await WatchSettingsStore.LoadAsync(root))!;
+        Assert.Equal(saved.Target, restored.Target);
+        Assert.Equal(saved.Identities, restored.Identities);
+        Assert.Equal(70, restored.Rate);
+        Assert.Equal("remote", restored.Transport);
+        Assert.Equal("123456", restored.ProbeSerial);
+        Assert.False(restored.EnableRtt);
+        Assert.Null(await WatchSettingsStore.LoadAsync(Path.Combine(root, "another-project")));
+    }
+
+    [Fact]
     public async Task MissingSdkAndInvalidSerialSettingsFailBeforeDeviceAccess()
     {
         await using var session = new ObservationSession();

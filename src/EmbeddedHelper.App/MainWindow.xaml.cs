@@ -15,6 +15,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ObservationPage.DataContext = observationView;
+        ObservationSetupPage.DataContext = observationView;
         VersionLabel.Text = "v" + Product.Version;
         Title = "Embedded Helper " + Product.Version;
         InitializePageSettings();
@@ -22,6 +23,7 @@ public partial class MainWindow : Window
         EnvironmentCheck(null, null!);
         refresh.Tick += Refresh;
         refresh.Start();
+        pagesReady = true;
     }
 
     private void Report(string text) { StatusLabel.Text = text; try { App.Data.Log(text); } catch (IOException) { } }
