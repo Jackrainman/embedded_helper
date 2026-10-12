@@ -205,19 +205,20 @@ def main():
         (output / 'release-notes.md').write_text(
             f'# Embedded Helper {version}\n\n开发内测；硬件未验收。\n\n'
             '直接下载 EmbeddedHelper.exe，放在可写目录双击运行；首次启动自动准备内部组件，升级时保留旁边的 data。ZIP是同一EXE及说明的可选归档。\n\n'
+            '本次UI：紧凑专业布局；工程、查看变量、串口助手、设置与诊断四项导航。工程内维护观察及远程设置，查看页读回保存值，缺项引导补齐；仅RTT准备状态明确。\n\n'
             '已实现：G4/H7/F4/F1工程配置适配、EIDE上传切换与恢复、官方工具更新发现、版本锁定及回退、工程读取、ELF标量索引、变量/RTT采集入口、兼容远程JSON预览保存、独立串口收发/记录、设置与诊断。'
             'DWARF5需外部ARM readelf（自动识别EIDE安装），SEGGER库及设备驱动由用户安装。\n\n'
             '远程变量、网页RTT切换及其他模板尚未完成完整P0验收。'
             '支持采集时手动更新读计划；绘图采用有界WPF折线。\n\n'
             '硬件链路、1Mbps双向30分钟、目标停止/恢复、无预装运行时的纯净Windows均未验收，等待用户测试。'
-            '本次验证为真实EXE在构建机解压启动、五页GUI渲染、设置回读、CLI/工作进程自检及C#离线测试。'
+            f'本次验证为真实EXE在构建机解压启动、{smoke["pages"]}个主导航及{smoke.get("projectSections", 0)}个工程子页渲染、设置回读、CLI/工作进程自检及C#离线测试。'
             '收窄PATH和DOTNET_ROOT不等同纯净Windows测试。\n', encoding='utf-8')
         checks = [dict(id=identifier, status='passed', exitCode=0, method='automated', details=detail)
                   for identifier, detail in [
                       ('repository', 'scripts/verify.py --client: repository/Harness checks passed before publishing.'),
                       ('client-static', 'Locked restore, dotnet format verify-no-changes and Release build passed.'),
                       ('client-tests', 'C# tests passed; TRX produced by verify.py. Hardware was not accessed.'),
-                      ('package-smoke', f'Single EXE from original ZIP in Chinese/space path; first/repeat/moved WPF launch, five pages and settings; external CLI stdout/stderr/exit codes and internal CLI/worker self-tests; corrupted component refused. Real replacement and old-runtime removal from: {upgrade_from or "not tested"}. Elapsed including smoke: {startup}. See qa/smoke.json and page PNGs.')]]
+                      ('package-smoke', f'Single EXE from original ZIP in Chinese/space path; first/repeat/moved WPF launch, {smoke["pages"]} main pages and {smoke.get("projectSections", 0)} project sections and settings; external CLI stdout/stderr/exit codes and internal CLI/worker self-tests; corrupted component refused. Real replacement and old-runtime removal from: {upgrade_from or "not tested"}. Elapsed including smoke: {startup}. See qa/smoke.json and page PNGs.')]]
         evidence = dict(schemaVersion=1, version=version, commit=commit, packageSha256=digest,
                         releaseProfile='developer-preview', checks=checks,
                         deferredChecks=['clean-windows', 'g4-remote-flash', 'g4-local-variables-rtt',

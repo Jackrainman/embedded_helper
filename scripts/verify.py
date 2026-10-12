@@ -266,7 +266,12 @@ def main():
             snapshot = Path(temp)
             git(ROOT, 'checkout-index', '--all', '--prefix=' + snapshot.as_posix() + '/')
             # 从暂存副本执行，避免未暂存脚本让坏提交漏检。
-            return subprocess.call([sys.executable, str(snapshot / 'scripts/verify.py')], cwd=snapshot)
+            # A linked-worktree hook exports GIT_COMMON_DIR and other local variables.
+            # The snapshot tests create independent repositories and must not inherit them.
+            snapshot_env = os.environ.copy()
+            for name in git(ROOT, 'rev-parse', '--local-env-vars').decode().splitlines():
+                snapshot_env.pop(name, None)
+            return subprocess.call([sys.executable, str(snapshot / 'scripts/verify.py')], cwd=snapshot, env=snapshot_env)
     errors = validate(ROOT)
     for error in errors:
         print('FAIL', error)
