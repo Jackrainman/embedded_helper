@@ -200,7 +200,7 @@
     },
     {
       "id": "R-04",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "NFR-05",
         "REL-11"

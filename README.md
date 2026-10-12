@@ -63,7 +63,9 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 [Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
 
-当前开发Pre-release：[0.2.0-alpha.8](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.8)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.2.0-alpha.8/EmbeddedHelper.exe)，约98MiB。主线0.2.0-alpha.8补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
+已发布的开发内测版本：[0.2.0-alpha.8](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.8)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.2.0-alpha.8/EmbeddedHelper.exe)，约98MiB。该版本补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
+
+当前开发版本为0.2.1-alpha.0，已完成路径与稳定入口、页面职责、Core和测试组织优化；本地候选及升级验证见详细设计18.16，尚未发布。
 
 远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；完全退出并重新打开VS Code使用户环境变量生效。新接入使用EMBEDDED_HELPER_ENTRY指向外层EXE，通过--cli进入当前组件。旧工程须在远程配置页预览并应用以迁移命令；旧EMBEDDED_HELPER_HOME不被覆盖，尚未迁移的工程仍依赖旧组件目录，全部迁移前不要删除该目录。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。
 
