@@ -56,11 +56,14 @@ public partial class MainWindow
             {
                 Pages.SelectedIndex = i;
                 await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
-                UpdateLayout();
-                var bitmap = new RenderTargetBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Pbgra32);
-                bitmap.Render(this);
-                var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
-                using var output = File.Create(System.IO.Path.Combine(directory, $"page-{i}.png")); encoder.Save(output);
+                SaveSmokeScreenshot(directory, $"page-{i}.png");
+            }
+            Pages.SelectedIndex = 0;
+            for (int i = 0; i < ProjectSections.Items.Count; i++)
+            {
+                ProjectSections.SelectedIndex = i;
+                await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+                SaveSmokeScreenshot(directory, $"project-section-{i}.png");
             }
             PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, scalarCount = Variables.Count, toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested" });
             Close();
@@ -70,5 +73,14 @@ public partial class MainWindow
             PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "failed", exitCode = 1, error = ex.ToString() });
             closing = true; refresh.Stop(); Application.Current.Shutdown(1);
         }
+    }
+
+    private void SaveSmokeScreenshot(string directory, string file)
+    {
+        UpdateLayout();
+        var bitmap = new RenderTargetBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Pbgra32);
+        bitmap.Render(this);
+        var encoder = new PngBitmapEncoder(); encoder.Frames.Add(BitmapFrame.Create(bitmap));
+        using var output = File.Create(System.IO.Path.Combine(directory, file)); encoder.Save(output);
     }
 }
