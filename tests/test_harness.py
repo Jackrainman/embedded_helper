@@ -21,7 +21,9 @@ class HarnessTests(unittest.TestCase):
         self.root = Path(self.temp.name)
         for name in [*verify.DOCS, '.gitignore', '.gitattributes', 'global.json', 'VERSION',
                      'Directory.Build.props', '.editorconfig']:
-            shutil.copy2(ROOT / name, self.root / name)
+            target = self.root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(ROOT / name, target)
         for name in ['.harness', '.githooks', '.github', 'scripts', 'tests/fixtures']:
             shutil.copytree(ROOT / name, self.root / name)
 
@@ -39,6 +41,9 @@ class HarnessTests(unittest.TestCase):
         self.assertTrue(any('账本' in x for x in verify.validate(self.root)))
         (self.root / 'tests/fixtures/serial.bin').write_bytes(b'corrupt')
         self.assertTrue(any('样本' in x for x in verify.validate(self.root)))
+        # 规格文档已迁入.docs，留在根目录视为副本漂移。
+        shutil.copy2(self.root / verify.REQUIREMENTS, self.root / '01_需求规格说明书.md')
+        self.assertIn('文档不在单源清单: 01_需求规格说明书.md', verify.validate(self.root))
 
     def test_real_commit_hook_and_ignore_policy(self):
         def run(*args):

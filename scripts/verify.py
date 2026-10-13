@@ -16,8 +16,9 @@ if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
 ROOT = Path(__file__).resolve().parents[1]
-DOCS = {'README.md', 'AGENTS.md', '01_需求规格说明书.md',
-        '02_概要设计说明书.md', '03_详细设计说明书.md'}
+DOCS = {'README.md', 'AGENTS.md', '.docs/01_需求规格说明书.md',
+        '.docs/02_概要设计说明书.md', '.docs/03_详细设计说明书.md'}
+REQUIREMENTS = '.docs/01_需求规格说明书.md'
 GENERATED = {'.git', 'tmp', '.venv', '__pycache__', 'build', 'dist', '.ruff_cache',
              'bin', 'obj', 'TestResults', 'test-results', '.vs'}
 FORBIDDEN = {'data', 'node_modules', '.codex', '.claude'} | (GENERATED - {'.git'})
@@ -135,7 +136,7 @@ def validate(root):
         tasks = ledger['tasks']
         ids = [t['id'] for t in tasks]
         assert len(ids) == len(set(ids))
-        requirements = (root / '01_需求规格说明书.md').read_text(encoding='utf-8-sig')
+        requirements = (root / REQUIREMENTS).read_text(encoding='utf-8-sig')
         graph = {}
         for t in tasks:
             assert re.fullmatch(r'[A-Z0-9]+-\d+', t['id'])
