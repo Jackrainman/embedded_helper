@@ -1,6 +1,6 @@
 # Embedded Helper 设计文档
 
-文档版本0.13，2026-10-12。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含单EXE按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
+文档版本0.14，2026-10-17。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含单EXE按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
 
 ## 阅读顺序
 
@@ -58,6 +58,8 @@ SDK 10.0.402锁定在[global.json](global.json)，运行时10.0.12；根[VERSION
 `python scripts/verify.py --client-preflight`检查客户端工程和精确SDK，不构建；缺少时返回2。`--client`执行锁定恢复、格式检查、Release构建及C#测试；加`--configuration Debug`验证Debug布局，Worker由测试构建自动准备，不依赖Release目录。`python scripts/package_client.py`从干净已提交基线构建ZIP、解压后运行真实GUI/CLI自检并生成同包证据，产物在dist/candidate。旧Qt入口已退出。活动任务见[唯一账本](.harness/todo.json)，证据见详细设计18节。
 
 源码构建后的离线GUI验证使用 `python -X utf8 scripts/gui_smoke.py`；支持 `--configuration Debug`、`--app-dir <已有WPF构建目录>`、`--timeout <秒>`，不会自动构建。入口按脚本位置定位仓库，可从其他工作目录启动。样本复制至tmp隔离副本，不复制既有data；结果、日志和19张截图归test-results/gui-smoke，每配置自动保留最近一次成功证据，失败证据保留待排查。成功删除运行副本，失败保留现场；`--keep-workspace`可显式保留成功副本。
+
+本地产物保留和清理规则见根AGENTS。已保留的历史完整候选集中在`dist/candidates/版本-提交短SHA/`，同版本不同字节以用途后缀区分；旧临时验证材料集中在test-results/legacy，本次维护摘要见详细设计18.20～18.22。既有候选保持原源码/SDK绑定，本轮源码验证不替代重新打包验收。
 
 Python产品原型、对应测试、requirements.lock及Qt打包探针归档于Git基线 `a7f30e11a86b8a60f15f853202da19bfba99a4c4`，当前工作树移除，不建归档文档或第二套产品实现。需要复现时在tmp隔离副本恢复该提交；[样本](tests/fixtures/manifest.json)保留供C#验证，历史通过不自动成为C#通过。
 
