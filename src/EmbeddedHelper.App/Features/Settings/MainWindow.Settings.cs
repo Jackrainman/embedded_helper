@@ -71,8 +71,14 @@ public partial class MainWindow
     }
     private void PersistSettings()
     {
-        settings = settings with { Dll = SettingsPage.DllPath.Text, ReadElf = SettingsPage.ReadElfPath.Text, Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, Serial = ReadSerialSettings(), SerialEncoding = SerialPage.EncodingBox.SelectedItem as string ?? "utf-8" };
+        settings = settings with { Dll = SettingsPage.DllPath.Text, ReadElf = SettingsPage.ReadElfPath.Text, Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, SerialEncoding = SerialPage.EncodingBox.SelectedItem as string ?? settings.SerialEncoding };
         settingsStore.Save(settings);
+    }
+    private void SaveSerialPreferences(SerialSettings serialSettings)
+    {
+        settings = settings with { Serial = serialSettings, SerialEncoding = SerialPage.EncodingBox.SelectedItem as string ?? "utf-8" };
+        try { settingsStore.Save(settings); }
+        catch (Exception ex) { Report("串口已打开，但偏好保存失败：" + ex.Message); }
     }
     private void EnvironmentCheck(object? sender, RoutedEventArgs e)
     {

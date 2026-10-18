@@ -18,7 +18,7 @@ SCREENSHOTS = [f'{page}{size}.png' for size in ['', '-minimum']
                for page in [*[f'page-{i}' for i in range(4)],
                             *[f'project-section-{i}' for i in range(3)]]]
 SCREENSHOTS += [f'page-1-{name}.png' for name in
-                ['missing', 'missing-remote', 'missing-sdk', 'rtt-only', 'rtt-only-minimum']]
+                ['missing', 'missing-remote', 'missing-sdk', 'rtt-only', 'rtt-only-minimum', 'plot']]
 
 
 def write_json(path, value):

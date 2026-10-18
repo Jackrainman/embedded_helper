@@ -15,8 +15,7 @@ public partial class ObservationView : UserControl
     private void StopObservation(object? sender, RoutedEventArgs e) => StopObservationRequested?.Invoke(sender, e);
     public event RoutedEventHandler? ParseElfRequested;
     private void ParseElf(object? sender, RoutedEventArgs e) => ParseElfRequested?.Invoke(sender, e);
-    public event SizeChangedEventHandler? PlotSizeChangedRequested;
-    private void PlotSizeChanged(object? sender, SizeChangedEventArgs e) => PlotSizeChangedRequested?.Invoke(sender, e);
+    private void RttTextChanged(object sender, TextChangedEventArgs e) => RttText.ScrollToEnd();
     public event RoutedEventHandler? ClearRttRequested;
     private void ClearRtt(object? sender, RoutedEventArgs e) => ClearRttRequested?.Invoke(sender, e);
 }

@@ -57,7 +57,7 @@ class GuiSmokeTests(unittest.TestCase):
         self.assertEqual(len(self.runs()), 1)
         result = json.loads((self.runs()[0] / 'run.json').read_text(encoding='utf-8'))
         self.assertFalse(result['workspaceRetained'])
-        self.assertEqual(len(list(self.runs()[0].glob('*.png'))), 19)
+        self.assertEqual(len(list(self.runs()[0].glob('*.png'))), 20)
         self.assertEqual((self.root / 'tests/fixtures/G4 中文 空格/.eide/eide.yml').read_text(encoding='utf-8'), 'immutable fixture')
         self.assertEqual((self.app / 'data/private.json').read_text(encoding='utf-8'), 'must not copy')
 

@@ -1,6 +1,6 @@
 # Embedded Helper 设计文档
 
-文档版本0.14，2026-10-17。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含单EXE按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
+文档版本0.15，2026-10-18。已建立C#、WPF和.NET 10客户端，提供工程读取、ELF标量索引、变量/RTT采集入口、远程JSON维护、独立串口、设置与诊断。Windows x64自包含单EXE按开发内测交付；硬件验收由用户后续执行，不宣称完整P0通过。
 
 ## 阅读顺序
 
@@ -57,7 +57,7 @@ SDK 10.0.402锁定在[global.json](global.json)，运行时10.0.12；根[VERSION
 
 `python scripts/verify.py --client-preflight`检查客户端工程和精确SDK，不构建；缺少时返回2。`--client`执行锁定恢复、格式检查、Release构建及C#测试；加`--configuration Debug`验证Debug布局，Worker由测试构建自动准备，不依赖Release目录。`python scripts/package_client.py`从干净已提交基线构建ZIP、解压后运行真实GUI/CLI自检并生成同包证据，产物在dist/candidate。旧Qt入口已退出。活动任务见[唯一账本](.harness/todo.json)，证据见详细设计18节。
 
-源码构建后的离线GUI验证使用 `python -X utf8 scripts/gui_smoke.py`；支持 `--configuration Debug`、`--app-dir <已有WPF构建目录>`、`--timeout <秒>`，不会自动构建。入口按脚本位置定位仓库，可从其他工作目录启动。样本复制至tmp隔离副本，不复制既有data；结果、日志和19张截图归test-results/gui-smoke，每配置自动保留最近一次成功证据，失败证据保留待排查。成功删除运行副本，失败保留现场；`--keep-workspace`可显式保留成功副本。
+源码构建后的离线GUI验证使用 `python -X utf8 scripts/gui_smoke.py`；支持 `--configuration Debug`、`--app-dir <已有WPF构建目录>`、`--timeout <秒>`，不会自动构建。入口按脚本位置定位仓库，可从其他工作目录启动。样本复制至tmp隔离副本，不复制既有data；结果、日志和20张截图归test-results/gui-smoke，每配置自动保留最近一次成功证据，失败证据保留待排查。成功删除运行副本，失败保留现场；`--keep-workspace`可显式保留成功副本。
 
 本地产物保留和清理规则见根AGENTS。已保留的历史完整候选集中在`dist/candidates/版本-提交短SHA/`，同版本不同字节以用途后缀区分；旧临时验证材料集中在test-results/legacy，本次维护摘要见详细设计18.20～18.22。既有候选保持原源码/SDK绑定，本轮源码验证不替代重新打包验收。
 
@@ -71,7 +71,7 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 已发布的开发内测版本：[0.2.0-alpha.8](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.8)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.2.0-alpha.8/EmbeddedHelper.exe)，约98MiB。该版本补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
 
-当前开发版本为0.2.1-alpha.2，已完成紧凑WPF界面、四项导航及工程观察设置；源码构建与离线GUI验证见详细设计18.18～18.19。18.16的单EXE候选属于旧版本，本轮未重新打包或发布。
+当前开发版本为0.2.1-alpha.3，已提取观察准备快照、采集协调与独立绘图控件，观察/远程/串口关键状态采用绑定，串口会话与周期发送独立协调；源码构建与离线GUI验证见详细设计18.23。18.16的单EXE候选属于旧版本，本轮未重新打包或发布。
 
 远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；完全退出并重新打开VS Code使用户环境变量生效。新接入使用EMBEDDED_HELPER_ENTRY指向外层EXE，通过--cli进入当前组件。旧工程须在远程配置页预览并应用以迁移命令；旧EMBEDDED_HELPER_HOME不被覆盖，尚未迁移的工程仍依赖旧组件目录，全部迁移前不要删除该目录。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。
 

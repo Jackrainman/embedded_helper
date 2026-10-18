@@ -7,7 +7,7 @@ namespace EmbeddedHelper.Core;
 public sealed record ObservationRequest(string Dll, int ProbeSerial, string Host, int Port, string Device, string Interface, int SpeedKHz, int SampleRate, bool Rtt, Variable[] Variables, string SessionId = "", long Generation = 1);
 public sealed record ObservationEvent(string Kind, string Message, Dictionary<string, string>? Values = null, string? RttBase64 = null, long Sequence = 0, string SessionId = "", long Generation = 1, long ReadStartTicks = 0, long ReadEndTicks = 0, DateTimeOffset? ObservedAt = null);
 
-public sealed class ObservationSession : IAsyncDisposable
+public sealed class ObservationSession : IObservationSession
 {
     private Process? process;
     private Task? reader;

@@ -19,18 +19,18 @@ public partial class MainWindow
             ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf");
             await ParseElfAsync();
             if (Variables.Count(v => v.Variable.Supported) != 7) throw new InvalidDataException("标量类型自检失败。");
-            RemotePage.RemoteHost.Text = "test.example.invalid"; PreviewConfig(null, null!);
+            remoteView.Host = "test.example.invalid"; PreviewConfig(null, null!);
             if (plan == null) throw new InvalidDataException("远程配置预览失败。");
             var toolPackage = System.IO.Path.Combine(directory, "debug-lan.zip");
             if (File.Exists(toolPackage))
             {
                 await PrepareToolAsync(toolPackage);
-                RemotePage.UseEideUpload.IsChecked = true; RemotePage.GdbPort.Text = "2450"; RemotePage.WebAddress.Text = "http://test.example.invalid:8000";
+                remoteView.EideUpload = true; remoteView.GdbPort = "2450"; remoteView.Web = "http://test.example.invalid:8000";
                 PreviewIntegration(null, null!);
                 if (plan == null || plan.Changes.Length == 0) throw new InvalidDataException("一键接入预览失败。");
                 await ApplyConfigAsync();
                 await LoadProjectAsync(project!.Root);
-                if (RemotePage.UseEideUpload.IsChecked != true || RemotePage.GdbPort.Text != "2450" || RemotePage.WebAddress.Text != "http://test.example.invalid:8000") throw new InvalidDataException("远程配置读回失败。");
+                if (remoteView.EideUpload != true || remoteView.GdbPort != "2450" || remoteView.Web != "http://test.example.invalid:8000") throw new InvalidDataException("远程配置读回失败。");
                 ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf"); await ParseElfAsync();
                 PreviewIntegration(null, null!);
                 if (plan == null || plan.Changes.Length != 0) throw new InvalidDataException("重复接入非幂等。");
@@ -52,6 +52,7 @@ public partial class MainWindow
             await Guard(ConnectSerialAsync);
             if (serial != null || SerialPage.ConnectSerialButton.Content?.ToString() != "打开串口" || !SerialPage.ConnectSerialButton.IsEnabled || SerialPage.SerialConnectionLabel.Text != "未连接" || SerialPage.SerialConnectionLight.Fill != Brushes.Firebrick) throw new InvalidDataException("打开失败后串口按钮和红灯未恢复。");
             await SmokeObservationSettingsAsync(directory);
+            await SmokePresentationAsync(directory);
             Report("离线 GUI 自检：工程、ELF、设置与错误反馈通过；硬件未验收。");
             ProjectSections.SelectedIndex = 0;
             for (int i = 0; i < Pages.Items.Count; i++)
@@ -84,7 +85,7 @@ public partial class MainWindow
                 await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
                 SaveSmokeScreenshot(directory, $"project-section-{i}-minimum.png");
             }
-            PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, projectSections = ProjectSections.Items.Count, scalarCount = Variables.Count, observationSettings = "roundtrip-and-missing-config-passed", toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested" });
+            PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, projectSections = ProjectSections.Items.Count, scalarCount = Variables.Count, observationSettings = "roundtrip-and-missing-config-passed", toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested", presentation = "bindings-and-render-passed", plotSmoke });
             Close();
         }
         catch (Exception ex)
@@ -121,7 +122,7 @@ public partial class MainWindow
         ObservationSetupPage.SampleRate.Text = "999";
         foreach (var row in Variables) row.Selected = false;
         await PrepareViewerAsync();
-        if (preparedWatch == null || !ObservationPage.StartButton.IsEnabled || ObservationSetupPage.ProbeSerial.Text != "123456" || ObservationSetupPage.SampleRate.Text != "75" || Variables.Count(v => v.Selected) != 2) throw new InvalidDataException("查看页未读取保存值，或使用了未保存的界面值。");
+        if (prepared == null || !ObservationPage.StartButton.IsEnabled || prepared.Request.ProbeSerial != 123456 || prepared.Request.SampleRate != 75 || Variables.Count(v => v.Selected) != 2) throw new InvalidDataException("查看页未读取保存值，或使用了未保存的界面值。");
         var remotePath = project.RemotePath;
         var remoteText = File.Exists(remotePath) ? await File.ReadAllTextAsync(remotePath) : null;
         File.Delete(remotePath);
@@ -132,9 +133,9 @@ public partial class MainWindow
         ConfigureObservation(null, null!);
         if (Pages.SelectedIndex != 0 || ProjectSections.SelectedIndex != 2) throw new InvalidDataException("缺少远程配置时恢复入口未到远程配置。");
         await File.WriteAllTextAsync(remotePath, "{\"ServerName\":\"saved.example.invalid\",\"Port\":19011}");
-        RemotePage.RemoteHost.Text = "unsaved.example.invalid";
+        remoteView.Host = "unsaved.example.invalid";
         await PrepareViewerAsync();
-        if (preparedWatch == null || RemotePage.RemoteHost.Text != "saved.example.invalid" || ObservationSetupPage.EnableRtt.IsChecked == true) throw new InvalidDataException("未读取工程远程参数或远程RTT状态错误。");
+        if (preparedWatch == null || prepared.Request.Host != "saved.example.invalid" || prepared.Request.Rtt) throw new InvalidDataException("未读取工程远程参数或远程RTT状态错误。");
         if (remoteText == null) File.Delete(remotePath); else await File.WriteAllTextAsync(remotePath, remoteText);
         WatchSettingsStore.Save(root, saved with { Identities = ["missing:variable"] });
         await PrepareViewerAsync();
@@ -160,7 +161,7 @@ public partial class MainWindow
         Width = width; Height = height;
         WatchSettingsStore.Save(root, saved);
         await PrepareViewerAsync();
-        if (preparedWatch == null || observation != null) throw new InvalidDataException("配置读回失败或自检意外创建了采集会话。");
+        if (preparedWatch == null || acquisition.HasSession) throw new InvalidDataException("配置读回失败或自检意外创建了采集会话。");
     }
 
     private async Task SaveObservationSmokeStateAsync(string directory, string file)
