@@ -62,14 +62,45 @@ public sealed class SerialTests : TestWorkspace
         display.Append(new DataBlock(1, "RX", [0xe4]));
         display.Append(new DataBlock(2, "TX", [65]));
         display.Append(new DataBlock(3, "RX", [0xb8, 0xad]));
-        Assert.Equal("[TX] A[RX] 中", display.Text);
+        Assert.Equal("A中", display.Text);
+        Assert.Equal(new[] { "TX", "RX" }, display.Capture().Spans.Select(s => s.Direction));
         for (int i = 0; i < 50; i++) display.Append(new DataBlock(i + 4, "RX", [66]));
         Assert.InRange(display.Text.Length, 1, 40); Assert.True(display.TrimmedCharacters > 0);
         display.Configure("gb18030", false);
         var bytes = SerialSession.ParseSend("中文", false, "\r\n", SerialTextBuffer.GetEncoding("gb18030"));
         display.Append(new DataBlock(55, "TX", bytes));
-        Assert.Equal("[TX] 中文\r\n", display.Text);
+        Assert.Equal("中文\r\n", display.Text);
         Assert.Throws<System.Text.EncoderFallbackException>(() => SerialSession.ParseSend("中文", false, "", SerialTextBuffer.GetEncoding("us-ascii")));
+    }
+    [Fact]
+    public void FrozenSnapshotSurvivesAppendTrimClearAndEncodingChanges()
+    {
+        var display = new SerialTextBuffer(12, 3);
+        display.Append(new(1, "RX", System.Text.Encoding.UTF8.GetBytes("半行\r")));
+        display.Append(new(2, "RX", [10]));
+        var frozen = display.Capture();
+        display.Append(new(3, "RX", System.Text.Encoding.UTF8.GetBytes("新内容不会修改快照")));
+        Assert.InRange(display.Text.Length, 0, 12);
+        display.Clear(); display.Configure("us-ascii", true);
+        display.Append(new(4, "TX", [0x41])); display.Append(new(5, "TX", [0x42]));
+        Assert.Equal("4142", display.Text);
+        Assert.Equal("半行\r\n", frozen.Text);
+        Assert.Equal("utf-8", frozen.Mode);
+    }
+    [Fact]
+    public void DisplayClearKeepsDecoderButNewSessionResetsItAndBoundsFragments()
+    {
+        var display = new SerialTextBuffer(100, 4);
+        display.Append(new(1, "RX", [0xe4])); display.Clear();
+        display.Append(new(2, "RX", [0xb8, 0xad])); Assert.Equal("中", display.Text);
+        display.Append(new(3, "RX", [0xe4])); display.ResetDecoder();
+        display.Append(new(4, "RX", [65])); Assert.Equal("中A", display.Text);
+        for (var i = 0; i < 100; i++) display.Append(new(i + 5, i % 2 == 0 ? "RX" : "TX", [66]));
+        Assert.Equal(4, display.SpanCount); Assert.Equal("BBBB", display.Text);
+        Assert.True(display.TrimmedCharacters > 0);
+        var unicode = new SerialTextBuffer(1);
+        unicode.Append(new(1, "RX", System.Text.Encoding.UTF8.GetBytes("😀")));
+        Assert.Equal("", unicode.Text);
     }
     [Fact]
     public async Task SerialDisposedSessionRejectsReopenWithoutTouchingAPort()
