@@ -12,4 +12,6 @@
   <SolidColorBrush x:Key="ConsoleBrush" Color="#18283B"/>
   <SolidColorBrush x:Key="ConsoleText" Color="#D4E3F4"/>
   <SolidColorBrush x:Key="ConsoleMuted" Color="#B1C3D9"/>
+  <SolidColorBrush x:Key="SerialRxBrush" Color="#D4E3F4"/>
+  <SolidColorBrush x:Key="SerialTxBrush" Color="#66D9CF"/>
 </ResourceDictionary>

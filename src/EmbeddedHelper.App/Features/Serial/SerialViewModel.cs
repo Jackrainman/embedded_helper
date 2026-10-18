@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Windows.Media;
+using EmbeddedHelper.Core;
 
 namespace EmbeddedHelper.App;
 
@@ -12,6 +13,20 @@ public sealed class SerialViewModel : INotifyPropertyChanged
     public Brush ConnectionBrush { get; private set; } = Brushes.Firebrick;
     public bool CanStartPeriodic { get; private set; }
     public bool CanStopPeriodic { get; private set; }
+    public string PeriodicText { get; private set; } = "周期发送未启动";
+    public void UpdatePeriodic(PeriodicSendStatus status)
+    {
+        var text = status.State switch
+        {
+            PeriodicSendState.Running => $"周期发送中 · {status.Milliseconds} ms · 驱动已接受 {status.Count} 次",
+            PeriodicSendState.Stopping => $"正在停止周期发送 · 等待当前发送结束 · {status.Count} 次",
+            PeriodicSendState.Stopped => $"周期发送已停止 · 驱动已接受 {status.Count} 次",
+            PeriodicSendState.Faulted => "周期发送故障：" + status.Error,
+            _ => "周期发送未启动"
+        };
+        if (PeriodicText == text) return;
+        PeriodicText = text; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(PeriodicText)));
+    }
     public void Update(bool opening, bool closing, bool hasSession, bool connected, bool periodic, bool shuttingDown)
     {
         var busy = opening || closing || shuttingDown;

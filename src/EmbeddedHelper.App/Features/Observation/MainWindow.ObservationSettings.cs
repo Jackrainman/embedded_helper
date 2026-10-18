@@ -49,6 +49,8 @@ public partial class MainWindow
         observationView.Summary = "工程观察设置未就绪";
         observationView.VariablesEmpty = "尚无已配置变量\n请先在工程的观察设置中勾选并保存。";
         observationView.PlotEmpty = "工程设置就绪后可查看变量曲线";
+        observationView.RttEmpty = "尚未读取有效的 RTT 设置";
+        observationView.Status = "尚未就绪 · 未采集 · ELF 与固件匹配未核验";
         if (report) Report(message);
     }
     private void RefreshViewerRows() => observationView.VisibleRows = Variables.Where(v => v.Selected).ToArray();
@@ -92,7 +94,23 @@ public partial class MainWindow
             observationView.Series = [];
             Report("已读取工程观察设置；尚未连接设备。");
         }
-        catch (ObservationPreparationException ex) { ShowViewerIssue(ex.Message, true, ex.Area); }
+        catch (ObservationPreparationException ex)
+        {
+            if (project != loaded || Target != target || shutdownRequested) return;
+            ShowViewerIssue(ex.Message, true, ex.Area);
+            if (ex.SavedSettings is { } saved)
+            {
+                ApplyWatchToSetup(saved);
+                var indexed = ex.Index.ToDictionary(v => v.Identity);
+                observationView.VisibleRows = saved.Identities.Select(id => new VariableRow(indexed.GetValueOrDefault(id)
+                    ?? new Variable(id, id, 0, "未解析", 0, "未采集"))
+                { Selected = true }).ToArray();
+                observationView.Summary = $"已保存观察设置 · {saved.Rate} Hz · {saved.Identities.Length} 个变量 · 连接未就绪";
+                observationView.RttEmpty = saved.EnableRtt && saved.Transport == "local" ? "本地 RTT 已启用 · 等待配置就绪" : "工程设置未启用本地 RTT";
+                observationView.VariablesEmpty = saved.Identities.Length == 0 ? "本工程仅观察 RTT\n未配置观察变量。" : "已保存变量 · 配置就绪后可采集";
+                observationView.PlotEmpty = saved.Identities.Length == 0 ? "本工程仅观察 RTT，未启用变量曲线" : "已保存变量 · 连接就绪并开始采集后显示曲线";
+            }
+        }
         catch (Exception ex) { ShowViewerIssue(ex.Message); }
         finally { preparing = false; SyncObservationState(); }
     }

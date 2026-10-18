@@ -52,7 +52,7 @@ public sealed class SerialTextBuffer
     // A display clear must not corrupt a character already partially received.
     public void Clear() { spans.Clear(); Revision++; }
     public SerialTextSnapshot Capture() => new(Start, End, Array.AsReadOnly(spans.ToArray()), Mode);
-    public void Append(DataBlock block)
+    public void Append(DataBlock block, bool display = true)
     {
         if (!decoders.TryGetValue(block.Direction, out var decoder)) throw new ArgumentException("未知数据方向。");
         string value;
@@ -62,7 +62,7 @@ public sealed class SerialTextBuffer
             var chars = new char[encoding.GetMaxCharCount(block.Bytes.Length)];
             value = new string(chars, 0, decoder.GetChars(block.Bytes, chars, false));
         }
-        if (value.Length == 0) return;
+        if (!display || value.Length == 0) return;
         if (spans.Last is { } last && last.Value.Direction == block.Direction && last.Value.Text.Length + value.Length <= 1024)
             last.Value = last.Value with { Text = last.Value.Text + value };
         else spans.AddLast(new SerialTextSpan(End, block.Direction, value));

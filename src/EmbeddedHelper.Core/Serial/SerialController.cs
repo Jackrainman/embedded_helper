@@ -11,6 +11,7 @@ public sealed class SerialController
     public bool IsOpening { get; private set; }
     public bool IsClosing { get; private set; }
     public bool IsPeriodic => periodic.IsRunning;
+    public PeriodicSendStatus PeriodicStatus => periodic.Status;
     public event Action? Changed;
 
     public async Task OpenAsync(SerialSettings settings, string? records)

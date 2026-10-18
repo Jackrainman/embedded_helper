@@ -18,6 +18,7 @@ public partial class MainWindow
             await LoadProjectAsync(System.IO.Path.Combine(directory, "project"));
             ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf");
             await ParseElfAsync();
+            if (ProjectPage.ProjectDiagnostics.Text.Contains($"目标 {Target!.Name} 的 ELF 不存在")) throw new InvalidDataException("成功解析后仍保留旧ELF缺失诊断。");
             if (Variables.Count(v => v.Variable.Supported) != 7) throw new InvalidDataException("标量类型自检失败。");
             remoteView.Host = "test.example.invalid"; PreviewConfig(null, null!);
             if (plan == null) throw new InvalidDataException("远程配置预览失败。");
@@ -53,6 +54,7 @@ public partial class MainWindow
             if (serial != null || SerialPage.ConnectSerialButton.Content?.ToString() != "打开串口" || !SerialPage.ConnectSerialButton.IsEnabled || SerialPage.SerialConnectionLabel.Text != "未连接" || SerialPage.SerialConnectionLight.Fill != Brushes.Firebrick) throw new InvalidDataException("打开失败后串口按钮和红灯未恢复。");
             await SmokeObservationSettingsAsync(directory);
             await SmokePresentationAsync(directory);
+            await SmokeSerialAsync(directory);
             Report("离线 GUI 自检：工程、ELF、设置与错误反馈通过；硬件未验收。");
             ProjectSections.SelectedIndex = 0;
             for (int i = 0; i < Pages.Items.Count; i++)
@@ -85,7 +87,7 @@ public partial class MainWindow
                 await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
                 SaveSmokeScreenshot(directory, $"project-section-{i}-minimum.png");
             }
-            PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, projectSections = ProjectSections.Items.Count, scalarCount = Variables.Count, observationSettings = "roundtrip-and-missing-config-passed", toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested", presentation = "bindings-and-render-passed", plotSmoke });
+            PortableData.SaveFile(System.IO.Path.Combine(directory, "smoke.json"), new { status = "passed", exitCode = 0, version = Product.Version, pages = Pages.Items.Count, projectSections = ProjectSections.Items.Count, scalarCount = Variables.Count, observationSettings = "roundtrip-and-missing-config-passed", toolIntegration = File.Exists(toolPackage), method = "automated", hardware = "not-tested", presentation = "bindings-and-render-passed", plotSmoke, serialSmoke });
             Close();
         }
         catch (Exception ex)
@@ -129,6 +131,7 @@ public partial class MainWindow
         WatchSettingsStore.Save(root, saved with { Transport = "remote", EnableRtt = false });
         await PrepareViewerAsync();
         if (preparedWatch != null || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("缺少远程配置时未阻止采集。");
+        if (observationView.VisibleRows.Length != 2 || observationView.VisibleRows.Any(r => r.Address != "未解析") || !observationView.Summary.Contains("已保存") || !observationView.RttEmpty.Contains("未启用")) throw new InvalidDataException("缺远程配置时丢失已保存变量或显示错误RTT状态。");
         await SaveObservationSmokeStateAsync(directory, "page-1-missing-remote.png");
         ConfigureObservation(null, null!);
         if (Pages.SelectedIndex != 0 || ProjectSections.SelectedIndex != 2) throw new InvalidDataException("缺少远程配置时恢复入口未到远程配置。");
@@ -147,6 +150,7 @@ public partial class MainWindow
         SettingsPage.DllPath.Text = System.IO.Path.Combine(directory, "missing-sdk.dll");
         await PrepareViewerAsync();
         if (preparedWatch != null || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("缺少本机SDK时未阻止采集。");
+        if (observationView.VisibleRows.Length != 2 || observationView.VisibleRows.Any(r => r.Address == "未解析")) throw new InvalidDataException("缺SDK时丢失已解析变量。");
         await SaveObservationSmokeStateAsync(directory, "page-1-missing-sdk.png");
         ConfigureObservation(null, null!);
         if (Pages.SelectedIndex != 3) throw new InvalidDataException("缺少SDK时恢复入口未到设置与诊断。");

@@ -68,10 +68,25 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         var watch = File.ReadAllBytes(Path.Combine(root, ".embedded_helper", "watch.json"));
         var error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => Task.FromResult(new[] { value })));
         Assert.Equal(ObservationConfigurationArea.Remote, error.Area);
+        Assert.Equal(value.Identity, Assert.Single(error.SavedSettings!.Identities));
+        Assert.Empty(error.Index);
         File.WriteAllText(input.Project.RemotePath, "{\"ServerName\":\"saved.invalid\",\"Port\":19011}");
         error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => throw new IOException("ELF changed")));
         Assert.Equal(ObservationConfigurationArea.Project, error.Area);
         Assert.Equal(watch, File.ReadAllBytes(Path.Combine(root, ".embedded_helper", "watch.json")));
+    }
+    [Fact]
+    public async Task MissingSdkPreservesIndexedSavedVariablesWithoutCreatingReadyRequest()
+    {
+        var input = Inputs();
+        WatchSettingsStore.Save(root, new("Debug", [value.Identity], 100) { ProbeSerial = "123", EnableRtt = false });
+        var error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, "missing.dll", _ => Task.FromResult(new[] { value })));
+        Assert.Equal(ObservationConfigurationArea.Settings, error.Area);
+        Assert.False(error.SavedSettings!.EnableRtt);
+        Assert.Equal(value, Assert.Single(error.Index));
+        WatchSettingsStore.Save(root, new("Other", [value.Identity], 100) { ProbeSerial = "123" });
+        error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => Task.FromResult(new[] { value })));
+        Assert.Null(error.SavedSettings); Assert.Empty(error.Index);
     }
     [Fact]
     public async Task StopWaitsForStartAndDuplicateStartCannotCreateAnotherSession()

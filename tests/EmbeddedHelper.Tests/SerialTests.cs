@@ -32,6 +32,9 @@ public sealed class SerialTests : TestWorkspace
     {
         Assert.Equal(new byte[] { 0, 255, 10 }, SerialSession.ParseSend("00 FF 0A", true, "\n"));
         Assert.Throws<FormatException>(() => SerialSession.ParseSend("zz", true, ""));
+        var error = Assert.Throws<FormatException>(() => SerialSession.ParseSend("GG", true, ""));
+        Assert.Contains("非十六进制", error.Message); Assert.NotNull(error.InnerException);
+        Assert.Contains("两个字符", Assert.Throws<FormatException>(() => SerialSession.ParseSend("A", true, "")).Message);
         var data = new PortableData(root); data.Save("settings/check.json", new { value = "中文" });
         Assert.Equal("中文", data.Load("settings/check.json", () => new Dictionary<string, string>())["value"]);
     }
@@ -101,6 +104,18 @@ public sealed class SerialTests : TestWorkspace
         var unicode = new SerialTextBuffer(1);
         unicode.Append(new(1, "RX", System.Text.Encoding.UTF8.GetBytes("😀")));
         Assert.Equal("", unicode.Text);
+    }
+    [Fact]
+    public void ClearedQueuedDataIsDecodedWithoutReappearingInDisplay()
+    {
+        var display = new SerialTextBuffer();
+        display.Append(new(1, "RX", [0xe4]), false);
+        Assert.Empty(display.Text);
+        display.Append(new(2, "RX", [0xb8, 0xad]));
+        Assert.Equal("中", display.Text);
+        display.Clear(); display.Append(new(3, "RX", [65]), false);
+        display.Append(new(4, "TX", [66]));
+        Assert.Equal("B", display.Text);
     }
     [Fact]
     public async Task SerialDisposedSessionRejectsReopenWithoutTouchingAPort()

@@ -34,7 +34,12 @@ public partial class MainWindow : Window
     private void Report(string text) { StatusLabel.Text = text; try { App.Data.Log(text); } catch (IOException) { } }
     private async Task Guard(Func<Task> action)
     {
-        try { await action(); } catch (Exception ex) { Report("操作未完成：" + ex.Message); }
+        try { await action(); }
+        catch (Exception ex)
+        {
+            Report("操作未完成：" + ex.Message);
+            try { App.Data.Log(ex.ToString()); } catch (IOException) { }
+        }
     }
     private void Refresh(object? sender, EventArgs e)
     {

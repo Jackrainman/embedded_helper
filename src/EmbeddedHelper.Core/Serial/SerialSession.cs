@@ -18,6 +18,7 @@ public sealed class SerialSession : IAsyncDisposable
     private long driverErrors;
     private bool disposed, stopping;
     public ChannelReader<DataBlock> Display => display.Reader;
+    public long PublishedSequence => Interlocked.Read(ref sequence);
     public long Received => Interlocked.Read(ref received);
     public long Sent => Interlocked.Read(ref sent);
     public long Clipped => Interlocked.Read(ref clipped);
@@ -107,7 +108,17 @@ public sealed class SerialSession : IAsyncDisposable
         }
         finally { lifecycle.Release(); }
     }
-    public static byte[] ParseSend(string text, bool hex, string newline, Encoding? encoding = null) => hex
-        ? Convert.FromHexString(string.Concat(text.Where(c => !char.IsWhiteSpace(c))))
-        : (encoding ?? Encoding.UTF8).GetBytes(text + newline);
+    public static byte[] ParseSend(string text, bool hex, string newline, Encoding? encoding = null)
+    {
+        if (!hex) return (encoding ?? Encoding.UTF8).GetBytes(text + newline);
+        var compact = string.Concat(text.Where(c => !char.IsWhiteSpace(c)));
+        try { return Convert.FromHexString(compact); }
+        catch (FormatException ex)
+        {
+            var invalid = compact.FirstOrDefault(c => !Uri.IsHexDigit(c));
+            throw new FormatException(invalid != default
+                ? $"HEX 内容包含非十六进制字符“{invalid}”。请使用 0–9、A–F，例如 45 48 0D 0A。"
+                : "HEX 内容必须每两个字符组成一个字节，例如 0A；请补全最后一个字节。", ex);
+        }
+    }
 }

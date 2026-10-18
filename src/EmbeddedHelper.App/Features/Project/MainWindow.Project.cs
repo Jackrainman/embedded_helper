@@ -13,6 +13,12 @@ public partial class MainWindow
     private ProjectInfo? project;
     private bool loadingProject;
     private BuildTarget? Target => ProjectPage.TargetBox.SelectedItem as BuildTarget;
+    private void RefreshProjectDiagnostics(string? selectedElf = null)
+    {
+        if (project == null) return;
+        project = ProjectReader.RefreshFileDiagnostics(project, Target?.Name, selectedElf);
+        ProjectPage.ProjectDiagnostics.Text = string.Join("\n", project.Diagnostics.Prepend("读取完成；未运行工程钩子、构建或设备命令。"));
+    }
 
     private void BrowseProject(object? sender, RoutedEventArgs e)
     {

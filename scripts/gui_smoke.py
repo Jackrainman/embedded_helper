@@ -19,6 +19,7 @@ SCREENSHOTS = [f'{page}{size}.png' for size in ['', '-minimum']
                             *[f'project-section-{i}' for i in range(3)]]]
 SCREENSHOTS += [f'page-1-{name}.png' for name in
                 ['missing', 'missing-remote', 'missing-sdk', 'rtt-only', 'rtt-only-minimum', 'plot']]
+SCREENSHOTS += ['page-2-log.png', 'page-2-frozen.png', 'page-2-frozen-minimum.png']
 
 
 def write_json(path, value):
@@ -60,7 +61,11 @@ def validate_result(qa):
     if (not isinstance(result, dict) or result.get('status') != 'passed'
             or result.get('exitCode') != 0 or result.get('pages') != 4
             or result.get('projectSections') != 3
-            or result.get('observationSettings') != 'roundtrip-and-missing-config-passed'):
+            or result.get('observationSettings') != 'roundtrip-and-missing-config-passed'
+            or not isinstance(result.get('serialSmoke'), dict)
+            or result['serialSmoke'].get('status') != 'passed'
+            or result['serialSmoke'].get('source') != 'synthetic'
+            or result['serialSmoke'].get('hardware') != 'not-tested'):
         raise ValueError('GUI自检未通过全部页面及观察配置检查。')
     for name in SCREENSHOTS:
         with (qa / name).open('rb') as screenshot:

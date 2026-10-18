@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using EmbeddedHelper.Core;
 
 namespace EmbeddedHelper.App;
@@ -15,12 +16,15 @@ public partial class MainWindow
     private readonly SerialController serialController = new();
     private SerialSession? serial => serialController.Current;
     private bool serialOpening => serialController.IsOpening;
-    private bool serialClosing => serialController.IsClosing;
+    private bool serialClosing => serialController.IsClosing || serialDraining;
+    private bool serialDraining;
+    private Task? serialCloseTask;
     private readonly SerialViewModel serialView = new();
     private readonly SerialTextBuffer serialText = new();
     private readonly Stopwatch serialClock = new();
     private long lastReceived, lastSent;
     private double lastSerialTime;
+    private long clearThrough, skipDecodeThrough, displayRevision = -1;
 
     private void RefreshPorts(object? sender, RoutedEventArgs e)
     { try { var current = SerialPage.SerialPortBox.Text; SerialPage.SerialPortBox.ItemsSource = SerialPort.GetPortNames().Order().ToArray(); SerialPage.SerialPortBox.Text = current; } catch (Exception ex) { Report(ex.Message); } }
@@ -34,7 +38,8 @@ public partial class MainWindow
     {
         if (shutdownRequested || serial != null || serialOpening || serialClosing) throw new InvalidOperationException("请先关闭当前串口并等待完成。");
         var parameters = ReadSerialSettings();
-        serialText.Clear(); lastReceived = lastSent = 0; lastSerialTime = 0; serialClock.Restart();
+        serialText.ResetDecoder(); clearThrough = skipDecodeThrough = 0;
+        lastReceived = lastSent = 0; lastSerialTime = 0; serialClock.Restart();
         await serialController.OpenAsync(parameters, SerialPage.RecordSerial.IsChecked == true ? System.IO.Path.Combine(App.Data.Root, "serial", "records") : null);
         SaveSerialPreferences(parameters);
         if (!serialClosing) Report(parameters.Baud > 1000000 ? "实验波特率请求已被驱动接受；实际速率和链路完整性未验收。" : "串口已打开；发送结果表示驱动已接受，尚无对端确认。");
@@ -42,13 +47,31 @@ public partial class MainWindow
     private void UpdateSerialConnection()
     {
         serialView.Update(serialOpening, serialClosing, serial != null, serial?.Connected == true, serialController.IsPeriodic, shutdownRequested);
+        serialView.UpdatePeriodic(serialController.PeriodicStatus);
     }
-    private async Task CloseSerialAsync()
+    private Task CloseSerialAsync() => serialCloseTask is { IsCompleted: false } ? serialCloseTask : serialCloseTask = CloseSerialCoreAsync();
+    private async Task CloseSerialCoreAsync()
     {
-        var result = await serialController.CloseAsync();
-        serialClock.Stop();
-        if (result.PeriodicError != null) Report("周期发送已停止：" + result.PeriodicError);
-        SerialPage.SerialStats.Text = result.RecorderError != null ? "串口已关闭；记录失败：" + result.RecorderError : $"串口已关闭；记录缺口 {result.Discarded} 块。";
+        serialDraining = true; UpdateSerialConnection();
+        try
+        {
+            var closingSession = serial;
+            var result = await serialController.CloseAsync();
+            // Keep ownership until the accepted tail has been drained, including while the page is hidden.
+            if (closingSession != null)
+            {
+                while (closingSession.Display.TryPeek(out _))
+                {
+                    DrainSerialDisplay(closingSession);
+                    await Dispatcher.Yield(DispatcherPriority.Background);
+                }
+            }
+            RenderSerialLog();
+            serialClock.Stop();
+            if (result.PeriodicError != null) Report("周期发送已停止：" + result.PeriodicError);
+            SerialPage.SerialStats.Text = result.RecorderError != null ? "串口已关闭；记录失败：" + result.RecorderError : $"串口已关闭；记录缺口 {result.Discarded} 块。";
+        }
+        finally { serialDraining = false; UpdateSerialConnection(); }
     }
     private async void SendSerial(object? sender, RoutedEventArgs e) => await Guard(() => SendSerialAsync(CancellationToken.None));
     private async Task SendSerialAsync(CancellationToken token)
@@ -69,30 +92,42 @@ public partial class MainWindow
         await serialController.StartPeriodicAsync(SendSerialAsync, delay);
     });
     private void StopPeriodic(object? sender, RoutedEventArgs e) => serialController.StopPeriodic();
-    private void ClearSerial(object? sender, RoutedEventArgs e) { serialText.Clear(); SerialPage.SerialText.Clear(); }
+    private void ClearSerial(object? sender, RoutedEventArgs e)
+    {
+        clearThrough = serial?.PublishedSequence ?? 0;
+        serialText.Clear(); RenderSerialLog();
+    }
     private void SerialEncodingChanged(object? sender, RoutedEventArgs e)
     {
-        if (SerialPage.EncodingBox?.SelectedItem is not string encoding || SerialPage.HexDisplay == null || SerialPage.SerialText == null) return;
-        serialText.Configure(encoding, SerialPage.HexDisplay.IsChecked == true); SerialPage.SerialText.Clear();
+        if (SerialPage.EncodingBox?.SelectedItem is not string encoding || SerialPage.HexDisplay == null || SerialPage.LiveLog == null) return;
+        clearThrough = serial?.PublishedSequence ?? 0;
+        skipDecodeThrough = clearThrough;
+        serialText.Configure(encoding, SerialPage.HexDisplay.IsChecked == true); RenderSerialLog();
     }
     private void SelectSendHistory(object? sender, SelectionChangedEventArgs e)
     { if (SerialPage.SendHistoryBox.SelectedItem is string text) SerialPage.SendText.Text = text; }
     private void OpenRecords(object? sender, RoutedEventArgs e) => OpenDirectory(System.IO.Path.Combine(App.Data.Root, "serial", "records"));
+    private void DrainSerialDisplay(SerialSession session)
+    {
+        var started = Stopwatch.GetTimestamp();
+        for (var count = 0; count < 256 && Stopwatch.GetElapsedTime(started).TotalMilliseconds < 8 && session.Display.TryRead(out var block); count++)
+            if (block.Sequence > skipDecodeThrough) serialText.Append(block, block.Sequence > clearThrough);
+    }
+    private void RenderSerialLog()
+    {
+        if (displayRevision == serialText.Revision) return;
+        SerialPage.RenderLog(serialText.Capture()); displayRevision = serialText.Revision;
+    }
     private void RefreshSerial()
     {
         if (serial != null)
         {
-            var changed = false;
-            var started = Stopwatch.GetTimestamp();
-            for (var count = 0; count < 256 && Stopwatch.GetElapsedTime(started).TotalMilliseconds < 8 && serial.Display.TryRead(out var block); count++)
-            {
-                serialText.Append(block); changed = true;
-            }
-            if (SerialPage.IsVisible && SerialPage.PauseSerial.IsChecked != true && (changed || SerialPage.SerialText.Text != serialText.Text)) { SerialPage.SerialText.Text = serialText.Text; SerialPage.SerialText.ScrollToEnd(); }
+            DrainSerialDisplay(serial);
             var elapsed = serialClock.Elapsed.TotalSeconds;
             var delta = Math.Max(0.001, elapsed - lastSerialTime);
             SerialPage.SerialStats.Text = $"{(serialOpening ? "打开中" : serialClosing ? "关闭中" : serial.Connected ? "已连接" : "连接故障")} · RX {serial.Received:N0} B / {(serial.Received - lastReceived) / delta:N0} B/s · TX 驱动已接受 {serial.Sent:N0} B / {(serial.Sent - lastSent) / delta:N0} B/s\n显示队列丢弃 {serial.Clipped:N0} B · 历史裁剪 {serialText.TrimmedCharacters:N0} 字符 · 记录积压 {serial.Recorder?.QueuedBytes ?? 0:N0} B · 记录缺口 {serial.Recorder?.Discarded ?? 0} 块 / {serial.Recorder?.DiscardedBytes ?? 0:N0} B · 驱动错误通知 {serial.DriverErrors} · {serial.LastDriverError} · {serial.Error ?? serial.Recorder?.Error}";
             lastReceived = serial.Received; lastSent = serial.Sent; lastSerialTime = elapsed;
         }
+        if (SerialPage.IsVisible) RenderSerialLog();
     }
 }

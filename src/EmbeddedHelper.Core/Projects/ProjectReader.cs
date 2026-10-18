@@ -8,6 +8,17 @@ public sealed record ProjectInfo(string Root, string Name, string Family, string
 
 public static class ProjectReader
 {
+    private static string MissingElf(BuildTarget target) => $"目标 {target.Name} 的 ELF 不存在：{target.ElfPath}";
+    public static ProjectInfo RefreshFileDiagnostics(ProjectInfo project, string? selectedTarget = null, string? selectedElf = null)
+    {
+        var diagnostics = project.Diagnostics.Where(d => !project.Targets.Any(t => d == MissingElf(t))).ToList();
+        foreach (var target in project.Targets)
+        {
+            var path = target.Name == selectedTarget && selectedElf != null ? selectedElf : target.ElfPath;
+            if (!File.Exists(path)) diagnostics.Add(MissingElf(target));
+        }
+        return project with { Diagnostics = diagnostics.ToArray() };
+    }
     public static readonly JsonDocumentOptions JsonOptions = new() { CommentHandling = JsonCommentHandling.Skip, AllowTrailingCommas = true };
     public static ProjectInfo Read(string input)
     {
@@ -58,7 +69,7 @@ public static class ProjectReader
             int.TryParse(Text(upload, "speed", "0"), out var speed);
             if (cpu.Length == 0 || iface == "未知" || speed <= 0) diagnostics.Add($"目标 {targetName} 的 J-Link 参数不完整。");
             var elf = Path.GetFullPath(Path.Combine(Text(map, "outDir", "Build"), targetName, name + ".elf"), root);
-            if (!File.Exists(elf)) diagnostics.Add($"目标 {targetName} 的 ELF 不存在：{elf}");
+            if (!File.Exists(elf)) diagnostics.Add(MissingElf(new BuildTarget(targetName, cpu, iface, speed, elf)));
             return new BuildTarget(targetName, cpu, iface, speed, elf);
         }).ToArray();
         if (targets.Length == 0) throw new InvalidDataException("工程没有构建目标。");

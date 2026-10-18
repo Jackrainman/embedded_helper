@@ -7,6 +7,8 @@ public enum ObservationConfigurationArea { Project, Observation, Remote, Setting
 public sealed class ObservationPreparationException(ObservationConfigurationArea area, string message, Exception? inner = null) : Exception(message, inner)
 {
     public ObservationConfigurationArea Area { get; } = area;
+    public WatchSettings? SavedSettings { get; init; }
+    public Variable[] Index { get; init; } = [];
 }
 
 public sealed record PreparedObservation(string Root, string Target, WatchSettings Settings, ObservationRequest Request, Variable[] Index, string ElfPath, DateTime ElfStamp);
@@ -17,6 +19,8 @@ public static class ObservationPreparation
     public static async Task<PreparedObservation> PrepareAsync(ProjectInfo project, BuildTarget target, string elfPath, string dll, Func<string, Task<Variable[]>> index)
     {
         var area = ObservationConfigurationArea.Observation;
+        WatchSettings? saved = null;
+        Variable[] indexed = [];
         try
         {
             var watch = await WatchSettingsStore.LoadAsync(project.Root) ?? throw new InvalidDataException("工程还没有观察设置。请在工程的观察设置中配置并保存。");
@@ -24,6 +28,7 @@ public static class ObservationPreparation
             if (watch.Transport is not ("local" or "remote")) throw new InvalidDataException("工程中的连接方式无效，请重新保存观察设置。");
             if (watch.Rate is < 1 or > 1000 || watch.Identities == null || watch.Identities.Length > 64 || watch.Identities.Any(string.IsNullOrWhiteSpace) || watch.Identities.Distinct().Count() != watch.Identities.Length)
                 throw new InvalidDataException("工程采样率或变量列表无效，请在观察设置中重新保存。");
+            saved = watch;
             var host = "";
             var port = 19011;
             var probe = 0;
@@ -43,7 +48,6 @@ public static class ObservationPreparation
             area = ObservationConfigurationArea.Observation;
             var rtt = watch.EnableRtt && watch.Transport == "local";
             if (watch.Identities.Length == 0 && !rtt) throw new InvalidDataException("工程尚未选择观察变量或本地 RTT，请在观察设置中选择并保存。");
-            Variable[] indexed = [];
             if (watch.Identities.Length > 0)
             {
                 area = ObservationConfigurationArea.Project;
@@ -64,7 +68,7 @@ public static class ObservationPreparation
         }
         catch (Exception ex) when (ex is not ObservationPreparationException)
         {
-            throw new ObservationPreparationException(area, ex.Message, ex);
+            throw new ObservationPreparationException(area, ex.Message, ex) { SavedSettings = saved, Index = indexed };
         }
     }
 }

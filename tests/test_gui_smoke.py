@@ -41,7 +41,8 @@ class GuiSmokeTests(unittest.TestCase):
         (qa / 'project/.eide/eide.yml').write_text('edited isolated fixture')
         gui.write_json(qa / 'smoke.json', {
             'status': 'passed', 'exitCode': 0, 'pages': 4, 'projectSections': 3,
-            'observationSettings': 'roundtrip-and-missing-config-passed'})
+            'observationSettings': 'roundtrip-and-missing-config-passed',
+            'serialSmoke': {'status': 'passed', 'source': 'synthetic', 'hardware': 'not-tested'}})
         for name in gui.SCREENSHOTS:
             (qa / name).write_bytes(gui.PNG_SIGNATURE + b'wrapper fixture, not a real screenshot')
         return 0
@@ -57,7 +58,7 @@ class GuiSmokeTests(unittest.TestCase):
         self.assertEqual(len(self.runs()), 1)
         result = json.loads((self.runs()[0] / 'run.json').read_text(encoding='utf-8'))
         self.assertFalse(result['workspaceRetained'])
-        self.assertEqual(len(list(self.runs()[0].glob('*.png'))), 20)
+        self.assertEqual(len(list(self.runs()[0].glob('*.png'))), len(gui.SCREENSHOTS))
         self.assertEqual((self.root / 'tests/fixtures/G4 中文 空格/.eide/eide.yml').read_text(encoding='utf-8'), 'immutable fixture')
         self.assertEqual((self.app / 'data/private.json').read_text(encoding='utf-8'), 'must not copy')
 
@@ -91,6 +92,17 @@ class GuiSmokeTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     gui.run_smoke(self.app, timeout=timeout)
             launch.assert_not_called()
+
+    def test_missing_or_failed_serial_interaction_evidence_is_rejected(self):
+        def missing_serial(command, workspace, timeout):
+            self.fake_gui(command, workspace, timeout)
+            path = Path(command[-1]) / 'smoke.json'
+            report = json.loads(path.read_text(encoding='utf-8'))
+            report.pop('serialSmoke')
+            gui.write_json(path, report)
+            return 0
+        with patch.object(gui, 'run_process', side_effect=missing_serial), patch('builtins.print'):
+            self.assertEqual(gui.run_smoke(self.app), 1)
 
     def test_explicit_keep_and_cleanup_boundary(self):
         with patch.object(gui, 'run_process', side_effect=self.fake_gui), patch('builtins.print'):

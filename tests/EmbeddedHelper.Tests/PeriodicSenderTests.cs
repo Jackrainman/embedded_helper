@@ -21,11 +21,14 @@ public sealed class PeriodicSenderTests
             token.ThrowIfCancellationRequested();
         }, 10);
         await entered.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        Assert.Equal(PeriodicSendState.Running, sender.Status.State);
         Assert.Throws<InvalidOperationException>(() => { _ = sender.StartAsync(_ => Task.CompletedTask, 10); });
         var stop = sender.StopAsync();
         await cancelled.Task.WaitAsync(TimeSpan.FromSeconds(5)); Assert.False(stop.IsCompleted);
+        Assert.Equal(PeriodicSendState.Stopping, sender.Status.State);
         finish.SetResult(); await stop; await running;
         Assert.Equal(1, count); Assert.False(sender.IsRunning);
+        Assert.Equal(PeriodicSendState.Stopped, sender.Status.State);
     }
     [Fact]
     public async Task SendFailureClearsRunningStateAndDoesNotBecomeSuccess()
@@ -33,6 +36,9 @@ public sealed class PeriodicSenderTests
         var sender = new PeriodicSender();
         await Assert.ThrowsAsync<IOException>(() => sender.StartAsync(_ => throw new IOException("driver rejected"), 10));
         Assert.False(sender.IsRunning);
+        Assert.Equal(PeriodicSendState.Faulted, sender.Status.State);
+        Assert.Equal("driver rejected", sender.Status.Error);
+        Assert.Equal(0, sender.Status.Count);
         await Assert.ThrowsAsync<IOException>(sender.StopAsync);
         Assert.Throws<ArgumentException>(() => { _ = sender.StartAsync(_ => Task.CompletedTask, 9); });
     }
