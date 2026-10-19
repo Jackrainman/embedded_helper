@@ -7,6 +7,8 @@ namespace EmbeddedHelper.App;
 public partial class ObservationView : UserControl
 {
     public ObservationView() => InitializeComponent();
+    public event RoutedEventHandler? SaveVariablesRequested;
+    private void SaveVariables(object sender, RoutedEventArgs e) => SaveVariablesRequested?.Invoke(sender, e);
     public event RoutedEventHandler? ConfigureRequested;
     private void Configure(object? sender, RoutedEventArgs e) => ConfigureRequested?.Invoke(sender, e);
     public event RoutedEventHandler? StartObservationRequested;

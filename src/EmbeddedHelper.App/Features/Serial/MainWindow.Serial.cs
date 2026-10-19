@@ -27,8 +27,8 @@ public partial class MainWindow
     private long clearThrough, skipDecodeThrough, displayRevision = -1;
 
     private void RefreshPorts(object? sender, RoutedEventArgs e)
-    { try { var current = SerialPage.SerialPortBox.Text; SerialPage.SerialPortBox.ItemsSource = SerialPort.GetPortNames().Order().ToArray(); SerialPage.SerialPortBox.Text = current; } catch (Exception ex) { Report(ex.Message); } }
-    private SerialSettings ReadSerialSettings() => new(SerialPage.SerialPortBox.Text, int.Parse(SerialPage.BaudBox.Text, CultureInfo.InvariantCulture), SerialPage.DataBitsBox.SelectedIndex + 5, (Parity)SerialPage.ParityBox.SelectedItem, (StopBits)SerialPage.StopBitsBox.SelectedItem, (Handshake)SerialPage.FlowBox.SelectedItem);
+    { try { var current = SerialPortDiscovery.PortName(SerialPage.SerialPortBox.Text); var ports = SerialPortDiscovery.List(); SerialPage.SerialPortBox.ItemsSource = ports; SerialPage.SerialPortBox.Text = ports.FirstOrDefault(p => SerialPortDiscovery.PortName(p) == current) ?? current; } catch (Exception ex) { Report(ex.Message); } }
+    private SerialSettings ReadSerialSettings() => new(SerialPortDiscovery.PortName(SerialPage.SerialPortBox.Text), int.Parse(SerialPage.BaudBox.Text, CultureInfo.InvariantCulture), SerialPage.DataBitsBox.SelectedIndex + 5, (Parity)SerialPage.ParityBox.SelectedItem, (StopBits)SerialPage.StopBitsBox.SelectedItem, (Handshake)SerialPage.FlowBox.SelectedItem);
     private async void ToggleSerial(object? sender, RoutedEventArgs e) => await Guard(async () =>
     {
         if (serialOpening || serialClosing) return;

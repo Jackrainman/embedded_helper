@@ -133,7 +133,7 @@ public partial class MainWindow
             {
                 foreach (var row in Variables.Where(v => v.LatestValue != null)) row.Value = row.LatestValue + (acquisition.CanRetry || DateTimeOffset.UtcNow - row.LastObservedAt > TimeSpan.FromSeconds(3) ? " / 过期" : "");
                 if (rttDirty || wasPaused) { observationView.RttText = rttHistory.ToString(); rttDirty = false; }
-                if (displayDirty || wasPaused) { observationView.Series = Variables.Where(v => v.Selected && v.History.Count > 1).Take(16).Select(v => v.History.ToArray()).ToArray(); displayDirty = false; }
+                if (displayDirty || wasPaused) { var plotted = Variables.Where(v => v.Selected && v.History.Count > 1).Take(16).ToArray(); observationView.PlotLabels = plotted.Select(v => v.Variable.Name).ToArray(); observationView.Series = plotted.Select(v => v.History.ToArray()).ToArray(); displayDirty = false; }
             }
             wasPaused = observationView.Paused;
         }

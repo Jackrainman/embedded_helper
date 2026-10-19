@@ -19,7 +19,7 @@ public partial class SerialView : UserControl
             IsFrozen = true;
             FrozenLog.Heading = "历史快照";
             FrozenColumn.Width = new GridLength(1, GridUnitType.Star);
-            FrozenColumn.MinWidth = 120; LogColumns.ColumnDefinitions[2].MinWidth = 120;
+            FrozenColumn.MinWidth = 120; LogColumns.ColumnDefinitions[0].MinWidth = 120;
             SplitterColumn.Width = new GridLength(8);
             FrozenLog.Visibility = LogSplitter.Visibility = Visibility.Visible;
             FrozenLog.Render(snapshot);
@@ -33,7 +33,7 @@ public partial class SerialView : UserControl
             var reading = LiveLog.ReadPosition();
             IsFrozen = false;
             FrozenLog.Visibility = LogSplitter.Visibility = Visibility.Collapsed;
-            FrozenColumn.MinWidth = 0; LogColumns.ColumnDefinitions[2].MinWidth = 0;
+            FrozenColumn.MinWidth = 0; LogColumns.ColumnDefinitions[0].MinWidth = 0;
             FrozenColumn.Width = SplitterColumn.Width = new GridLength(0);
             FrozenLog.Release();
             UpdateLayout(); LiveLog.RestorePosition(reading);

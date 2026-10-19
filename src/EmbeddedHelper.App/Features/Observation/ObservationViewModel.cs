@@ -24,6 +24,8 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     private string summary = "读取本工程已保存的观察设置。", issue = "请打开工程，并在观察设置中保存连接方式、变量或 RTT。", configureText = "去观察设置";
     private string status = "未连接 · ELF 与固件匹配未核验", variablesEmpty = "尚无已配置变量\n请先在工程的观察设置中勾选并保存。", plotEmpty = "开始采集后显示曲线", rttEmpty = "等待本地 RTT 输出", rttText = "";
     private double[][] series = [];
+    private string[] plotLabels = [];
+    public string[] PlotLabels { get => plotLabels; set => Set(ref plotLabels, value); }
     public string Summary { get => summary; set => Set(ref summary, value); }
     public string Issue { get => issue; set => Set(ref issue, value); }
     public string ConfigureText { get => configureText; set => Set(ref configureText, value); }

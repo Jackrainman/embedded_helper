@@ -83,6 +83,7 @@ public partial class MainWindow
             else foreach (var row in Variables) row.Selected = false;
             elfStamp = ready.ElfStamp;
             RefreshViewerRows();
+            ApplyWatchToSetup(ready.Settings);
             prepared = ready; observationView.Ready = true;
             var request = ready.Request;
             var connection = request.Host.Length > 0 ? $"远程 {request.Host}:{request.Port}" : "本地探针 " + request.ProbeSerial;
@@ -122,8 +123,6 @@ public partial class MainWindow
             if (acquisition.HasSession || ObservationBusy || configurationBusy) throw new InvalidOperationException("请先停止采集并等待当前操作完成，再保存工程设置。");
             var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
             var target = Target ?? throw new InvalidOperationException("请先选择工程目标。");
-            ObservationSetupPage.VariableGrid.CommitEdit(DataGridEditingUnit.Cell, true);
-            ObservationSetupPage.VariableGrid.CommitEdit(DataGridEditingUnit.Row, true);
             var rate = int.Parse(ObservationSetupPage.SampleRate.Text, CultureInfo.InvariantCulture);
             var variables = Variables.Where(v => v.Selected).Select(v => v.Variable).ToArray();
             new ReadPlan(1, rate, variables).Validate();
