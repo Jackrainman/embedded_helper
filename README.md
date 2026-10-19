@@ -71,7 +71,7 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 已发布的开发内测版本：[0.2.0-alpha.8](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.8)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.2.0-alpha.8/EmbeddedHelper.exe)，约98MiB。该版本补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
 
-当前开发版本为0.3.0-alpha.0，包含观察准备及采集协调整理、串口双色日志、冻结快照分栏和状态恢复；源码构建与离线GUI验证见详细设计18.23～18.24。随包说明已同步四项导航及工程子页，当前版本的本地打包由任务H-05跟踪；硬件验收仍由C-05跟踪。
+当前开发版本为0.3.0-alpha.0，包含观察准备及采集协调整理、串口双色日志、冻结快照分栏和状态恢复；源码构建与离线GUI验证见详细设计18.23～18.24。2026-10-19已完成本地单EXE及ZIP打包，产物在dist/candidate，成品验证与摘要见详细设计18.25；尚未推送、打标签或发布该版本。硬件验收仍由C-05跟踪。
 
 远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；完全退出并重新打开VS Code使用户环境变量生效。新接入使用EMBEDDED_HELPER_ENTRY指向外层EXE，通过--cli进入当前组件。旧工程须在远程配置页预览并应用以迁移命令；旧EMBEDDED_HELPER_HOME不被覆盖，尚未迁移的工程仍依赖旧组件目录，全部迁移前不要删除该目录。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。
 
