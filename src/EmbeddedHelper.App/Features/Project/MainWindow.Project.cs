@@ -36,6 +36,8 @@ public partial class MainWindow
         {
             var loaded = await Task.Run(() => ProjectReader.Read(path));
             project = loaded;
+            activeTransport = "local";
+            SetTransportSelection();
             ProjectPage.ProjectPath.Text = loaded.Root;
             ProjectPage.ProjectSummary.Text = loaded.Name + " · " + loaded.Family;
             ProjectPage.McuLabel.Text = "MCU：" + loaded.Mcu + "\n来源：.eide/eide.yml";
@@ -69,7 +71,7 @@ public partial class MainWindow
             Report("已打开 " + loaded.Name + "。请选择 ELF 解析变量，或维护远程配置。");
             if (configuration.HasPending(loaded.Root)) Report("该工程有未完成写入，请到远程配置页恢复；外部修改不会被覆盖。");
         }
-        finally { loadingProject = false; SyncObservationState(); }
+        finally { loadingProject = false; SyncObservationState(); await RefreshProjectConnectionAsync(); }
     }
     private async void TargetChanged(object? sender, SelectionChangedEventArgs e)
     {
@@ -79,6 +81,6 @@ public partial class MainWindow
         ProjectPage.ElfPath.Text = target.ElfPath;
         Variables.Clear();
         remoteView.Invalidate();
-        if (!loadingProject) await LoadConnectionAsync();
+        if (!loadingProject) { await LoadConnectionAsync(); await RefreshProjectConnectionAsync(); }
     }
 }

@@ -16,7 +16,7 @@ public sealed record PreparedObservation(string Root, string Target, WatchSettin
 /// <summary>Reads saved project configuration only. Preparing never starts a worker or loads the SDK.</summary>
 public static class ObservationPreparation
 {
-    public static async Task<PreparedObservation> PrepareAsync(ProjectInfo project, BuildTarget target, string elfPath, string dll, Func<string, Task<Variable[]>> index, bool rttOnly = false)
+    public static async Task<PreparedObservation> PrepareAsync(ProjectInfo project, BuildTarget target, string elfPath, string dll, Func<string, Task<Variable[]>> index, bool rttOnly = false, string? transport = null)
     {
         var area = ObservationConfigurationArea.Observation;
         WatchSettings? saved = null;
@@ -30,7 +30,7 @@ public static class ObservationPreparation
                 throw new InvalidDataException("变量列表或采样率无效，请在 MCU Viewer 中重新保存。");
             saved = watch;
             area = ObservationConfigurationArea.Connection;
-            var connection = await ConnectionSettingsStore.LoadAsync(project.Root, target.Name)
+            var connection = await ConnectionSettingsStore.LoadAsync(project.Root, target.Name, transport)
                 ?? throw new InvalidDataException("请先为当前目标保存共享连接配置。");
             watch = watch with { Transport = connection.Transport, ProbeSerial = connection.ProbeSerial, EnableRtt = rttOnly };
             saved = watch;
@@ -45,11 +45,7 @@ public static class ObservationPreparation
             else
             {
                 area = ObservationConfigurationArea.Remote;
-                if (!File.Exists(project.RemotePath)) throw new InvalidDataException("工程没有远程配置。请在工程的远程配置中预览并应用连接参数。");
-                using var remote = JsonDocument.Parse(await File.ReadAllTextAsync(project.RemotePath), ProjectReader.JsonOptions);
-                host = remote.RootElement.GetProperty("ServerName").GetString() ?? "";
-                port = remote.RootElement.GetProperty("Port").GetInt32();
-                if (string.IsNullOrWhiteSpace(host) || port is < 1 or > 65535) throw new InvalidDataException("工程远程主机或端口无效，请重新配置。");
+                (host, port) = await ConnectionSettingsStore.RemoteEndpointAsync(project);
             }
             area = ObservationConfigurationArea.Observation;
             var rtt = rttOnly;

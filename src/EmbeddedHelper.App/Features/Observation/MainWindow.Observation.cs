@@ -32,6 +32,7 @@ public partial class MainWindow
         RttPage.StopButton.IsEnabled = rttSession && acquisition.HasSession && !acquisition.IsBusy;
         ProjectPage.TargetBox.IsEnabled = observationView.CanEdit;
         EnableConnectionFields(observationView.CanEdit);
+        UpdateProjectHeader();
     }
     private async void BrowseElf(object? sender, RoutedEventArgs e)
     {

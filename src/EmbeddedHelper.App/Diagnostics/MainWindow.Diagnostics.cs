@@ -15,6 +15,8 @@ public partial class MainWindow
         try
         {
             Directory.CreateDirectory(directory);
+            UpdateProjectHeader();
+            if (GlobalTransport.IsEnabled || !ProjectStateLabel.Text.Contains("未打开项目")) throw new InvalidDataException("未打开项目状态错误。");
             await LoadProjectAsync(System.IO.Path.Combine(directory, "project"));
             ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf");
             await ParseElfAsync();
@@ -53,6 +55,7 @@ public partial class MainWindow
             await Guard(ConnectSerialAsync);
             if (serial != null || SerialPage.ConnectSerialButton.Content?.ToString() != "打开串口" || !SerialPage.ConnectSerialButton.IsEnabled || SerialPage.SerialConnectionLabel.Text != "未连接" || SerialPage.SerialConnectionLight.Fill != Brushes.Firebrick) throw new InvalidDataException("打开失败后串口按钮和红灯未恢复。");
             await SmokeObservationSettingsAsync(directory);
+            await SmokeProjectStatusAsync(directory);
             await SmokePresentationAsync(directory);
             await SmokeSerialAsync(directory);
             Report("离线 GUI 自检：工程、ELF、设置与错误反馈通过；硬件未验收。");
@@ -128,6 +131,7 @@ public partial class MainWindow
         if (prepared == null || !ObservationPage.StartButton.IsEnabled || prepared.Request.ProbeSerial != 123456 || prepared.Request.SampleRate != 75 || Variables.Count(v => v.Selected) != 2) throw new InvalidDataException("查看页未读取保存值，或使用了未保存的界面值。");
         var remotePath = project.RemotePath;
         var remoteText = File.Exists(remotePath) ? await File.ReadAllTextAsync(remotePath) : null;
+        activeTransport = "remote"; SetTransportSelection(); // Simulate a previously selected remote configuration being removed.
         File.Delete(remotePath);
         WatchSettingsStore.Save(root, saved with { Transport = "remote", EnableRtt = false });
         await PrepareViewerAsync();
@@ -141,6 +145,7 @@ public partial class MainWindow
         await PrepareViewerAsync();
         if (preparedWatch == null || prepared.Request.Host != "saved.example.invalid" || prepared.Request.Rtt) throw new InvalidDataException("未读取工程远程参数或远程RTT状态错误。");
         if (remoteText == null) File.Delete(remotePath); else await File.WriteAllTextAsync(remotePath, remoteText);
+        activeTransport = "local"; SetTransportSelection();
         WatchSettingsStore.Save(root, saved with { Identities = ["missing:variable"] });
         await PrepareViewerAsync();
         if (preparedWatch != null || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("ELF缺少保存变量时未阻止采集。");
@@ -169,6 +174,43 @@ public partial class MainWindow
         WatchSettingsStore.Save(root, saved);
         await PrepareViewerAsync();
         if (preparedWatch == null || acquisition.HasSession) throw new InvalidDataException("配置读回失败或自检意外创建了采集会话。");
+    }
+
+    private async Task SmokeProjectStatusAsync(string directory)
+    {
+        var loaded = project!;
+        var remotePath = loaded.RemotePath;
+        var remoteText = File.Exists(remotePath) ? await File.ReadAllTextAsync(remotePath) : null;
+        File.Delete(remotePath);
+        await RefreshProjectConnectionAsync();
+        if (activeTransport != "local" || GlobalTransport.SelectedIndex != 0 || ProjectStateLabel.Foreground != Brushes.LightGreen || ConnectionStateLabel.Text != "未连接")
+            throw new InvalidDataException("本地默认状态或已就绪状态错误。");
+        await Guard(() => SelectTransportAsync("remote"));
+        if (activeTransport != "local" || GlobalTransport.SelectedIndex != 0 || !StatusLabel.Text.Contains("项目未配置远程连接"))
+            throw new InvalidDataException("缺少远程连接时未保留原选择。");
+        await File.WriteAllTextAsync(remotePath, "{\"ServerName\":\"saved.invalid\",\"Port\":19011,\"WebUrl\":\"http://saved.invalid:8000\"}");
+        await SelectTransportAsync("remote");
+        if (activeTransport != "remote" || GlobalTransport.SelectedIndex != 1 || ProjectStateLabel.Foreground != Brushes.LightGreen)
+            throw new InvalidDataException("有效远程连接切换失败。");
+        await PrepareViewerAsync();
+        if (prepared?.Request.Host != "saved.invalid" || prepared.Request.Rtt) throw new InvalidDataException("MCU Viewer未使用顶部连接选择。");
+        preparing = true; SyncObservationState();
+        await Guard(() => SelectTransportAsync("local"));
+        if (GlobalTransport.IsEnabled || activeTransport != "remote") throw new InvalidDataException("连接处理中允许切换。");
+        preparing = false; SyncObservationState();
+        File.Delete(remotePath);
+        await RefreshProjectConnectionAsync();
+        if (ProjectStateLabel.Foreground != Brushes.Salmon || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("远程配置丢失未显示红色。");
+        SaveSmokeScreenshot(directory, "header-invalid-remote.png");
+        await SelectTransportAsync("local");
+        if (remoteText != null) await File.WriteAllTextAsync(remotePath, remoteText);
+        await RefreshProjectConnectionAsync();
+        ConnectionSettingsStore.Save(loaded.Root, new(Target!.Name, "local", "123456"));
+        var watchBefore = await File.ReadAllTextAsync(System.IO.Path.Combine(loaded.Root, ".embedded_helper", "watch.json"));
+        await LoadConnectionAsync();
+        await PrepareViewerAsync();
+        if (prepared?.Request.ProbeSerial != 123456 || ConnectionPage.ProbeSerial.Text != "123456") throw new InvalidDataException("共享连接未同步。");
+        if (watchBefore != await File.ReadAllTextAsync(System.IO.Path.Combine(loaded.Root, ".embedded_helper", "watch.json"))) throw new InvalidDataException("连接切换修改了变量配置。");
     }
 
     private async Task SaveObservationSmokeStateAsync(string directory, string file)

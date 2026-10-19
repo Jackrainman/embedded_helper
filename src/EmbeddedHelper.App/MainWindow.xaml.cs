@@ -57,7 +57,7 @@ public partial class MainWindow : Window
         shutdownRequested = true; SyncObservationState();
         // Let the cancelled Closing event return before calling Close again, even when cleanup completes synchronously.
         await Dispatcher.Yield(DispatcherPriority.Background);
-        await Guard(async () => { await viewerPreparation; while (indexing || loadingProject || configurationBusy) await Task.Delay(25); await CloseSerialAsync(); await StopObservationAsync(); try { PersistSettings(); } catch (Exception ex) { Report("输入无效，保留上次设置：" + ex.Message); } refresh.Stop(); closing = true; Close(); });
+        await Guard(async () => { await viewerPreparation; while (indexing || loadingProject || configurationBusy || preparing) await Task.Delay(25); await CloseSerialAsync(); await StopObservationAsync(); try { PersistSettings(); } catch (Exception ex) { Report("输入无效，保留上次设置：" + ex.Message); } refresh.Stop(); closing = true; Close(); });
         if (!closing) { shutdownRequested = false; SyncObservationState(); }
     }
 }

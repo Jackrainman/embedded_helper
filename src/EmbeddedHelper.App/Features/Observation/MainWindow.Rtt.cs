@@ -12,7 +12,7 @@ public partial class MainWindow
         if (loaded == null || target == null) { RttPage.ConnectionSummary.Text = "请先打开工程并选择目标。"; return; }
         try
         {
-            var connection = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name);
+            var connection = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name, activeTransport);
             if (project != loaded || Target != target) return;
             RttPage.ConnectionSummary.Text = connection == null ? "请先保存当前目标的共享连接。" :
                 $"{loaded.Name} / {target.Name} · " + (connection.Transport == "remote" ? "远程 RTT 网页" : $"本地探针 {connection.ProbeSerial} · RTT Up 0");
@@ -33,17 +33,17 @@ public partial class MainWindow
         preparing = true; SyncObservationState();
         try
         {
-            var connection = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name)
+            var connection = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name, activeTransport)
                 ?? throw new InvalidOperationException("请先保存当前目标的共享连接。");
             if (connection.Transport == "remote")
             {
-                var uri = await ConnectionSettingsStore.RemoteRttUriAsync(loaded, target.Name);
+                var uri = await ConnectionSettingsStore.RemoteRttUriAsync(loaded, target.Name, activeTransport);
                 Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
                 RttPage.Status.Text = "已打开远程 RTT 网页；日志与停止在网页操作。返回 MCU Viewer 前请手动停止网页 RTT。";
                 return;
             }
             var ready = await ObservationPreparation.PrepareAsync(loaded, target, "", SettingsPage.DllPath.Text,
-                _ => throw new InvalidOperationException("RTT 不应解析 ELF。"), rttOnly: true);
+                _ => throw new InvalidOperationException("RTT 不应解析 ELF。"), rttOnly: true, transport: activeTransport);
             if (shutdownRequested) return;
             rttSession = true;
             ResetObservationDisplay(); RttPage.RttText.Clear();

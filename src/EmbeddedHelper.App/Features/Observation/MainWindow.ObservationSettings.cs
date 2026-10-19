@@ -33,12 +33,12 @@ public partial class MainWindow
     private async Task LoadConnectionAsync()
     {
         var loaded = project; var target = Target;
+        ConnectionPage.ProbeSerial.Text = "";
         if (loaded == null || target == null) { ConnectionPage.ProbeSerial.Text = ""; return; }
         try
         {
             var saved = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name);
             if (project != loaded || Target != target) return;
-            ConnectionPage.TransportBox.SelectedIndex = saved?.Transport == "remote" ? 1 : 0;
             ConnectionPage.ProbeSerial.Text = saved?.ProbeSerial ?? "";
             ConnectionPage.SetupStatus.Text = saved == null ? "当前目标尚未保存连接。" : "已读取共享连接；旧 watch.json 连接字段可兼容使用。修改后请保存。";
         }
@@ -49,10 +49,11 @@ public partial class MainWindow
         if (!observationView.CanEdit) throw new InvalidOperationException("请先停止采集并等待当前操作结束。");
         var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
         var target = Target ?? throw new InvalidOperationException("请选择目标。");
-        ConnectionSettingsStore.Save(loaded.Root, new(target.Name, ConnectionPage.TransportBox.SelectedIndex == 1 ? "remote" : "local", ConnectionPage.ProbeSerial.Text.Trim()));
+        ConnectionSettingsStore.Save(loaded.Root, new(target.Name, activeTransport, ConnectionPage.ProbeSerial.Text.Trim()));
         InvalidateViewer();
         ConnectionPage.SetupStatus.Text = "共享连接已保存；变量列表和采样率未改动。";
         await RefreshRttConnectionAsync();
+        await RefreshProjectConnectionAsync();
     });
     private void InvalidateViewer()
     {
@@ -93,7 +94,7 @@ public partial class MainWindow
             if (indexing || acquisition.IsBusy || configurationBusy) throw new InvalidOperationException("请等待当前操作完成。");
             if (loaded == null || target == null) throw new ObservationPreparationException(ObservationConfigurationArea.Project, "请先打开工程并选择目标。");
             var tool = SettingsPage.ReadElfPath.Text;
-            var ready = await ObservationPreparation.PrepareAsync(loaded, target, ProjectPage.ElfPath.Text, SettingsPage.DllPath.Text, path => ElfIndexService.ReadAsync(path, tool));
+            var ready = await ObservationPreparation.PrepareAsync(loaded, target, ProjectPage.ElfPath.Text, SettingsPage.DllPath.Text, path => ElfIndexService.ReadAsync(path, tool), transport: activeTransport);
             if (shutdownRequested || project != loaded || Target != target) return;
             Variables.Clear();
             foreach (var variable in ready.Index) Variables.Add(new VariableRow(variable) { Selected = ready.Settings.Identities.Contains(variable.Identity) });
@@ -134,6 +135,7 @@ public partial class MainWindow
         if (variables.Length == 0) throw new InvalidOperationException("请至少添加一个变量；RTT 请到 RTT 监视。");
         var legacy = await WatchSettingsStore.LoadAsync(loaded.Root);
         if (project != loaded || Target != target || !observationView.CanEdit) throw new InvalidOperationException("工程或会话已变化，请重试保存。");
+        if (legacy?.Target != target.Name) legacy = null;
         var watch = new WatchSettings(target.Name, variables.Select(v => v.Identity).ToArray(), rate)
         { Transport = legacy?.Transport ?? "local", ProbeSerial = legacy?.ProbeSerial ?? "", EnableRtt = false };
         WatchSettingsStore.Save(loaded.Root, watch);

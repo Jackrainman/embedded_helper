@@ -35,7 +35,7 @@ public partial class MainWindow
             remoteView.Preview = "已应用预览中的配置。保留本地条目；未执行构建、烧录或调试。";
             Report(remoteView.Preview);
         }
-        finally { configurationBusy = false; remoteView.Busy = false; SyncObservationState(); }
+        finally { configurationBusy = false; remoteView.Busy = false; SyncObservationState(); await RefreshProjectConnectionAsync(); }
     }
     private void PreviewIntegration(object? sender, RoutedEventArgs e)
     {
@@ -70,7 +70,7 @@ public partial class MainWindow
             remoteView.Preview = conflicts.Length == 0 ? "已检查未完成事务，能确认归属的写入已恢复。" : "以下文件有外部修改，未覆盖；请按事务备份人工处理：\n" + string.Join("\n", conflicts) + "\n备份：" + configuration.JournalFor(root);
             InvalidateViewer(); Report(remoteView.Preview);
         }
-        finally { configurationBusy = false; remoteView.Busy = false; SyncObservationState(); }
+        finally { configurationBusy = false; remoteView.Busy = false; SyncObservationState(); await RefreshProjectConnectionAsync(); }
     });
     private async void OpenWeb(object? sender, RoutedEventArgs e)
     {

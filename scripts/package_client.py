@@ -210,14 +210,14 @@ def main():
             '远程变量、网页RTT切换及其他模板尚未完成完整P0验收。'
             '支持采集时手动更新读计划；绘图采用有界WPF折线。串口支持收发双色日志、冻结快照分栏及实时侧独立清屏。\n\n'
             '硬件链路、1Mbps双向30分钟、目标停止/恢复、无预装运行时的纯净Windows均未验收，等待用户测试。'
-            '本次验证为真实EXE在构建机解压启动、四项导航及三个工程子页渲染、串口合成日志交互、设置回读、CLI/工作进程自检及C#离线测试。'
+            '本次验证为真实EXE在构建机解压启动、五项导航及三个工程子页渲染、串口合成日志交互、设置回读、CLI/工作进程自检及C#离线测试。'
             '收窄PATH和DOTNET_ROOT不等同纯净Windows测试。\n', encoding='utf-8')
         checks = [dict(id=identifier, status='passed', exitCode=0, method='automated', details=detail)
                   for identifier, detail in [
                       ('repository', 'scripts/verify.py --client: repository/Harness checks passed before publishing.'),
                       ('client-static', 'Locked restore, dotnet format verify-no-changes and Release build passed.'),
                       ('client-tests', 'C# tests passed; TRX produced by verify.py. Hardware was not accessed.'),
-                      ('package-smoke', f'Single EXE from original ZIP in Chinese/space path; first/repeat/moved WPF launch, four navigation pages, three project sections, synthetic serial interaction and settings; external CLI stdout/stderr/exit codes and internal CLI/worker self-tests; corrupted component refused. Real replacement and old-runtime removal from: {upgrade_from or "not tested"}. Elapsed including smoke: {startup}. See qa/smoke.json and page PNGs.')]]
+                      ('package-smoke', f'Single EXE from original ZIP in Chinese/space path; first/repeat/moved WPF launch, five navigation pages, three project sections, synthetic serial interaction and settings; external CLI stdout/stderr/exit codes and internal CLI/worker self-tests; corrupted component refused. Real replacement and old-runtime removal from: {upgrade_from or "not tested"}. Elapsed including smoke: {startup}. See qa/smoke.json and page PNGs.')]]
         evidence = dict(schemaVersion=1, version=version, commit=commit, packageSha256=digest,
                         releaseProfile='developer-preview', checks=checks,
                         deferredChecks=['clean-windows', 'g4-remote-flash', 'g4-local-variables-rtt',

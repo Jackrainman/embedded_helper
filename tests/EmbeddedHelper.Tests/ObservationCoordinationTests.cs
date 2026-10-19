@@ -119,6 +119,26 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         await Assert.ThrowsAsync<InvalidDataException>(() => ConnectionSettingsStore.RemoteRttUriAsync(input.Project, "Debug"));
     }
     [Fact]
+    public async Task ExplicitTransportOverridesLegacyWithoutWritingAndRemoteNeedsEndpoint()
+    {
+        var input = Inputs();
+        WatchSettingsStore.Save(root, new("Debug", [value.Identity], 100) { Transport = "remote", ProbeSerial = "123" });
+        var path = Path.Combine(root, ".embedded_helper", "watch.json");
+        var before = File.ReadAllBytes(path);
+        var ready = await ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll,
+            _ => Task.FromResult(new[] { value }), transport: "local");
+        Assert.Equal("", ready.Request.Host); Assert.Equal(123, ready.Request.ProbeSerial);
+        var error = await Assert.ThrowsAsync<InvalidDataException>(() => ConnectionSettingsStore.RemoteEndpointAsync(input.Project));
+        Assert.Equal("项目未配置远程连接", error.Message);
+        File.WriteAllText(input.Project.RemotePath, "{\"ServerName\":\"saved.invalid\",\"Port\":0}");
+        await Assert.ThrowsAsync<InvalidDataException>(() => ConnectionSettingsStore.RemoteEndpointAsync(input.Project));
+        File.WriteAllText(input.Project.RemotePath, "{\"ServerName\":\"saved.invalid\",\"Port\":19011}");
+        ready = await ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll,
+            _ => Task.FromResult(new[] { value }), transport: "remote");
+        Assert.Equal("saved.invalid", ready.Request.Host);
+        Assert.Equal(before, File.ReadAllBytes(path));
+    }
+    [Fact]
     public async Task StopWaitsForStartAndDuplicateStartCannotCreateAnotherSession()
     {
         var session = new FakeSession { StartGate = new(TaskCreationOptions.RunContinuationsAsynchronously) };

@@ -6,7 +6,7 @@ public sealed record ConnectionSettings(string Target, string Transport, string 
 
 public static class ConnectionSettingsStore
 {
-    public static async Task<ConnectionSettings?> LoadAsync(string root, string target)
+    public static async Task<ConnectionSettings?> LoadAsync(string root, string target, string? transport = null)
     {
         var path = Path.Combine(root, ".embedded_helper", "connection.json");
         ConnectionSettings? connection;
@@ -18,9 +18,11 @@ public static class ConnectionSettingsStore
             var legacy = await WatchSettingsStore.LoadAsync(root);
             connection = legacy == null ? null : new(legacy.Target, legacy.Transport, legacy.ProbeSerial);
         }
-        if (connection == null) return null;
+        if (connection == null) return transport == "remote" ? new(target, "remote", "") : null;
+        if (string.IsNullOrWhiteSpace(connection.Target)) throw new InvalidDataException("连接配置缺少目标。");
+        if (connection.Target != target) return transport == "remote" ? new(target, "remote", "") : null;
+        if (transport != null) connection = connection with { Transport = transport };
         Validate(connection);
-        if (connection.Target != target) return null;
         return connection;
     }
     public static void Validate(ConnectionSettings settings)
@@ -35,9 +37,22 @@ public static class ConnectionSettingsStore
         Validate(settings);
         PortableData.SaveFile(Path.Combine(root, ".embedded_helper", "connection.json"), settings);
     }
-    public static async Task<Uri> RemoteRttUriAsync(ProjectInfo project, string target)
+    public static async Task<(string Host, int Port)> RemoteEndpointAsync(ProjectInfo project)
     {
-        var connection = await LoadAsync(project.Root, target);
+        if (!File.Exists(project.RemotePath)) throw new InvalidDataException("项目未配置远程连接");
+        try
+        {
+            using var remote = JsonDocument.Parse(await File.ReadAllTextAsync(project.RemotePath), ProjectReader.JsonOptions);
+            var host = remote.RootElement.GetProperty("ServerName").GetString() ?? "";
+            var port = remote.RootElement.GetProperty("Port").GetInt32();
+            if (string.IsNullOrWhiteSpace(host) || port is < 1 or > 65535) throw new InvalidDataException("远程主机或端口无效。");
+            return (host, port);
+        }
+        catch (Exception ex) { throw new InvalidDataException("项目远程连接配置错误：" + ex.Message, ex); }
+    }
+    public static async Task<Uri> RemoteRttUriAsync(ProjectInfo project, string target, string? transport = null)
+    {
+        var connection = await LoadAsync(project.Root, target, transport);
         if (connection?.Transport != "remote") throw new InvalidDataException("请在连接配置中选择远程 IP 并保存。");
         using var remote = JsonDocument.Parse(await File.ReadAllTextAsync(project.RemotePath), ProjectReader.JsonOptions);
         var web = remote.RootElement.TryGetProperty("WebUrl", out var value) ? value.GetString() : null;

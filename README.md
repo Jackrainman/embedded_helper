@@ -59,7 +59,7 @@ SDK 10.0.402锁定在[global.json](global.json)，运行时10.0.12；根[VERSION
 
 `python scripts/verify.py --client-preflight`检查客户端工程和精确SDK，不构建；缺少时返回2。`--client`执行锁定恢复、格式检查、Release构建及C#测试；加`--configuration Debug`验证Debug布局，Worker由测试构建自动准备，不依赖Release目录。`python scripts/package_client.py`从干净已提交基线构建ZIP、解压后运行真实GUI/CLI自检并生成同包证据，产物在dist/candidate。旧Qt入口已退出。活动任务见[唯一账本](.harness/todo.json)，证据见详细设计18节。
 
-源码构建后的离线GUI验证使用 `python -X utf8 scripts/gui_smoke.py`；支持 `--configuration Debug`、`--app-dir <已有WPF构建目录>`、`--timeout <秒>`，不会自动构建。入口按脚本位置定位仓库，可从其他工作目录启动。样本复制至tmp隔离副本，不复制既有data；结果、日志和23张截图归test-results/gui-smoke，每配置自动保留最近一次成功证据，失败证据保留待排查。成功删除运行副本，失败保留现场；`--keep-workspace`可显式保留成功副本。
+源码构建后的离线GUI验证使用 `python -X utf8 scripts/gui_smoke.py`；支持 `--configuration Debug`、`--app-dir <已有WPF构建目录>`、`--timeout <秒>`，不会自动构建。入口按脚本位置定位仓库，可从其他工作目录启动。样本复制至tmp隔离副本，不复制既有data；结果、日志和26张截图归test-results/gui-smoke，每配置自动保留最近一次成功证据，失败证据保留待排查。成功删除运行副本，失败保留现场；`--keep-workspace`可显式保留成功副本。
 
 本地产物保留和清理规则见根AGENTS。已保留的历史完整候选集中在`dist/candidates/版本-提交短SHA/`，同版本不同字节以用途后缀区分；旧临时验证材料集中在test-results/legacy，本次维护摘要见详细设计18节。既有候选保持原源码/SDK绑定，本轮源码验证不替代重新打包验收。
 
@@ -82,3 +82,5 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 串口打开/关闭合并为单按钮，绿灯表示驱动连接正常，红灯表示未连接或故障，附带文字；切换期间禁用重复操作。程序图标和页首logo使用用户提供的原图。
 
 主导航为工程、MCU Viewer、RTT监视、串口助手、设置与诊断。工程内含工程概览、连接配置与远程配置。MCU Viewer负责搜索添加变量、采样率及曲线；RTT监视负责本地Up 0日志和远程网页入口，两者共用连接且一次仅持有一个采集会话。共享连接显式保存，旧watch.json连接字段兼容读取；RTT无需ELF，变量采集不隐式启用RTT。本机DLL与readelf路径在设置与诊断维护。远程网页停止仍需手动操作。
+
+顶部统一显示工程/目标、配置状态及本地/远程选择。每次打开工程默认本地，绿色只代表配置有效，实际采集状态单独显示。远程未配置时提示并保留原选择；采集中禁止切换。连接方式选择不自动连接，也不改变量配置。
