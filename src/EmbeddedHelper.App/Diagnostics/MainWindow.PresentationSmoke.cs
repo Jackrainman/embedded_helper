@@ -33,14 +33,14 @@ public partial class MainWindow
         observationView.Busy = true;
         if (ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("准备期间开始按钮未禁用。");
         SyncObservationState();
-        observationView.RttText = "离线合成 RTT 显示，不代表硬件输出。";
+        RttPage.RttText.Text = "离线合成 RTT 显示，不代表硬件输出。";
         var series = Enumerable.Range(0, 16).Select(row => Enumerable.Range(0, 2000).Select(i => Math.Sin(i * 0.03 + row) + row * 0.15).ToArray()).ToArray();
         series[0][1001] = 8;
         observationView.Series = series;
         observationView.Status = "离线模拟绘图 · 16 条曲线 × 2000 点 · 未连接设备";
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         UpdateLayout();
-        if (ObservationPage.Plot.Series.Length != 16 || ObservationPage.RttText.Text != observationView.RttText || ObservationPage.PlotEmpty.Visibility != Visibility.Collapsed) throw new InvalidDataException("绘图或文本绑定未生效。");
+        if (ObservationPage.Plot.Series.Length != 16 || RttPage.RttText.Text != RttPage.RttText.Text || ObservationPage.PlotEmpty.Visibility != Visibility.Collapsed) throw new InvalidDataException("绘图或文本绑定未生效。");
         var plot = ObservationPage.Plot;
         var bitmap = new RenderTargetBitmap((int)plot.ActualWidth, (int)plot.ActualHeight, 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(plot);
@@ -60,7 +60,7 @@ public partial class MainWindow
             return new { frames = 30, elapsedMs = watch.Elapsed.TotalMilliseconds, allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocated };
         }
         plotSmoke = new { source = "synthetic", series = 16, pointsPerSeries = 2000, sameSnapshotRedraw = Measure(false), snapshotUpdates = Measure(true), longRunning = "not-tested" };
-        observationView.Series = []; observationView.RttText = "";
+        observationView.Series = []; RttPage.RttText.Text = "";
         await PrepareViewerAsync();
     }
 }

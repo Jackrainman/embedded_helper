@@ -40,7 +40,7 @@ class GuiSmokeTests(unittest.TestCase):
         qa = Path(command[-1])
         (qa / 'project/.eide/eide.yml').write_text('edited isolated fixture')
         gui.write_json(qa / 'smoke.json', {
-            'status': 'passed', 'exitCode': 0, 'pages': 4, 'projectSections': 3,
+            'status': 'passed', 'exitCode': 0, 'pages': 5, 'projectSections': 3,
             'observationSettings': 'roundtrip-and-missing-config-passed',
             'serialSmoke': {'status': 'passed', 'source': 'synthetic', 'hardware': 'not-tested'}})
         for name in gui.SCREENSHOTS:

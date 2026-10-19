@@ -15,7 +15,7 @@ public partial class MainWindow
     private object? serialSmoke;
     private async Task SmokeSerialAsync(string directory)
     {
-        Pages.SelectedIndex = 2;
+        Pages.SelectedIndex = 3;
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         serialText.Configure("utf-8", false);
         var sequence = 0;
@@ -52,7 +52,7 @@ public partial class MainWindow
         if (serial != null || live.PlainText != beforeFailure) throw new InvalidDataException("连接失败清除了历史。");
         serialText.ResetDecoder(); Append("RX", "新会话\r\n");
         if (!live.PlainText.StartsWith(beforeFailure, StringComparison.Ordinal)) throw new InvalidDataException("重置会话丢失显示历史。");
-        Pages.SelectedIndex = 0; Pages.SelectedIndex = 2;
+        Pages.SelectedIndex = 0; Pages.SelectedIndex = 3;
         if (!live.PlainText.Contains("新会话")) throw new InvalidDataException("切页丢失日志。");
         SerialPage.ToggleFreeze(); frozen = SerialPage.FrozenLog.PlainText;
         serialText.Configure("us-ascii", true); RenderSerialLog();

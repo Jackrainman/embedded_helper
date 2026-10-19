@@ -10,10 +10,11 @@
     <TabControl x:Name="Pages" Style="{StaticResource NavigationTabs}" SelectionChanged="PagesChanged">
       <TabItem Header="工程"><TabControl x:Name="ProjectSections" Margin="18,16,18,0">
         <TabItem Header="工程概览"><local:ProjectView x:Name="ProjectPage" BrowseProjectRequested="BrowseProject" OpenProjectRequested="OpenProject" TargetChangedRequested="TargetChanged" BrowseElfRequested="BrowseElf" ParseElfRequested="ParseElf" OpenRecentRequested="OpenRecent"/></TabItem>
-        <TabItem Header="观察设置"><local:ObservationSetupView x:Name="ObservationSetupPage" SaveRequested="SaveObservationSettings" ParseElfRequested="ParseElf"/></TabItem>
+        <TabItem Header="连接配置"><local:ConnectionView x:Name="ConnectionPage" SaveRequested="SaveConnection"/></TabItem>
         <TabItem Header="远程配置"><local:RemoteView x:Name="RemotePage" OpenWebRequested="OpenWeb" PreviewIntegrationRequested="PreviewIntegration" PreviewConfigRequested="PreviewConfig" PreviewRemoveIntegrationRequested="PreviewRemoveIntegration" RecoverConfigRequested="RecoverConfig" ApplyConfigRequested="ApplyConfig"/></TabItem>
       </TabControl></TabItem>
-      <TabItem Header="查看变量"><local:ObservationView x:Name="ObservationPage" StartObservationRequested="StartObservation" StopObservationRequested="StopObservation" ParseElfRequested="ParseElf" ClearRttRequested="ClearRtt" ConfigureRequested="ConfigureObservation"/></TabItem>
+      <TabItem Header="MCU Viewer"><local:ObservationView x:Name="ObservationPage" StartObservationRequested="StartObservation" StopObservationRequested="StopObservation" ParseElfRequested="ParseElf" ConfigureRequested="ConfigureObservation"/></TabItem>
+      <TabItem Header="RTT 监视"><local:RttView x:Name="RttPage" StartRequested="StartRtt" StopRequested="StopObservation" ConfigureRequested="ConfigureConnection" ClearRequested="ClearRtt"/></TabItem>
       <TabItem Header="串口助手"><local:SerialView x:Name="SerialPage" RefreshPortsRequested="RefreshPorts" ToggleSerialRequested="ToggleSerial" SerialEncodingChangedRequested="SerialEncodingChanged" ClearSerialRequested="ClearSerial" SelectSendHistoryRequested="SelectSendHistory" SendSerialRequested="SendSerial" StartPeriodicRequested="StartPeriodic" StopPeriodicRequested="StopPeriodic" OpenRecordsRequested="OpenRecords"/></TabItem>
       <TabItem Header="设置与诊断"><local:SettingsView x:Name="SettingsPage" BrowseDllRequested="BrowseDll" SaveSettingsRequested="SaveSettings" EnvironmentCheckRequested="EnvironmentCheck" OpenLogsRequested="OpenLogs" RefreshToolsRequested="RefreshTools" DownloadToolRequested="DownloadTool" ImportToolRequested="ImportTool" BindCliRequested="BindCli"/></TabItem>
     </TabControl>

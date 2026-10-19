@@ -25,7 +25,7 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         var result = await ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => Task.FromResult(new[] { value }));
         WatchSettingsStore.Save(root, new("Debug", [], 999) { ProbeSerial = "999" });
         Assert.Equal(75, result.Request.SampleRate); Assert.Equal(123456, result.Request.ProbeSerial);
-        Assert.Equal("", result.Request.Host); Assert.True(result.Request.Rtt); Assert.Equal(value, Assert.Single(result.Request.Variables));
+        Assert.Equal("", result.Request.Host); Assert.False(result.Request.Rtt); Assert.Equal(value, Assert.Single(result.Request.Variables));
     }
     [Fact]
     public async Task RemotePreparationReadsSavedEndpointAndSuppressesRtt()
@@ -42,9 +42,9 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         var input = Inputs();
         WatchSettingsStore.Save(root, new("Debug", [], 100) { ProbeSerial = "123" });
         Task<Variable[]> Never(string _) => throw new InvalidOperationException("must not index");
-        var result = await ObservationPreparation.PrepareAsync(input.Project, input.Target, "missing.elf", input.Dll, Never);
+        var result = await ObservationPreparation.PrepareAsync(input.Project, input.Target, "missing.elf", input.Dll, Never, true);
         Assert.Empty(result.Index); Assert.Empty(result.Request.Variables); Assert.True(result.Request.Rtt);
-        var error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, "missing.elf", "missing.dll", Never));
+        var error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, "missing.elf", "missing.dll", Never, true));
         Assert.Equal(ObservationConfigurationArea.Settings, error.Area);
     }
     [Theory]
@@ -58,7 +58,7 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         var input = Inputs();
         WatchSettingsStore.Save(root, new(target, [identity], rate) { Transport = transport, ProbeSerial = probe });
         var error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => Task.FromResult(new[] { value })));
-        Assert.Equal(ObservationConfigurationArea.Observation, error.Area);
+        Assert.Equal(transport == "unknown" || probe == "" ? ObservationConfigurationArea.Connection : ObservationConfigurationArea.Observation, error.Area);
     }
     [Fact]
     public async Task PreparationFailureRoutesRemoteAndElfErrorsWithoutWritingInputs()
@@ -87,6 +87,36 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         WatchSettingsStore.Save(root, new("Other", [value.Identity], 100) { ProbeSerial = "123" });
         error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => Task.FromResult(new[] { value })));
         Assert.Null(error.SavedSettings); Assert.Empty(error.Index);
+    }
+    [Fact]
+    public async Task SharedConnectionMigrationIsExplicitAndTargetScoped()
+    {
+        Inputs();
+        WatchSettingsStore.Save(root, new("Debug", [value.Identity], 75) { ProbeSerial = "123" });
+        var path = Path.Combine(root, ".embedded_helper", "watch.json");
+        var before = File.ReadAllBytes(path);
+        Assert.Equal("123", (await ConnectionSettingsStore.LoadAsync(root, "Debug"))!.ProbeSerial);
+        Assert.False(File.Exists(Path.Combine(root, ".embedded_helper", "connection.json")));
+        ConnectionSettingsStore.Save(root, new("Debug", "local", "456"));
+        Assert.Equal("456", (await ConnectionSettingsStore.LoadAsync(root, "Debug"))!.ProbeSerial);
+        Assert.Null(await ConnectionSettingsStore.LoadAsync(root, "Other"));
+        Assert.Equal(before, File.ReadAllBytes(path));
+        File.WriteAllText(Path.Combine(root, ".embedded_helper", "connection.json"), "{}");
+        await Assert.ThrowsAsync<InvalidDataException>(() => ConnectionSettingsStore.LoadAsync(root, ""));
+    }
+    [Fact]
+    public async Task RttNeedsOnlySharedConnectionAndRemoteUsesSavedHttpUrl()
+    {
+        var input = Inputs();
+        ConnectionSettingsStore.Save(root, new("Debug", "local", "123"));
+        var ready = await ObservationPreparation.PrepareAsync(input.Project, input.Target, "", input.Dll,
+            _ => throw new InvalidOperationException("no ELF required"), true);
+        Assert.True(ready.Request.Rtt); Assert.Empty(ready.Request.Variables);
+        ConnectionSettingsStore.Save(root, new("Debug", "remote", ""));
+        File.WriteAllText(input.Project.RemotePath, "{\"WebUrl\":\"http://saved.invalid:8000\"}");
+        Assert.Equal("saved.invalid", (await ConnectionSettingsStore.RemoteRttUriAsync(input.Project, "Debug")).Host);
+        File.WriteAllText(input.Project.RemotePath, "{\"WebUrl\":\"file:///secret\"}");
+        await Assert.ThrowsAsync<InvalidDataException>(() => ConnectionSettingsStore.RemoteRttUriAsync(input.Project, "Debug"));
     }
     [Fact]
     public async Task StopWaitsForStartAndDuplicateStartCannotCreateAnotherSession()

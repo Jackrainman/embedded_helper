@@ -67,7 +67,7 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 ## 启动、产物与发布
 
-直接交付 `EmbeddedHelper.exe`，另提供同字节EXE的可选ZIP、清单及摘要。将EXE放在可写目录并双击，无需Python或预装.NET；J-Link软件和设备驱动由用户安装。DWARF4内置解析，DWARF5调用已有ARM readelf（自动定位EIDE工具链，亦可在设置中填写）。软件在自身目录创建data；升级保留data，工程观察设置保存到.embedded_helper/watch.json。
+直接交付 `EmbeddedHelper.exe`，另提供同字节EXE的可选ZIP、清单及摘要。将EXE放在可写目录并双击，无需Python或预装.NET；J-Link软件和设备驱动由用户安装。DWARF4内置解析，DWARF5调用已有ARM readelf（自动定位EIDE工具链，亦可在设置中填写）。软件在自身目录创建data；升级保留data，工程变量设置保存到.embedded_helper/watch.json，共享连接保存到.embedded_helper/connection.json。
 
 [Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
 
@@ -81,4 +81,4 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 串口打开/关闭合并为单按钮，绿灯表示驱动连接正常，红灯表示未连接或故障，附带文字；切换期间禁用重复操作。程序图标和页首logo使用用户提供的原图。
 
-紧凑专业界面采用工程、查看变量、串口助手、设置与诊断四项导航。工程内含工程概览、观察设置与远程配置。先选择目标与 ELF，在观察设置中搜索并添加变量、设置连接方式/采样率/本地 RTT并保存；查看变量页读取工程保存值，缺项提示补全。本机 DLL 与 readelf 路径在设置与诊断维护；串口独立使用。样式资源及原生GUI验证见详细设计18节。
+主导航为工程、MCU Viewer、RTT监视、串口助手、设置与诊断。工程内含工程概览、连接配置与远程配置。MCU Viewer负责搜索添加变量、采样率及曲线；RTT监视负责本地Up 0日志和远程网页入口，两者共用连接且一次仅持有一个采集会话。共享连接显式保存，旧watch.json连接字段兼容读取；RTT无需ELF，变量采集不隐式启用RTT。本机DLL与readelf路径在设置与诊断维护。远程网页停止仍需手动操作。

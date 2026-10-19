@@ -48,6 +48,7 @@ public partial class MainWindow
                 ProjectPage.TargetBox.SelectedItem = loaded.Targets.FirstOrDefault(t => t.Name == watch?.Target);
             }
             ApplyWatchToSetup(watch);
+            await LoadConnectionAsync();
             remoteView.Host = ""; remoteView.Port = "19011"; remoteView.Web = "";
             var integration = VsCodeIntegration.ReadState(loaded.Root);
             remoteView.GdbPort = (integration?.GdbPort ?? 2331).ToString(CultureInfo.InvariantCulture);
@@ -70,7 +71,7 @@ public partial class MainWindow
         }
         finally { loadingProject = false; SyncObservationState(); }
     }
-    private void TargetChanged(object? sender, SelectionChangedEventArgs e)
+    private async void TargetChanged(object? sender, SelectionChangedEventArgs e)
     {
         InvalidateViewer(); remoteView.Invalidate();
         Variables.Clear();
@@ -78,5 +79,6 @@ public partial class MainWindow
         ProjectPage.ElfPath.Text = target.ElfPath;
         Variables.Clear();
         remoteView.Invalidate();
+        if (!loadingProject) await LoadConnectionAsync();
     }
 }

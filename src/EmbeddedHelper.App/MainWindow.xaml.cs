@@ -15,8 +15,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ObservationPage.DataContext = observationView;
-        ObservationSetupPage.DataContext = observationView;
-        ObservationPage.SaveVariablesRequested += async (sender, e) => { SaveObservationSettings(sender, e); if (prepared == null) await PrepareViewerAsync(); };
+        ObservationPage.SaveVariablesRequested += SaveObservationSettings;
+        ObservationPage.ConnectionRequested += ConfigureConnection;
         RemotePage.DataContext = remoteView;
         SerialPage.DataContext = serialView;
         SettingsPage.ToolVersionBox.SelectionChanged += (_, _) => remoteView.Invalidate();

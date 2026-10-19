@@ -4,7 +4,7 @@
     <TextBlock Text="连接参数保存在本工程；远程探针端口与网页端口不同。" Style="{StaticResource Description}"/>
     <GroupBox Header="J-Link Remote Server"><Grid><Grid.ColumnDefinitions><ColumnDefinition Width="2*"/><ColumnDefinition/></Grid.ColumnDefinitions>
       <StackPanel><TextBlock Text="服务器主机名 / IP"/><TextBox x:Name="RemoteHost" Text="{Binding Host, UpdateSourceTrigger=PropertyChanged}"/><TextBlock Text="网页地址（可选）"/><TextBox x:Name="WebAddress" Text="{Binding Web, UpdateSourceTrigger=PropertyChanged}"/><TextBlock Text="远程变量与网页 RTT 手动二选一；开始远程采集前请在网页停止 RTT。" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/></StackPanel>
-      <StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="远程探针端口"/><TextBox x:Name="RemotePort" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"/><TextBlock Text="本机 GDB 端口"/><TextBox x:Name="GdbPort" Text="{Binding GdbPort, UpdateSourceTrigger=PropertyChanged}"/><Button Content="停止采集并打开 RTT 网页" Click="OpenWeb" HorizontalAlignment="Left" Margin="0,0,0,0"/></StackPanel>
+      <StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="远程探针端口"/><TextBox x:Name="RemotePort" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"/><TextBlock Text="本机 GDB 端口"/><TextBox x:Name="GdbPort" Text="{Binding GdbPort, UpdateSourceTrigger=PropertyChanged}"/><Button Content="前往 RTT 监视" Click="OpenWeb" HorizontalAlignment="Left" Margin="0,0,0,0"/></StackPanel>
     </Grid></GroupBox>
     <TextBlock Text="VS Code 接入前，先到设置与诊断准备工具并绑定本机入口。" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/>
     <CheckBox x:Name="UseEideUpload" IsChecked="{Binding EideUpload}" Content="同时切换 EIDE 上传按钮（适配 3.27.2，可恢复）"/>

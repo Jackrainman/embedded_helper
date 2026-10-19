@@ -25,9 +25,11 @@ public partial class MainWindow
 
     private void SyncObservationState()
     {
-        observationView.Busy = ObservationBusy || configurationBusy;
-        observationView.HasSession = acquisition.HasSession;
-        observationView.CanRetry = acquisition.CanRetry;
+        observationView.Busy = ObservationBusy || configurationBusy || (rttSession && acquisition.HasSession);
+        observationView.HasSession = acquisition.HasSession && !rttSession;
+        observationView.CanRetry = acquisition.CanRetry && !rttSession;
+        RttPage.StartButton.IsEnabled = !ObservationBusy && !configurationBusy && (!acquisition.HasSession || (rttSession && acquisition.CanRetry));
+        RttPage.StopButton.IsEnabled = rttSession && acquisition.HasSession && !acquisition.IsBusy;
         ProjectPage.TargetBox.IsEnabled = observationView.CanEdit;
         EnableConnectionFields(observationView.CanEdit);
     }
@@ -40,7 +42,7 @@ public partial class MainWindow
     private async void ParseElf(object? sender, RoutedEventArgs e) => await Guard(ParseElfAsync);
     private async Task ParseElfAsync()
     {
-        if (ObservationBusy || configurationBusy) throw new InvalidOperationException("正在切换连接或读取计划，请稍候。");
+        if ((rttSession && acquisition.HasSession) || ObservationBusy || configurationBusy) throw new InvalidOperationException("正在切换连接或读取计划，请稍候。");
         indexing = true; SyncObservationState();
         try
         {
@@ -70,12 +72,14 @@ public partial class MainWindow
     }
     private async void StartObservation(object? sender, RoutedEventArgs e) => await Guard(async () =>
     {
-        if (ObservationBusy || configurationBusy) throw new InvalidOperationException("正在执行其他操作，请稍候。");
+        if ((rttSession && acquisition.HasSession) || ObservationBusy || configurationBusy) throw new InvalidOperationException("正在执行其他操作，请稍候。");
         if (acquisition.CanRetry) await StopObservationAsync();
         if (acquisition.HasSession) throw new InvalidOperationException("请先停止已有采集。");
         await PrepareViewerAsync();
         var ready = prepared;
         if (ready == null || shutdownRequested) return;
+        rttSession = false;
+        ObservationPage.VariableEditor.IsExpanded = false;
         await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request);
         if (!acquisition.HasSession || shutdownRequested) return;
         ResetObservationDisplay();
@@ -90,18 +94,21 @@ public partial class MainWindow
         await acquisition.StopAsync();
         sampling.Stop();
         foreach (var row in Variables.Where(v => v.Selected)) row.Value = "已停止 / 过期";
-        observationView.Status = "已释放 · 可使用外部烧录/调试工具";
+        if (rttSession) RttPage.Status.Text = "已释放 · 可使用外部烧录/调试工具";
+        else observationView.Status = "已释放 · 可使用外部烧录/调试工具";
+        if (!acquisition.HasSession) rttSession = false;
+        SyncObservationState();
     }
     private void EnableConnectionFields(bool enabled)
     {
-        ObservationSetupPage.IsEnabled = enabled;
+        ConnectionPage.IsEnabled = enabled;
         foreach (var field in new UIElement[] { SettingsPage.DllPath, SettingsPage.ReadElfPath, ProjectPage.ElfPath, RemotePage.RemoteHost, RemotePage.RemotePort }) field.IsEnabled = enabled;
     }
     private static string Decode(Decoder decoder, byte[] data)
     { var chars = new char[Encoding.UTF8.GetMaxCharCount(data.Length)]; var count = decoder.GetChars(data, chars, false); return new string(chars, 0, count); }
     private static void AppendBounded(TextBox box, string text)
     { if (box.Text.Length + text.Length > 65536) box.Text = box.Text[Math.Min(box.Text.Length, 32768)..]; box.AppendText(text); box.ScrollToEnd(); }
-    private void ClearRtt(object? sender, RoutedEventArgs e) { rttHistory.Clear(); observationView.RttText = ""; rttDirty = false; }
+    private void ClearRtt(object? sender, RoutedEventArgs e) { rttHistory.Clear(); RttPage.RttText.Text = ""; rttDirty = false; }
     private void RefreshObservation()
     {
         SyncObservationState();
@@ -128,11 +135,13 @@ public partial class MainWindow
                     rttDirty = true;
                 }
             }
-            observationView.Status = $"{acquisition.State} · 第 {acquisition.Generation} 代 · 接收批次 {samples / Math.Max(1, sampling.Elapsed.TotalSeconds):F1} Hz · 显示缺口 {acquisition.Dropped}";
-            if (!observationView.Paused && ObservationPage.IsVisible)
+            var status = $"{acquisition.State} · 第 {acquisition.Generation} 代 · 接收批次 {samples / Math.Max(1, sampling.Elapsed.TotalSeconds):F1} Hz · 显示缺口 {acquisition.Dropped}";
+            if (rttSession) { RttPage.Status.Text = status; observationView.Status = "RTT 正在占用连接，请先到 RTT 监视停止并释放。"; }
+            else observationView.Status = status;
+            if (rttDirty && RttPage.IsVisible) { RttPage.RttText.Text = rttHistory.ToString(); rttDirty = false; }
+            if (!rttSession && !observationView.Paused && ObservationPage.IsVisible)
             {
                 foreach (var row in Variables.Where(v => v.LatestValue != null)) row.Value = row.LatestValue + (acquisition.CanRetry || DateTimeOffset.UtcNow - row.LastObservedAt > TimeSpan.FromSeconds(3) ? " / 过期" : "");
-                if (rttDirty || wasPaused) { observationView.RttText = rttHistory.ToString(); rttDirty = false; }
                 if (displayDirty || wasPaused) { var plotted = Variables.Where(v => v.Selected && v.History.Count > 1).Take(16).ToArray(); observationView.PlotLabels = plotted.Select(v => v.Variable.Name).ToArray(); observationView.Series = plotted.Select(v => v.History.ToArray()).ToArray(); displayDirty = false; }
             }
             wasPaused = observationView.Paused;

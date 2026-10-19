@@ -72,13 +72,9 @@ public partial class MainWindow
         }
         finally { configurationBusy = false; remoteView.Busy = false; SyncObservationState(); }
     });
-    private async void OpenWeb(object? sender, RoutedEventArgs e) => await Guard(async () =>
+    private async void OpenWeb(object? sender, RoutedEventArgs e)
     {
-        if (!Uri.TryCreate(remoteView.Web, UriKind.Absolute, out var uri) || uri.Scheme is not ("http" or "https")) throw new ArgumentException("请输入完整 http:// 或 https:// 网页地址。");
-        if (indexing || preparing || configurationBusy || shutdownRequested) throw new InvalidOperationException("连接正在切换，请稍后重试。");
-        await StopObservationAsync();
-        if (acquisition.HasSession) throw new IOException("采集连接尚未释放，未打开网页。");
-        Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
-        Report("已释放客户端采集并打开网页；返回远程变量前，请先在网页手动停止 RTT。");
-    });
+        Pages.SelectedIndex = 2;
+        await RefreshRttConnectionAsync();
+    }
 }

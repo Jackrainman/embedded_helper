@@ -21,8 +21,8 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     public bool CanEdit => !Busy && !HasSession;
     public string StartText => CanRetry ? "清理并重试" : "开始采集";
     public bool NeedsConfiguration => !Ready && !HasSession && !Busy;
-    private string summary = "读取本工程已保存的观察设置。", issue = "请打开工程，并在观察设置中保存连接方式、变量或 RTT。", configureText = "去观察设置";
-    private string status = "未连接 · ELF 与固件匹配未核验", variablesEmpty = "尚无已配置变量\n请先在工程的观察设置中勾选并保存。", plotEmpty = "开始采集后显示曲线", rttEmpty = "等待本地 RTT 输出", rttText = "";
+    private string summary = "读取本工程已保存的变量与共享连接配置。", issue = "请打开工程，保存共享连接并搜索添加变量。", configureText = "设置观察变量";
+    private string status = "未连接 · ELF 与固件匹配未核验", variablesEmpty = "尚无已配置变量\n请搜索添加变量并保存。", plotEmpty = "开始采集后显示曲线";
     private double[][] series = [];
     private string[] plotLabels = [];
     public string[] PlotLabels { get => plotLabels; set => Set(ref plotLabels, value); }
@@ -32,12 +32,8 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     public string Status { get => status; set => Set(ref status, value); }
     public string VariablesEmpty { get => variablesEmpty; set => Set(ref variablesEmpty, value); }
     public string PlotEmpty { get => plotEmpty; set => Set(ref plotEmpty, value); }
-    public string RttEmpty { get => rttEmpty; set => Set(ref rttEmpty, value); }
-    public string RttText { get => rttText; set { Set(ref rttText, value); Notify(nameof(HasRtt)); Notify(nameof(RttMissing)); } }
-    public bool HasRtt => RttText.Length > 0;
     public double[][] Series { get => series; set { Set(ref series, value); Notify(nameof(HasPlot)); Notify(nameof(PlotMissing)); } }
     public bool VariablesMissing => !HasVariables;
-    public bool RttMissing => !HasRtt;
     public bool PlotMissing => !HasPlot;
     public bool HasPlot => Series.Any(s => s.Length > 1);
     public event PropertyChangedEventHandler? PropertyChanged;
