@@ -407,7 +407,7 @@
     },
     {
       "id": "R-18",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "PRJ-02",
         "VIS-02",
@@ -419,7 +419,7 @@
     },
     {
       "id": "R-19",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "SER-04",
         "SER-06"
@@ -440,7 +440,7 @@
     },
     {
       "id": "R-20",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "SER-01",
         "SER-02"
@@ -450,7 +450,7 @@
     },
     {
       "id": "R-21",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "VIS-04",
         "NFR-01"
