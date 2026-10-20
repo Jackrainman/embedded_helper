@@ -7,6 +7,7 @@ namespace EmbeddedHelper.App;
 public partial class ObservationView : UserControl
 {
     public ObservationView() => InitializeComponent();
+    private void IgnoreFrequencyMouseWheel(object sender, MouseWheelEventArgs e) => e.Handled = true;
     private void AddVariables(object sender, RoutedEventArgs e) => ShowAddVariables();
     public void ShowAddVariables()
     {

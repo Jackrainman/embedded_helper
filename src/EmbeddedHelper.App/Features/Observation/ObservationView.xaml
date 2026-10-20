@@ -28,7 +28,27 @@
         <CheckBox x:Name="PauseObservation" Content="暂停显示" IsChecked="{Binding Paused}" VerticalAlignment="Center" Margin="0,0,16,8"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal">
-        <TextBlock Text="频率设置（Hz）" VerticalAlignment="Center" Margin="0,0,8,8"/><TextBox x:Name="SampleRate" Text="200" Width="64" Height="36" Margin="0,0,8,8" IsEnabled="{Binding CanEdit}"/>
+        <TextBlock Text="频率设置（Hz）" VerticalAlignment="Center" Margin="0,0,8,8"/>
+        <TextBox x:Name="SampleRate" Text="200" Width="64" Height="36" Margin="0,0,8,8"
+                 IsEnabled="{Binding CanEdit}" AcceptsReturn="False" TextWrapping="NoWrap"
+                 MinLines="1" MaxLines="1" TextAlignment="Center" VerticalContentAlignment="Center"
+                 HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"
+                 PreviewMouseWheel="IgnoreFrequencyMouseWheel">
+          <TextBox.Template>
+            <ControlTemplate TargetType="TextBox">
+              <Border x:Name="FrequencyFrame" Background="{TemplateBinding Background}"
+                      BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5">
+                <ScrollViewer x:Name="PART_ContentHost" Margin="4,0"
+                              VerticalAlignment="Center"
+                              HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Disabled"/>
+              </Border>
+              <ControlTemplate.Triggers>
+                <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="FrequencyFrame" Property="BorderBrush" Value="{StaticResource Accent}"/></Trigger>
+                <Trigger Property="IsEnabled" Value="False"><Setter Property="Background" Value="{StaticResource Layer}"/><Setter Property="Foreground" Value="{StaticResource MutedBrush}"/></Trigger>
+              </ControlTemplate.Triggers>
+            </ControlTemplate>
+          </TextBox.Template>
+        </TextBox>
         <Button Content="保存数据" Style="{StaticResource ToolbarButton}" ToolTip="保存当前变量选择和采样频率；不导出采集数据。" Click="SaveVariables" IsEnabled="{Binding CanEdit}"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal">
