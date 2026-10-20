@@ -246,7 +246,7 @@ def main():
                       ('repository', 'scripts/verify.py --client: repository/Harness checks passed before publishing.'),
                       ('client-static', 'Locked restore, dotnet format verify-no-changes and Release build passed.'),
                       ('client-tests', 'C# tests passed; TRX produced by verify.py. Hardware was not accessed.'),
-                      ('package-smoke', f'Single EXE from original ZIP in Chinese/space path; first/repeat/moved WPF launch, five navigation pages, three project sections, synthetic serial interaction and settings; external CLI stdout/stderr/exit codes and internal CLI/worker self-tests; corrupted component refused. Real replacement and old-runtime removal from: {upgrade_from or "not tested"}. Elapsed including smoke: {startup}. See qa/smoke.json and page PNGs.')]]
+                      ('package-smoke', f'Single EXE from original ZIP in Chinese/space path; first/repeat/moved WPF launch, five navigation pages, two project sections, synthetic serial interaction and settings; external CLI stdout/stderr/exit codes and internal CLI/worker self-tests; corrupted component refused. Real replacement and old-runtime removal from: {upgrade_from or "not tested"}. Elapsed including smoke: {startup}. See qa/smoke.json and page PNGs.')]]
         evidence = dict(schemaVersion=1, version=version, commit=commit, packageSha256=digest,
                         releaseProfile='developer-preview', checks=checks,
                         deferredChecks=['clean-windows', 'g4-remote-flash', 'g4-local-variables-rtt',

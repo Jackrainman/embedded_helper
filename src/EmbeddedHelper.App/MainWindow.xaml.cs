@@ -10,10 +10,12 @@ public partial class MainWindow : Window
 {
     private readonly DispatcherTimer refresh = new() { Interval = TimeSpan.FromMilliseconds(100) };
     private bool closing, shutdownRequested;
+    private readonly ConnectionView ConnectionPage = new();
 
     public MainWindow()
     {
         InitializeComponent();
+        ConnectionPage.SaveRequested += SaveConnection;
         ObservationPage.DataContext = observationView;
         ObservationPage.SaveVariablesRequested += SaveObservationSettings;
         ObservationPage.ConnectionRequested += ConfigureConnection;

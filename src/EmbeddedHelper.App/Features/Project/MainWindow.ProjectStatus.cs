@@ -21,6 +21,8 @@ public partial class MainWindow
     {
         if (GlobalTransport == null) return;
         GlobalTransport.IsEnabled = project != null && Target != null && !ObservationBusy && !configurationBusy && !acquisition.HasSession;
+        ConnectionButton.IsEnabled = GlobalTransport.IsEnabled;
+        ConnectionButton.ToolTip = project == null || Target == null ? "请先打开项目并选择目标" : "配置当前项目的共享连接";
         ProjectStateLabel.Text = project == null ? "● 未打开项目" :
             $"● {project.Name} / {Target?.Name ?? "未选择目标"} · {(connectionIssue.Length == 0 ? "项目已就绪" : "连接配置错误")}";
         ProjectStateLabel.Foreground = project == null ? Brushes.LightGray : connectionIssue.Length == 0 ? Brushes.LightGreen : Brushes.Salmon;

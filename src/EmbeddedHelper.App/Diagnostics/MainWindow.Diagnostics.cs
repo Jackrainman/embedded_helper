@@ -139,7 +139,7 @@ public partial class MainWindow
         if (observationView.VisibleRows.Length != 2 || observationView.VisibleRows.Any(r => r.Address != "未解析") || !observationView.Summary.Contains("已保存")) throw new InvalidDataException("缺远程配置时丢失已保存变量或显示错误RTT状态。");
         await SaveObservationSmokeStateAsync(directory, "page-1-missing-remote.png");
         ConfigureObservation(null, null!);
-        if (Pages.SelectedIndex != 0 || ProjectSections.SelectedIndex != 2) throw new InvalidDataException("缺少远程配置时恢复入口未到远程配置。");
+        if (Pages.SelectedIndex != 0 || ProjectSections.SelectedIndex != 1) throw new InvalidDataException("缺少远程配置时恢复入口未到远程配置。");
         await File.WriteAllTextAsync(remotePath, "{\"ServerName\":\"saved.example.invalid\",\"Port\":19011}");
         remoteView.Host = "unsaved.example.invalid";
         await PrepareViewerAsync();

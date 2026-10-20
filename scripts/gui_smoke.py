@@ -16,7 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 PNG_SIGNATURE = b'\x89PNG\r\n\x1a\n'
 SCREENSHOTS = [f'{page}{size}.png' for size in ['', '-minimum']
                for page in [*[f'page-{i}' for i in range(5)],
-                            *[f'project-section-{i}' for i in range(3)]]]
+                            *[f'project-section-{i}' for i in range(2)]]]
 SCREENSHOTS += [f'page-1-{name}.png' for name in
                 ['missing', 'missing-remote', 'missing-sdk', 'rtt-only', 'rtt-only-minimum', 'plot']]
 SCREENSHOTS += ['header-invalid-remote.png', 'page-2-log.png', 'page-2-frozen.png', 'page-2-frozen-minimum.png']
@@ -60,7 +60,7 @@ def validate_result(qa):
     result = json.loads((qa / 'smoke.json').read_text(encoding='utf-8-sig'))
     if (not isinstance(result, dict) or result.get('status') != 'passed'
             or result.get('exitCode') != 0 or result.get('pages') != 5
-            or result.get('projectSections') != 3
+            or result.get('projectSections') != 2
             or result.get('observationSettings') != 'roundtrip-and-missing-config-passed'
             or not isinstance(result.get('serialSmoke'), dict)
             or result['serialSmoke'].get('status') != 'passed'

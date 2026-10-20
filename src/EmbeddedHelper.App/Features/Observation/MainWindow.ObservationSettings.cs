@@ -20,13 +20,34 @@ public partial class MainWindow
         if (Pages.SelectedIndex == 1) await PrepareViewerAsync();
         if (Pages.SelectedIndex == 2) await RefreshRttConnectionAsync();
     }
-    private void ConfigureConnection(object? sender, RoutedEventArgs e) { Pages.SelectedIndex = 0; ProjectSections.SelectedIndex = 1; }
+    private async void ConfigureConnection(object? sender, RoutedEventArgs e)
+    {
+        if (project == null || Target == null) { Report("请先打开项目并选择目标。"); return; }
+        if (ObservationBusy || configurationBusy || acquisition.HasSession) { Report("请先停止并释放当前采集，再修改连接配置。"); return; }
+        var dialog = new Window
+        {
+            Title = "连接配置",
+            Owner = this,
+            Width = 640,
+            Height = 440,
+            MinWidth = 480,
+            MinHeight = 360,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = (System.Windows.Media.Brush)FindResource("MainBackground"),
+            Content = new ScrollViewer { Content = ConnectionPage, Margin = new Thickness(18), VerticalScrollBarVisibility = ScrollBarVisibility.Auto }
+        };
+        try { dialog.ShowDialog(); }
+        finally { ((ScrollViewer)dialog.Content).Content = null; }
+        if (Pages.SelectedIndex == 1) await PrepareViewerAsync();
+        else if (Pages.SelectedIndex == 2) await RefreshRttConnectionAsync();
+    }
     private void ConfigureObservation(object? sender, RoutedEventArgs e)
     {
         if (configurationDestination == ObservationConfigurationArea.Observation)
         { ObservationPage.Picker.SearchBox.Focus(); return; }
+        if (configurationDestination == ObservationConfigurationArea.Connection) { ConfigureConnection(sender, e); return; }
         Pages.SelectedIndex = configurationDestination == ObservationConfigurationArea.Settings ? 4 : 0;
-        ProjectSections.SelectedIndex = configurationDestination switch { ObservationConfigurationArea.Project => 0, ObservationConfigurationArea.Remote => 2, _ => 1 };
+        ProjectSections.SelectedIndex = configurationDestination switch { ObservationConfigurationArea.Project => 0, ObservationConfigurationArea.Remote => 1, _ => 0 };
     }
     private void ApplyWatchToSetup(WatchSettings? watch)
     { ObservationPage.SampleRate.Text = (watch?.Rate ?? 100).ToString(CultureInfo.InvariantCulture); }

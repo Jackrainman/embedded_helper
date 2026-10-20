@@ -538,6 +538,19 @@
         "R-25"
       ],
       "doneWhen": "从已提交干净源码生成结构体/UI本地EXE及ZIP，记录提交和SHA256，仅静态核验归档一致性；明确未进行GUI、成品和硬件冒烟，不release、不推送。"
+    },
+    {
+      "id": "R-26",
+      "status": "in_progress",
+      "refs": [
+        "CON-03",
+        "NFR-01",
+        "REL-01"
+      ],
+      "dependsOn": [
+        "R-25"
+      ],
+      "doneWhen": "移除工程内连接配置子页，顶部独立窗口维护共享连接，保留远程配置导航；软件验证后本地提交打包，将未release产物移入桌面EmbeddedHelper_test独立版本目录供手动验收，不覆盖旧data、不启动冒烟、不发布。"
     }
   ]
 }
