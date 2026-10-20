@@ -111,8 +111,27 @@ public partial class MainWindow
         if (preparedWatch != null || ObservationPage.StartButton.IsEnabled || ObservationPage.ConfigurationRequired.Visibility != Visibility.Visible) throw new InvalidDataException("缺少工程观察设置时未阻止采集。");
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         SaveSmokeScreenshot(directory, "page-1-missing.png");
+        Exception? dialogError = null;
+        var dialogChecked = false;
+        _ = Dispatcher.BeginInvoke(DispatcherPriority.ApplicationIdle, new Action(() =>
+        {
+            var dialog = OwnedWindows.Cast<Window>().SingleOrDefault(w => w.Title == "添加变量");
+            try
+            {
+                if (dialog?.Content is not System.Windows.Controls.DockPanel panel) throw new InvalidDataException("添加变量弹窗未打开。");
+                var picker = panel.Children.OfType<VariablePicker>().Single();
+                if (!ReferenceEquals(picker.Variables, Variables) || picker.AddedVariables.Visibility != Visibility.Collapsed || ObservationPage.Picker.SearchBox.Visibility != Visibility.Collapsed)
+                    throw new InvalidDataException("变量弹窗与主页面职责或集合不一致。");
+                picker.SearchBox.Text = Variables.First(v => v.Variable.Supported).Variable.Name;
+                if (picker.Results.Items.Count == 0) throw new InvalidDataException("弹窗搜索未返回变量。");
+                dialogChecked = true;
+            }
+            catch (Exception ex) { dialogError = ex; }
+            finally { dialog?.Close(); }
+        }));
         ConfigureObservation(null, null!);
-        if (Pages.SelectedIndex != 1) throw new InvalidDataException("工程设置入口未导航到观察设置。");
+        if (dialogError != null) throw new InvalidDataException("添加变量弹窗自检失败。", dialogError);
+        if (!dialogChecked || Pages.SelectedIndex != 1 || ObservationPage.SampleRate.Text != "200") throw new InvalidDataException("变量弹窗或默认200Hz错误。");
         ConnectionPage.ProbeSerial.Text = "123456";
         ObservationPage.SampleRate.Text = "75";
         foreach (var row in Variables) row.Selected = false;
