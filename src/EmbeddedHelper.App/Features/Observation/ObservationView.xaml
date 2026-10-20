@@ -1,15 +1,40 @@
 <UserControl x:Class="EmbeddedHelper.App.ObservationView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:local="clr-namespace:EmbeddedHelper.App">
-  <UserControl.Resources><BooleanToVisibilityConverter x:Key="VisibleWhenTrue"/></UserControl.Resources>
+  <UserControl.Resources>
+    <BooleanToVisibilityConverter x:Key="VisibleWhenTrue"/>
+    <Style x:Key="ToolbarButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Height" Value="36"/><Setter Property="MinWidth" Value="88"/>
+      <Setter Property="Padding" Value="12,6"/><Setter Property="Margin" Value="0,0,8,8"/>
+    </Style>
+    <Style x:Key="StartAction" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+      <Setter Property="Background" Value="{StaticResource Accent}"/><Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style x:Key="AddAction" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+      <Setter Property="Background" Value="{StaticResource AccentSoft}"/><Setter Property="Foreground" Value="{StaticResource Accent}"/>
+      <Setter Property="BorderBrush" Value="{StaticResource Accent}"/>
+    </Style>
+    <Style x:Key="StopAction" TargetType="Button" BasedOn="{StaticResource ToolbarButton}">
+      <Style.Triggers><Trigger Property="IsEnabled" Value="True">
+        <Setter Property="Background" Value="#FCEBEC"/><Setter Property="Foreground" Value="#B4232D"/><Setter Property="BorderBrush" Value="#B4232D"/>
+      </Trigger></Style.Triggers>
+    </Style>
+  </UserControl.Resources>
   <Grid Margin="12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
     <WrapPanel Margin="0,0,0,8">
-      <TextBlock Text="MCU Viewer" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,0"/>
-      <Button x:Name="StartButton" Content="{Binding StartText}" Style="{StaticResource Primary}" Click="StartObservation" IsEnabled="{Binding CanStart}"/>
-      <Button x:Name="StopButton" Content="停止并释放" Click="StopObservation" IsEnabled="{Binding CanStop}"/>
-      <CheckBox x:Name="PauseObservation" Content="暂停显示" IsChecked="{Binding Paused}"/>
-      <TextBlock Text="频率设置（Hz）" VerticalAlignment="Center" Margin="10,0,2,0"/><TextBox x:Name="SampleRate" Text="200" Width="64" IsEnabled="{Binding CanEdit}"/>
-      <Button Content="保存数据" ToolTip="保存当前变量选择和采样频率；不导出采集数据。" Click="SaveVariables" IsEnabled="{Binding CanEdit}"/>
-      <Button Content="更新 ELF" Click="ParseElf" IsEnabled="{Binding CanEdit}"/>
-      <Button Content="添加变量" Click="AddVariables" IsEnabled="{Binding CanEdit}"/>
+      <TextBlock Text="MCU Viewer" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,8"/>
+      <StackPanel Orientation="Horizontal">
+        <Button x:Name="StartButton" Content="{Binding StartText}" Style="{StaticResource StartAction}" Click="StartObservation" IsEnabled="{Binding CanStart}"/>
+        <Button x:Name="StopButton" Content="停止并释放" Style="{StaticResource StopAction}" Click="StopObservation" IsEnabled="{Binding CanStop}"/>
+        <CheckBox x:Name="PauseObservation" Content="暂停显示" IsChecked="{Binding Paused}" VerticalAlignment="Center" Margin="0,0,16,8"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal">
+        <TextBlock Text="频率设置（Hz）" VerticalAlignment="Center" Margin="0,0,8,8"/><TextBox x:Name="SampleRate" Text="200" Width="64" Height="36" Margin="0,0,8,8" IsEnabled="{Binding CanEdit}"/>
+        <Button Content="保存数据" Style="{StaticResource ToolbarButton}" ToolTip="保存当前变量选择和采样频率；不导出采集数据。" Click="SaveVariables" IsEnabled="{Binding CanEdit}"/>
+      </StackPanel>
+      <StackPanel Orientation="Horizontal">
+        <Button Content="更新 ELF" Style="{StaticResource ToolbarButton}" Click="ParseElf" IsEnabled="{Binding CanEdit}"/>
+        <Button Content="添加变量" Style="{StaticResource AddAction}" Click="AddVariables" IsEnabled="{Binding CanEdit}"/>
+      </StackPanel>
     </WrapPanel>
     <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="330" MinWidth="260" MaxWidth="600"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*" MinWidth="260"/></Grid.ColumnDefinitions>
       <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
