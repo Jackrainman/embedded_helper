@@ -55,30 +55,52 @@ public static class ElfIndex
             if (location?.Operations.Count == 1 && location.Operations[0].Kind == DwarfOperationKind.Addr)
             {
                 var type = Attribute(die, DwarfAttributeKind.Type)?.ValueAsObject as DwarfDIE;
-                var visited = new HashSet<DwarfDIE>();
-                while (type != null && visited.Add(type) && (type.Tag == DwarfTag.Typedef || type.Tag == DwarfTag.ConstType || type.Tag == DwarfTag.VolatileType || type.Tag == DwarfTag.RestrictType))
-                    type = Attribute(type, DwarfAttributeKind.Type)?.ValueAsObject as DwarfDIE;
-                var size = checked((int)(type == null ? 0 : Attribute(type, DwarfAttributeKind.ByteSize)?.ValueAsU64 ?? 0));
-                var encoding = type == null ? 0 : Attribute(type, DwarfAttributeKind.Encoding)?.ValueAsU64 ?? 0;
-                var typeName = type?.Tag == DwarfTag.BaseType ? (encoding, size) switch
-                {
-                    (5 or 6, 1) => "int8",
-                    (7 or 8, 1) => "uint8",
-                    (5, 2) => "int16",
-                    (7, 2) => "uint16",
-                    (5, 4) => "int32",
-                    (7, 4) => "uint32",
-                    (4, 4) => "float32",
-                    _ => "不支持"
-                } : "不支持";
                 var address = location.Operations[0].Operand1.U64;
                 var external = Attribute(die, DwarfAttributeKind.External)?.ValueAsU64 == 1;
-                result.Add(new Variable(external ? "global:" + name : cu.Replace('\\', '/') + ":" + scope + ":" + name,
-                    name, address, typeName, size, typeName == "不支持" ? "类型尚不支持" : "可读取"));
+                var identity = external ? "global:" + name : cu.Replace('\\', '/') + ":" + scope + ":" + name;
+                result.AddRange(ElfTypeExpansion.Expand(identity, name, address, BuildType(type, new())));
             }
         }
         var childScope = die.Tag == DwarfTag.Subprogram ? scope + "/" + name : scope;
         foreach (var child in die.Children) Walk(child, cu, childScope, result);
+    }
+
+    private static ulong? Constant(DwarfDIE die, DwarfAttributeKind kind)
+    {
+        var attribute = Attribute(die, kind);
+        if (attribute == null) return null;
+        if (attribute.ValueAsObject is DwarfExpression expression)
+            return expression.Operations.Count == 1 && expression.Operations[0].Kind == DwarfOperationKind.PlusUconst
+                ? expression.Operations[0].Operand1.U64 : null;
+        if (attribute.ValueAsObject != null) return null;
+        return attribute.ValueAsU64;
+    }
+    private static ElfTypeNode? BuildType(DwarfDIE? die, Dictionary<DwarfDIE, ElfTypeNode> cache, int depth = 0)
+    {
+        if (die == null) return null;
+        if (cache.TryGetValue(die, out var existing)) return existing;
+        if (depth > 64) throw new InvalidDataException("DWARF类型嵌套超过64层。");
+        var node = new ElfTypeNode(die.Tag.ToString())
+        {
+            Name = Attribute(die, DwarfAttributeKind.Name)?.ValueAsObject as string ?? "",
+            Size = Constant(die, DwarfAttributeKind.ByteSize),
+            Encoding = Constant(die, DwarfAttributeKind.Encoding),
+            Offset = Constant(die, DwarfAttributeKind.DataMemberLocation),
+            Count = Constant(die, DwarfAttributeKind.Count),
+            Upper = Constant(die, DwarfAttributeKind.UpperBound),
+            Lower = Constant(die, DwarfAttributeKind.LowerBound),
+            BitField = Attribute(die, DwarfAttributeKind.BitSize) != null,
+            CustomStride = Attribute(die, DwarfAttributeKind.ByteStride) != null || Attribute(die, DwarfAttributeKind.BitStride) != null
+        };
+        cache[die] = node;
+        // Pointer and union targets are deliberately not followed.
+        if (node.Tag is not ("pointertype" or "uniontype"))
+        {
+            node.Type = BuildType(Attribute(die, DwarfAttributeKind.Type)?.ValueAsObject as DwarfDIE, cache, depth + 1);
+            foreach (var child in die.Children)
+                if (child.Tag == DwarfTag.Member || child.Tag == DwarfTag.SubrangeType) node.Children.Add(BuildType(child, cache, depth + 1)!);
+        }
+        return node;
     }
 
     public static double Decode(Variable variable, ReadOnlySpan<byte> bytes)

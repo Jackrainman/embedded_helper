@@ -10,9 +10,24 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / 'scripts'))
 from bump_version import bump
 from release_gate import ENTRYPOINTS, HARDWARE, REQUIRED, validate_release
+from package_client import record_unverified_package
 
 
 class ReleaseGateTests(unittest.TestCase):
+    def test_unverified_local_package_cannot_claim_smoke_or_pass_release_gate(self):
+        exe = self.root / 'EmbeddedHelper.exe'
+        exe.write_bytes(b'not executable; software contract fixture')
+        with zipfile.ZipFile(self.package, 'w') as archive:
+            archive.write(exe, exe.name)
+        manifest = record_unverified_package(self.root, self.version, self.commit, exe, self.package)
+        self.assertEqual(manifest['smoke'], 'not-run')
+        self.assertEqual(manifest['executableSha256'], hashlib.sha256(exe.read_bytes()).hexdigest())
+        evidence = self.root / 'verification-evidence.json'
+        data = json.loads(evidence.read_text(encoding='utf-8'))
+        self.assertIn('package-smoke', data['deferredChecks'])
+        self.assertFalse(any(c['id'] == 'package-smoke' for c in data['checks']))
+        self.assertTrue(validate_release(self.root, evidence, self.version, self.commit))
+
     def setUp(self):
         (ROOT / 'tmp').mkdir(exist_ok=True)
         self.temp = tempfile.TemporaryDirectory(dir=ROOT / 'tmp')

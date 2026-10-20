@@ -32,7 +32,12 @@
     "F4 配置样本/.eide/eide.yml": "f20b75205c5079c455085292cbb97eaa170f7c9ac3efe6b150ff70b087dd8b69",
     "F4 配置样本/.vscode/launch.json": "e33a2e0421d4ec4f900cf8963cae313bc3bac7012b3472af91145e1602dc3382",
     "F1 配置样本/.eide/eide.yml": "7dee591517b8d10f3760e1c98b13426e8ad2b9d49d24a67c42450fae5e294c59",
-    "F1 配置样本/.vscode/launch.json": "26feb8cb3a07264fd1ed57a7a117351c46f89ad278a540ce567b7973b791f998"
+    "F1 配置样本/.vscode/launch.json": "26feb8cb3a07264fd1ed57a7a117351c46f89ad278a540ce567b7973b791f998",
+    "structures.c": "3d864aaa8818ddb8d730c854024bddeb4f4d6a6a48a6ab77085512ebd9877183",
+    "structures.elf": "3900e571c1ae03350bbba96718bf4aab94c8d6c36113807e3cba30dc5ded9ec2",
+    "structures5.elf": "00aaa27e997d7494a9ffccdbe8a952bc3295463ff236562466e3a405ced6eb95",
+    "structures.dwarf.txt": "9943346ddc626e98e0ceb2d53bd052ae7579bea1dbcaf3e561178b6ae20a9fe5",
+    "structures5.dwarf.txt": "fdc89f8b2d546266e84604eb541934d0ec0a52815bb2478755a032da20df8c10"
   },
   "syntheticElf": {
     "compiler": "arm-none-eabi-gcc.exe (Arm GNU Toolchain 15.2.Rel1 (Build arm-15.86)) 15.2.1 20251203",
@@ -50,5 +55,11 @@
       "tests/fixtures/scalars.elf"
     ],
     "purpose": "self-owned scalar DWARF fixture; never flash"
+  },
+  "structuresElf": {
+    "purpose": "Self-owned offline C struct/array fixture; never flash",
+    "compiler": "Arm GNU 15.2.1",
+    "arguments": "-g -gdwarf-4/-gdwarf-5 -O0 -nostdlib -Wl,-e,main -Wl,-Ttext=0x08000000 -Wl,-Tdata=0x20000000 -ffile-prefix-map=tmp/struct-fixture=fixtures tmp/struct-fixture/structures.c; readelf --debug-dump=info --wide",
+    "dumpNormalization": "Trailing whitespace removed; UTF-8 LF."
   }
 }

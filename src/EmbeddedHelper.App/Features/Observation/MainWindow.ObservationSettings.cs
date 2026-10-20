@@ -24,7 +24,7 @@ public partial class MainWindow
     private void ConfigureObservation(object? sender, RoutedEventArgs e)
     {
         if (configurationDestination == ObservationConfigurationArea.Observation)
-        { ObservationPage.VariableEditor.IsExpanded = true; return; }
+        { ObservationPage.Picker.SearchBox.Focus(); return; }
         Pages.SelectedIndex = configurationDestination == ObservationConfigurationArea.Settings ? 4 : 0;
         ProjectSections.SelectedIndex = configurationDestination switch { ObservationConfigurationArea.Project => 0, ObservationConfigurationArea.Remote => 2, _ => 1 };
     }
@@ -96,8 +96,7 @@ public partial class MainWindow
             var tool = SettingsPage.ReadElfPath.Text;
             var ready = await ObservationPreparation.PrepareAsync(loaded, target, ProjectPage.ElfPath.Text, SettingsPage.DllPath.Text, path => ElfIndexService.ReadAsync(path, tool), transport: activeTransport);
             if (shutdownRequested || project != loaded || Target != target) return;
-            Variables.Clear();
-            foreach (var variable in ready.Index) Variables.Add(new VariableRow(variable) { Selected = ready.Settings.Identities.Contains(variable.Identity) });
+            observationView.LoadIndex(ready.Index, ready.Settings.Identities);
             elfStamp = ready.ElfStamp; RefreshViewerRows(); ApplyWatchToSetup(ready.Settings);
             prepared = ready; observationView.Ready = true;
             var request = ready.Request;
@@ -115,8 +114,7 @@ public partial class MainWindow
             if (ex.SavedSettings is { } saved)
             {
                 ApplyWatchToSetup(saved);
-                var indexed = ex.Index.ToDictionary(v => v.Identity);
-                observationView.VisibleRows = saved.Identities.Select(id => new VariableRow(indexed.GetValueOrDefault(id) ?? new Variable(id, id, 0, "未解析", 0, "未采集")) { Selected = true }).ToArray();
+                observationView.LoadIndex(ex.Index, saved.Identities);
                 observationView.Summary = $"已保存变量 · {saved.Rate} Hz · {saved.Identities.Length} 项 · 配置未就绪";
             }
         }

@@ -89,6 +89,32 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         Assert.Null(error.SavedSettings); Assert.Empty(error.Index);
     }
     [Fact]
+    public async Task MissingSdkKeepsOneEditableIndexAndSavedStructSelection()
+    {
+        var input = Inputs();
+        var index = ElfIndex.Read(Path.Combine(fixtures, "structures.elf"));
+        var identity = "global:motors[1].feedback.speed";
+        WatchSettingsStore.Save(root, new("Debug", [identity], 100) { ProbeSerial = "123" });
+        var error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(
+            input.Project, input.Target, input.Elf, "missing.dll", _ => Task.FromResult(index)));
+        var view = new EmbeddedHelper.App.ObservationViewModel();
+        view.LoadIndex(error.Index, error.SavedSettings!.Identities);
+        var selected = Assert.Single(view.VisibleRows);
+        Assert.Same(selected, Assert.Single(view.Variables, v => v.Selected));
+        Assert.True(selected.Variable.Supported); Assert.Equal(identity, selected.Variable.Identity);
+        Assert.False(view.CanStart); Assert.True(view.CanEdit);
+        Assert.Contains(view.Variables, v => v.Variable.Name == "motors[0].feedback.speed" && !v.Selected);
+        selected.Value = "123"; Assert.Equal("123", view.Variables.Single(v => v.Selected).Value);
+        WatchSettingsStore.Save(root, new("Debug", [selected.Variable.Identity], 75) { ProbeSerial = "123" });
+        var ready = await ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => Task.FromResult(index));
+        Assert.Equal(selected.Variable, Assert.Single(ready.Request.Variables));
+        view.LoadIndex([], [identity]);
+        Assert.False(Assert.Single(view.VisibleRows).Variable.Supported);
+        Assert.Same(view.VisibleRows[0], Assert.Single(view.Variables));
+        view.LoadIndex(index, [identity]);
+        Assert.True(Assert.Single(view.VisibleRows).Variable.Supported);
+    }
+    [Fact]
     public async Task SharedConnectionMigrationIsExplicitAndTargetScoped()
     {
         Inputs();

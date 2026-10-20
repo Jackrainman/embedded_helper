@@ -7,7 +7,8 @@ namespace EmbeddedHelper.Core;
 
 public static partial class ReadElfIndex
 {
-    private sealed record Entry(ulong Offset, string Tag, string Scope, Dictionary<string, string> Attributes);
+    private sealed record Entry(ulong Offset, string Tag, string Scope, Dictionary<string, string> Attributes)
+    { public List<Entry> Children { get; } = []; }
     public static string? FindTool()
     {
         var eide = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".eide", "tools", "gcc_arm", "bin", "arm-none-eabi-readelf.exe");
@@ -41,6 +42,7 @@ public static partial class ReadElfIndex
         var entries = new Dictionary<ulong, Entry>();
         Entry? current = null;
         var scopes = new Dictionary<int, string>();
+        var parents = new Dictionary<int, Entry>();
         string cu = "";
         foreach (var line in text.Split('\n'))
         {
@@ -53,6 +55,9 @@ public static partial class ReadElfIndex
                 var tag = header.Groups[3].Value;
                 if (depth == 0) cu = "";
                 current = new Entry(offset, tag, string.Join("/", scopes.OrderBy(p => p.Key).Select(p => p.Value)), new());
+                foreach (var level in parents.Keys.Where(k => k >= depth).ToArray()) parents.Remove(level);
+                if (parents.TryGetValue(depth - 1, out var parent)) parent.Children.Add(current);
+                parents[depth] = current;
                 entries[offset] = current;
                 scopes[depth] = tag + "@" + offset.ToString("x", CultureInfo.InvariantCulture);
                 continue;
@@ -76,24 +81,57 @@ public static partial class ReadElfIndex
         {
             var location = Location().Match(item.Attributes.GetValueOrDefault("location", ""));
             if (!location.Success || !item.Attributes.TryGetValue("name", out var rawName)) continue;
-            Entry? type = item;
-            var visited = new HashSet<ulong>();
-            while (type != null && visited.Add(type.Offset) && type.Tag is "variable" or "typedef" or "const_type" or "volatile_type" or "restrict_type")
-            {
-                var reference = Reference().Match(type.Attributes.GetValueOrDefault("type", ""));
-                type = reference.Success && entries.TryGetValue(ulong.Parse(reference.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture), out var target) ? target : null;
-            }
-            var size = Number(type?.Attributes.GetValueOrDefault("byte_size", "") ?? "");
-            var encoding = Number(type?.Attributes.GetValueOrDefault("encoding", "") ?? "");
-            var scalar = type?.Tag == "base_type" ? (encoding, size) switch
-            { (5 or 6, 1) => "int8", (7 or 8, 1) => "uint8", (5, 2) => "int16", (7, 2) => "uint16", (5, 4) => "int32", (7, 4) => "uint32", (4, 4) => "float32", _ => "不支持" } : "不支持";
             var name = Name(rawName);
             var external = Number(item.Attributes.GetValueOrDefault("external", "")) == 1;
             var identity = external ? "global:" + name : item.Attributes.GetValueOrDefault("cu", "") + ":" + item.Scope + ":" + name;
-            result.Add(new Variable(identity, name, ulong.Parse(location.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture), scalar, size, scalar == "不支持" ? "类型尚不支持" : "可读取"));
+            result.AddRange(ElfTypeExpansion.Expand(identity, name,
+                ulong.Parse(location.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
+                BuildType(Referenced(item, entries), entries, new())));
         }
         if (result.Count == 0) throw new InvalidDataException("readelf 未找到固定地址变量。");
         return result.DistinctBy(v => v.Identity).OrderBy(v => v.Name, StringComparer.Ordinal).ToArray();
+    }
+    private static Entry? Referenced(Entry entry, Dictionary<ulong, Entry> entries)
+    {
+        var reference = Reference().Match(entry.Attributes.GetValueOrDefault("type", ""));
+        return reference.Success ? entries.GetValueOrDefault(ulong.Parse(reference.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture)) : null;
+    }
+    private static ulong? Constant(Entry entry, string key)
+    {
+        if (!entry.Attributes.TryGetValue(key, out var value)) return null;
+        value = Regex.Replace(value.Trim(), @"^\([^)]*\)\s*", "");
+        var expression = Regex.Match(value, @"\(DW_OP_plus_uconst: (\d+)\)\s*$");
+        if (key == "data_member_location" && expression.Success) return ulong.Parse(expression.Groups[1].Value, CultureInfo.InvariantCulture);
+        var match = Regex.Match(value, @"^(0x[0-9a-fA-F]+|\d+)(?:\s+\([^)]*\))?$");
+        if (!match.Success) return null;
+        var number = match.Groups[1].Value;
+        return number.StartsWith("0x", StringComparison.Ordinal) ? ulong.Parse(number[2..], NumberStyles.HexNumber, CultureInfo.InvariantCulture) : ulong.Parse(number, CultureInfo.InvariantCulture);
+    }
+    private static ElfTypeNode? BuildType(Entry? entry, Dictionary<ulong, Entry> entries, Dictionary<ulong, ElfTypeNode> cache, int depth = 0)
+    {
+        if (entry == null) return null;
+        if (cache.TryGetValue(entry.Offset, out var existing)) return existing;
+        if (depth > 64) throw new InvalidDataException("DWARF类型嵌套超过64层。");
+        var node = new ElfTypeNode(entry.Tag)
+        {
+            Name = Name(entry.Attributes.GetValueOrDefault("name", "")),
+            Size = Constant(entry, "byte_size"),
+            Encoding = Constant(entry, "encoding"),
+            Offset = Constant(entry, "data_member_location"),
+            Count = Constant(entry, "count"),
+            Upper = Constant(entry, "upper_bound"),
+            Lower = entry.Attributes.ContainsKey("lower_bound") ? Constant(entry, "lower_bound") ?? ulong.MaxValue : null,
+            BitField = entry.Attributes.ContainsKey("bit_size"),
+            CustomStride = entry.Attributes.ContainsKey("byte_stride") || entry.Attributes.ContainsKey("bit_stride")
+        };
+        cache[entry.Offset] = node;
+        if (node.Tag is not ("pointertype" or "uniontype"))
+        {
+            node.Type = BuildType(Referenced(entry, entries), entries, cache, depth + 1);
+            foreach (var child in entry.Children.Where(c => c.Tag is "member" or "subrange_type"))
+                node.Children.Add(BuildType(child, entries, cache, depth + 1)!);
+        }
+        return node;
     }
     private static string Name(string value)
     {

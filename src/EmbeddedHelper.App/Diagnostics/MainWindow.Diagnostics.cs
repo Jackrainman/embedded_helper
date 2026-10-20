@@ -112,7 +112,7 @@ public partial class MainWindow
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         SaveSmokeScreenshot(directory, "page-1-missing.png");
         ConfigureObservation(null, null!);
-        if (Pages.SelectedIndex != 1 || !ObservationPage.VariableEditor.IsExpanded) throw new InvalidDataException("工程设置入口未导航到观察设置。");
+        if (Pages.SelectedIndex != 1) throw new InvalidDataException("工程设置入口未导航到观察设置。");
         ConnectionPage.ProbeSerial.Text = "123456";
         ObservationPage.SampleRate.Text = "75";
         foreach (var row in Variables) row.Selected = false;

@@ -62,7 +62,7 @@ public partial class MainWindow
                 await acquisition.UpdateAsync(rows.Where(v => v.Selected && v.Variable.Supported).Select(v => v.Variable).ToArray(), prepared!.Request.SampleRate);
                 ResetObservationDisplay();
             }
-            Variables.Clear(); foreach (var row in rows) Variables.Add(row);
+            observationView.ReplaceRows(rows);
             elfStamp = File.GetLastWriteTimeUtc(path);
             RefreshProjectDiagnostics(path);
             RefreshViewerRows(); displayDirty = true;
@@ -80,7 +80,6 @@ public partial class MainWindow
         var ready = prepared;
         if (ready == null || shutdownRequested) return;
         rttSession = false;
-        ObservationPage.VariableEditor.IsExpanded = false;
         await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request);
         if (!acquisition.HasSession || shutdownRequested) return;
         ResetObservationDisplay();

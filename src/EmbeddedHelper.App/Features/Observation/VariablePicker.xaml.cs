@@ -10,6 +10,8 @@ public partial class VariablePicker : UserControl
 {
     public static readonly DependencyProperty VariablesProperty = DependencyProperty.Register(nameof(Variables), typeof(ObservableCollection<VariableRow>), typeof(VariablePicker), new PropertyMetadata(null, SourceChanged));
     public ObservableCollection<VariableRow>? Variables { get => (ObservableCollection<VariableRow>?)GetValue(VariablesProperty); set => SetValue(VariablesProperty, value); }
+    public static readonly DependencyProperty CanEditProperty = DependencyProperty.Register(nameof(CanEdit), typeof(bool), typeof(VariablePicker), new PropertyMetadata(true));
+    public bool CanEdit { get => (bool)GetValue(CanEditProperty); set => SetValue(CanEditProperty, value); }
     private readonly HashSet<VariableRow> subscribed = [];
     public VariablePicker() => InitializeComponent();
     private static void SourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
@@ -41,9 +43,10 @@ public partial class VariablePicker : UserControl
     }
     private void Add(object sender, RoutedEventArgs e)
     {
+        if (!CanEdit) return;
         if (((FrameworkElement)sender).DataContext is not VariableRow row || !row.Variable.Supported || row.Selected) return;
         if ((Variables?.Count(r => r.Selected) ?? 0) >= 64) { Hint.Text = "最多观察 64 项，请先移除不需要的变量。"; return; }
         row.Selected = true;
     }
-    private void Remove(object sender, RoutedEventArgs e) { if (((FrameworkElement)sender).DataContext is VariableRow row) row.Selected = false; }
+    private void Remove(object sender, RoutedEventArgs e) { if (CanEdit && ((FrameworkElement)sender).DataContext is VariableRow row) row.Selected = false; }
 }

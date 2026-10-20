@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using EmbeddedHelper.Core;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
@@ -6,7 +8,19 @@ namespace EmbeddedHelper.App;
 
 public sealed class ObservationViewModel : INotifyPropertyChanged
 {
-    public ObservableCollection<VariableRow> Variables { get; } = new();
+    private readonly VariableCollection variables = new();
+    public ObservableCollection<VariableRow> Variables => variables;
+    public void ReplaceRows(VariableRow[] rows) => variables.Replace(rows);
+    public void LoadIndex(Variable[] index, string[] selected)
+    {
+        var identities = selected.ToHashSet(StringComparer.Ordinal);
+        var known = index.Select(v => v.Identity).ToHashSet(StringComparer.Ordinal);
+        var rows = index.Select(variable => new VariableRow(variable) { Selected = identities.Contains(variable.Identity) })
+            .Concat(selected.Where(id => !known.Contains(id)).Distinct().Select(id =>
+                new VariableRow(new(id, id, 0, "未解析", 0, "当前索引缺少该变量")) { Selected = true })).ToArray();
+        ReplaceRows(rows);
+        VisibleRows = Variables.Where(v => v.Selected).ToArray();
+    }
     private VariableRow[] visibleRows = [];
     public VariableRow[] VisibleRows { get => visibleRows; set { Set(ref visibleRows, value); Notify(nameof(HasVariables)); Notify(nameof(VariablesMissing)); } }
     public bool HasVariables => VisibleRows.Length > 0;
@@ -43,5 +57,20 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     private void StateChanged()
     {
         Notify(nameof(CanStart)); Notify(nameof(CanStop)); Notify(nameof(CanEdit)); Notify(nameof(StartText)); Notify(nameof(NeedsConfiguration));
+    }
+}
+
+
+// A large structure index is published once, rather than rebuilding the picker for every member.
+internal sealed class VariableCollection : ObservableCollection<VariableRow>
+{
+    public void Replace(VariableRow[] rows)
+    {
+        CheckReentrancy();
+        Items.Clear();
+        foreach (var row in rows) Items.Add(row);
+        OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+        OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
     }
 }

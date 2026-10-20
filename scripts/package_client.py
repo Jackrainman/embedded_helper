@@ -22,12 +22,38 @@ def write_json(path, value):
     path.write_text(json.dumps(value, ensure_ascii=False, indent=2) + '\n', encoding='utf-8')
 
 
+def record_unverified_package(output, version, commit, executable, package):
+    """Explicit local-only packaging: never claim startup evidence or call the release gate."""
+    manifest = dict(schemaVersion=1, productId='embedded-helper', version=version, commit=commit,
+                    platform='windows', architecture='x64', deployment='self-contained-single-exe',
+                    releaseProfile='unverified-local', executableName=executable.name,
+                    executableSha256=hashlib.sha256(executable.read_bytes()).hexdigest(),
+                    executableBytes=executable.stat().st_size, packageName=package.name,
+                    packageSha256=hashlib.sha256(package.read_bytes()).hexdigest(),
+                    packageBytes=package.stat().st_size, smoke='not-run', hardware='not-tested')
+    write_json(output / 'release-manifest.json', manifest)
+    write_json(output / 'verification-evidence.json', dict(
+        schemaVersion=1, version=version, commit=commit, packageSha256=manifest['packageSha256'],
+        releaseProfile='unverified-local', checks=[dict(id='software-logic', status='passed', exitCode=0,
+        details='verify.py --client completed before packaging; no GUI or hardware smoke requested.')],
+        deferredChecks=['package-smoke', 'gui-smoke', 'clean-windows', 'hardware', 'remote-mcu-viewer']))
+    (output / 'SHA256SUMS').write_text(
+        f"{manifest['packageSha256']}  {package.name}\n{manifest['executableSha256']}  {executable.name}\n", encoding='utf-8')
+    (output / 'release-notes.md').write_text(
+        f'# Embedded Helper {version}\n\n本地未冒烟包，不满足发布门。\n\n'
+        '本次仅完成软件逻辑测试与编译封装；未启动GUI、未做成品或硬件冒烟，远程MCU Viewer仍待P0验收。\n', encoding='utf-8')
+    return manifest
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, default=ROOT / 'dist/candidate')
     parser.add_argument('--tool-zip', type=Path, help='Optional original Debug_LAN ZIP for real GUI import/integration smoke')
     parser.add_argument('--upgrade-from', type=Path, help='Optional previous portable EXE for real replacement/old-runtime-removal checks')
+    parser.add_argument('--skip-smoke', action='store_true', help='Local unverified package only; do not launch GUI/CLI smoke or run release gate')
     args = parser.parse_args()
+    if args.skip_smoke and (args.tool_zip or args.upgrade_from):
+        parser.error('--skip-smoke cannot be combined with smoke-only inputs')
     version = (ROOT / 'VERSION').read_text().strip()
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT):
@@ -82,6 +108,9 @@ def main():
                 if file.is_file():
                     archive.write(file, file.relative_to(delivery).as_posix())
         digest = hashlib.sha256(package.read_bytes()).hexdigest()
+        if args.skip_smoke:
+            print(json.dumps(record_unverified_package(output, version, commit, executable, package), indent=2))
+            return 0
         extracted = temporary / '中文 空格 portable'
         with zipfile.ZipFile(package) as archive:
             archive.extractall(extracted)
