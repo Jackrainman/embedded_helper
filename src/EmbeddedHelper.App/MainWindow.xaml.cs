@@ -16,6 +16,12 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ConnectionPage.SaveRequested += SaveConnection;
+        SettingsPage.DiscoverToolsRequested += DiscoverLocalTools;
+        SettingsPage.UseJLinkRequested += (_, _) => UseLocalTool(LocalToolKind.JLink);
+        SettingsPage.UseReadElfRequested += (_, _) => UseLocalTool(LocalToolKind.ReadElf);
+        SettingsPage.BrowseReadElfRequested += BrowseReadElf;
+        SettingsPage.DllPath.TextChanged += (_, _) => RefreshLocalToolStatus();
+        SettingsPage.ReadElfPath.TextChanged += (_, _) => RefreshLocalToolStatus();
         ObservationPage.DataContext = observationView;
         ObservationPage.SaveVariablesRequested += SaveObservationSettings;
         ObservationPage.ConnectionRequested += ConfigureConnection;
@@ -32,6 +38,7 @@ public partial class MainWindow : Window
         refresh.Tick += Refresh;
         refresh.Start();
         pagesReady = true;
+        DiscoverLocalTools(null, new RoutedEventArgs());
     }
 
     private void Report(string text) { StatusLabel.Text = text; try { App.Data.Log(text); } catch (IOException) { } }

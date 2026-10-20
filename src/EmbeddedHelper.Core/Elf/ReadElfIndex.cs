@@ -11,8 +11,9 @@ public static partial class ReadElfIndex
     { public List<Entry> Children { get; } = []; }
     public static string? FindTool()
     {
-        var eide = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".eide", "tools", "gcc_arm", "bin", "arm-none-eabi-readelf.exe");
-        return File.Exists(eide) ? eide : null;
+        var result = ToolDiscovery.Find(LocalToolKind.ReadElf, "", ToolDiscovery.Current());
+        var suggestion = ToolDiscovery.Suggest("", result);
+        return suggestion.Length == 0 ? null : suggestion;
     }
     public static Variable[] Read(string tool, string elf)
     {

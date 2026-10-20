@@ -90,3 +90,5 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 仅需本地封装且明确不运行冒烟时使用 python scripts/package_client.py --skip-smoke --output <新目录>。该模式执行软件逻辑门后封装，标记unverified-local，不启动GUI/成品冒烟，不运行发布门；产物须后续验收，不能当已验证发布包。
 
 未 release 的本地测试包构建后统一移动至 Windows 桌面 `EmbeddedHelper_test/EmbeddedHelper-版本-源码短提交-用途/`，供手动测试。保留清单和验证证据，不覆盖旧包及 data；软件逻辑通过不代表 GUI 或硬件验收通过。
+
+采集与解析环境支持从工程/VS Code 明确工具设置、EIDE 默认目录、SEGGER 安装目录及 PATH 查找候选；显示来源、版本及静态校验结果。多候选需选择，已有路径不自动替换；J-Link 文件校验不等于加载或设备连接验证。

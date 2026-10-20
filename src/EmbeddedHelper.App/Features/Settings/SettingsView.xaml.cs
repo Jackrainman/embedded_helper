@@ -7,6 +7,14 @@ namespace EmbeddedHelper.App;
 public partial class SettingsView : UserControl
 {
     public SettingsView() => InitializeComponent();
+    public event RoutedEventHandler? DiscoverToolsRequested;
+    private void DiscoverTools(object? sender, RoutedEventArgs e) => DiscoverToolsRequested?.Invoke(sender, e);
+    public event RoutedEventHandler? UseJLinkRequested;
+    private void UseJLink(object? sender, RoutedEventArgs e) => UseJLinkRequested?.Invoke(sender, e);
+    public event RoutedEventHandler? UseReadElfRequested;
+    private void UseReadElf(object? sender, RoutedEventArgs e) => UseReadElfRequested?.Invoke(sender, e);
+    public event RoutedEventHandler? BrowseReadElfRequested;
+    private void BrowseReadElf(object? sender, RoutedEventArgs e) => BrowseReadElfRequested?.Invoke(sender, e);
     public event RoutedEventHandler? BrowseDllRequested;
     private void BrowseDll(object? sender, RoutedEventArgs e) => BrowseDllRequested?.Invoke(sender, e);
     public event RoutedEventHandler? SaveSettingsRequested;

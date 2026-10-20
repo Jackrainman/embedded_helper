@@ -20,7 +20,7 @@ public partial class MainWindow
     private void BrowseDll(object? sender, RoutedEventArgs e)
     { var dialog = new OpenFileDialog { Filter = "SEGGER 64 位库|JLink_x64.dll|DLL|*.dll" }; if (dialog.ShowDialog(this) == true) SettingsPage.DllPath.Text = dialog.FileName; }
     private void SaveSettings(object? sender, RoutedEventArgs e)
-    { try { PersistSettings(); Report("设置已保存。升级时保留程序目录下的 data。"); } catch (Exception ex) { Report("设置保存失败：" + ex.Message); } }
+    { try { ValidateLocalTools(); PersistSettings(); Report("设置已保存。升级时保留程序目录下的 data。"); } catch (Exception ex) { Report("设置保存失败：" + ex.Message); } }
     private async void ImportTool(object? sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog { Filter = "Debug_LAN 发布包|DebugLAN-*.zip|ZIP|*.zip" };
@@ -82,7 +82,8 @@ public partial class MainWindow
     }
     private void EnvironmentCheck(object? sender, RoutedEventArgs e)
     {
-        SettingsPage.EnvironmentText.Text = $"版本：{Product.Version}\n系统：{Environment.OSVersion} / {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}\n程序目录：{AppContext.BaseDirectory}\n数据目录：{App.Data.Root}\nSEGGER 库：{(File.Exists(SettingsPage.DllPath.Text) ? "文件存在（未加载、未连接设备）" : "缺失，请选择 JLink_x64.dll")}\n硬件状态：未检测；仅用户点击开始/打开串口时连接。\n本包自包含运行时；纯净 Windows 与硬件验收仍待用户执行。";
+        RefreshLocalToolStatus();
+        SettingsPage.EnvironmentText.Text = $"版本：{Product.Version}\n系统：{Environment.OSVersion} / {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}\n程序目录：{AppContext.BaseDirectory}\n数据目录：{App.Data.Root}\nSEGGER 库：{SettingsPage.JLinkStatus.Text}\n硬件状态：未检测；仅用户点击开始/打开串口时连接。\n本包自包含运行时；纯净 Windows 与硬件验收仍待用户执行。";
     }
     private void InitializePageSettings()
     {
@@ -98,7 +99,7 @@ public partial class MainWindow
         SerialPage.SendHistoryBox.ItemsSource = settings.SendHistory ?? [];
         try { ToolCatalog.Load(App.Data.Root); } catch (Exception ex) { Report("工具目录记录无法读取：" + ex.Message); }
         SettingsPage.ToolVersionBox.ItemsSource = ToolRelease.Available; SettingsPage.ToolVersionBox.SelectedIndex = 0;
-        SettingsPage.ReadElfPath.Text = string.IsNullOrEmpty(settings.ReadElf) ? ReadElfIndex.FindTool() ?? "" : settings.ReadElf;
+        SettingsPage.ReadElfPath.Text = string.IsNullOrEmpty(settings.ReadElf) ? ToolDiscovery.Suggest("", ToolDiscovery.Find(LocalToolKind.ReadElf, "", ToolDiscovery.Current())) : settings.ReadElf;
         Width = Math.Clamp(settings.Width, MinWidth, Math.Max(MinWidth, SystemParameters.WorkArea.Width));
         Height = Math.Clamp(settings.Height, MinHeight, Math.Max(MinHeight, SystemParameters.WorkArea.Height));
         ProjectPage.RecentProjects.ItemsSource = settings.Recent ?? [];

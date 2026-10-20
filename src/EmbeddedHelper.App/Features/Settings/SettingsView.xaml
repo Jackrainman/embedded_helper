@@ -2,14 +2,22 @@
   <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel Margin="18">
     <TextBlock Text="设置与诊断" Style="{StaticResource PageTitle}"/>
     <TextBlock Text="维护本机工具路径；连接参数从右上角配置，变量选择与频率在 MCU Viewer 设置。" Style="{StaticResource Description}"/>
-    <GroupBox Header="本机工具路径"><StackPanel>
-      <TextBlock Text="SEGGER JLink_x64.dll" FontWeight="SemiBold"/>
-      <TextBlock Text="点击“选择 DLL”，选择已安装 J-Link 软件中的 JLink_x64.dll 文件（不是文件夹），然后保存本机设置并运行环境检查。本软件不分发 SEGGER 库。" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
-      <DockPanel><Button DockPanel.Dock="Right" Content="选择 DLL" Click="BrowseDll" Margin="0,4,0,10"/><TextBox x:Name="DllPath"/></DockPanel>
-      <TextBlock Text="DWARF5 解析工具（可选）" FontWeight="SemiBold"/>
-      <TextBlock Text="DWARF4 使用内置解析；DWARF5 使用 arm-none-eabi-readelf.exe。自动检测 EIDE，也可填写完整路径。" Foreground="{StaticResource MutedBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
-      <TextBox x:Name="ReadElfPath"/>
-      <WrapPanel><Button Content="保存本机设置" Click="SaveSettings" Style="{StaticResource Primary}"/><Button Content="环境检查" Click="EnvironmentCheck"/><Button Content="打开日志目录" Click="OpenLogs"/></WrapPanel>
+    <GroupBox Header="采集与解析环境"><StackPanel>
+      <TextBlock Text="J-Link 设备访问组件" FontWeight="SemiBold"/>
+      <TextBlock Text="用于 MCU 变量采集和本地 RTT。优先沿用已指定版本，自动查找不会替换现有路径。" Style="{StaticResource Description}"/>
+      <TextBlock x:Name="JLinkStatus" Text="尚未指定组件" TextWrapping="Wrap"/>
+      <ComboBox x:Name="JLinkCandidates" DisplayMemberPath="Label" ToolTip="{Binding SelectedItem.Path, RelativeSource={RelativeSource Self}}"><ComboBox.ItemContainerStyle><Style TargetType="ComboBoxItem"><Setter Property="ToolTip" Value="{Binding Path}"/></Style></ComboBox.ItemContainerStyle></ComboBox>
+      <WrapPanel><Button Content="自动查找" Click="DiscoverTools"/><Button Content="使用所选组件" Click="UseJLink"/><Button Content="手动选择文件" Click="BrowseDll"/></WrapPanel>
+      <Expander Header="J-Link 详细设置"><TextBox x:Name="DllPath" ToolTip="JLink_x64.dll 完整路径"/></Expander>
+      <TextBlock Text="ELF 变量解析组件" FontWeight="SemiBold" Margin="0,14,0,0"/>
+      <TextBlock Text="用于读取变量名称、类型和地址。内置解析始终可用；部分 ELF 需要外部工具，打开文件时自动判断。" Style="{StaticResource Description}"/>
+      <TextBlock x:Name="ReadElfStatus" Text="内置解析可用" TextWrapping="Wrap"/>
+      <ComboBox x:Name="ReadElfCandidates" DisplayMemberPath="Label" ToolTip="{Binding SelectedItem.Path, RelativeSource={RelativeSource Self}}"><ComboBox.ItemContainerStyle><Style TargetType="ComboBoxItem"><Setter Property="ToolTip" Value="{Binding Path}"/></Style></ComboBox.ItemContainerStyle></ComboBox>
+      <WrapPanel><Button Content="自动查找" Click="DiscoverTools"/><Button Content="使用所选组件" Click="UseReadElf"/><Button Content="手动选择文件" Click="BrowseReadElf"/></WrapPanel>
+      <Expander Header="ELF 解析详细设置"><TextBox x:Name="ReadElfPath" ToolTip="arm-none-eabi-readelf.exe 完整路径；留空使用自动查找"/></Expander>
+      <TextBlock x:Name="DiscoveryNotes" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}"/>
+      <WrapPanel><Button Content="保存本机设置" Click="SaveSettings" Style="{StaticResource Primary}"/><Button Content="检查配置" Click="EnvironmentCheck"/><Button Content="打开日志目录" Click="OpenLogs"/></WrapPanel>
+      <TextBlock Text="文件校验不加载 DLL、不连接设备；实际加载及目标连接在开始采集时验证。" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/>
     </StackPanel></GroupBox>
     <GroupBox Header="Debug_LAN 工具版本"><StackPanel>
       <TextBlock Text="从 Template 官方 Release 下载，或导入原版 ZIP；每个版本独立保留。" Style="{StaticResource Description}" Margin="0,0,0,6"/>
