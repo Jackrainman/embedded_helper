@@ -117,7 +117,7 @@ public partial class MainWindow
             if (indexing || acquisition.IsBusy || configurationBusy) throw new InvalidOperationException("请等待当前操作完成。");
             if (loaded == null || target == null) throw new ObservationPreparationException(ObservationConfigurationArea.Project, "请先打开工程并选择目标。");
             var tool = SettingsPage.ReadElfPath.Text;
-            var ready = await ObservationPreparation.PrepareAsync(loaded, target, ProjectPage.ElfPath.Text, SettingsPage.DllPath.Text, path => ElfIndexService.ReadAsync(path, tool), transport: activeTransport);
+            var ready = await ObservationPreparation.PrepareAsync(loaded, target, ProjectPage.ElfPath.Text, SettingsPage.DllPath.Text, path => ReadElfWithFeedbackAsync(path, tool), transport: activeTransport);
             if (shutdownRequested || project != loaded || Target != target) return;
             observationView.LoadIndex(ready.Index, ready.Settings.Identities);
             elfStamp = ready.ElfStamp; RefreshViewerRows(); ApplyWatchToSetup(ready.Settings);

@@ -66,7 +66,7 @@
     },
     {
       "id": "R-31",
-      "status": "todo",
+      "status": "in_progress",
       "refs": [
         "VIS-02",
         "NFR-01"

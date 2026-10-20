@@ -20,7 +20,7 @@
     </Style>
   </UserControl.Resources>
   <Grid Margin="12"><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-    <WrapPanel Margin="0,0,0,8">
+    <StackPanel><WrapPanel Margin="0,0,0,8">
       <TextBlock Text="MCU Viewer" FontSize="18" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,14,8"/>
       <StackPanel Orientation="Horizontal">
         <Button x:Name="StartButton" Content="{Binding StartText}" Style="{StaticResource StartAction}" Click="StartObservation" IsEnabled="{Binding CanStart}"/>
@@ -56,6 +56,8 @@
         <Button Content="添加变量" Style="{StaticResource AddAction}" Click="AddVariables" IsEnabled="{Binding CanEdit}"/>
       </StackPanel>
     </WrapPanel>
+    <TextBlock Text="{Binding ElfStatus}" TextWrapping="Wrap" Margin="0,0,0,6"/>
+    <Expander Header="解析详细信息" Visibility="{Binding HasElfDetails, Converter={StaticResource VisibleWhenTrue}}" Margin="0,0,0,6"><TextBox Text="{Binding ElfDetails, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"/></Expander></StackPanel>
     <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="330" MinWidth="260" MaxWidth="600"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*" MinWidth="260"/></Grid.ColumnDefinitions>
       <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>
         <TextBlock x:Name="ConfigurationSummary" Text="{Binding Summary}" TextWrapping="Wrap" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,6"/>

@@ -81,6 +81,7 @@ public partial class MainWindow
     private async void TargetChanged(object? sender, SelectionChangedEventArgs e)
     {
         connectionFailure = "";
+        SetElfFeedback(new("尚未解析当前目标 ELF"));
         InvalidateViewer(); remoteView.Invalidate();
         Variables.Clear();
         if (Target is not { } target) { ProjectPage.ElfPath.Text = ""; return; }

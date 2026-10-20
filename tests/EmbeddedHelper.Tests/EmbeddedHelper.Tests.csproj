@@ -11,6 +11,8 @@
     <Compile Include="../../src/EmbeddedHelper.App/Features/Observation/ObservationViewModel.cs" Link="App/ObservationViewModel.cs" />
     <Compile Include="../../src/EmbeddedHelper.App/Features/Observation/VariableRow.cs" Link="App/VariableRow.cs" />
     <Compile Include="../../src/EmbeddedHelper.App/Features/Remote/RemoteViewModel.cs" Link="App/RemoteViewModel.cs" />
+    <Compile Include="../../src/EmbeddedHelper.App/Services/ElfIndexService.cs" Link="App/ElfIndexService.cs" />
+    <Compile Include="../../src/EmbeddedHelper.App/Services/ElfParseFeedback.cs" Link="App/ElfParseFeedback.cs" />
   </ItemGroup>
   <Target Name="PrepareWorkerForTests" AfterTargets="Build">
     <MSBuild Projects="../../src/EmbeddedHelper.Worker/EmbeddedHelper.Worker.csproj" Targets="GetTargetPath" Properties="Configuration=$(Configuration);TargetFramework=$(TargetFramework)">

@@ -50,6 +50,10 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     public bool VariablesMissing => !HasVariables;
     public bool PlotMissing => !HasPlot;
     public bool HasPlot => Series.Any(s => s.Length > 1);
+    private string elfStatus = "尚未解析 ELF", elfDetails = "";
+    public string ElfStatus { get => elfStatus; set => Set(ref elfStatus, value); }
+    public string ElfDetails { get => elfDetails; set { Set(ref elfDetails, value); Notify(nameof(HasElfDetails)); } }
+    public bool HasElfDetails => ElfDetails.Length > 0;
     public event PropertyChangedEventHandler? PropertyChanged;
     private bool Set<T>(ref T field, T value, [CallerMemberName] string? name = null)
     { if (EqualityComparer<T>.Default.Equals(field, value)) return false; field = value; Notify(name); return true; }

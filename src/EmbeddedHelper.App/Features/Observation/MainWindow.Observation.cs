@@ -22,6 +22,30 @@ public partial class MainWindow
     private long samples;
     private readonly Stopwatch sampling = new();
     private bool ObservationBusy => indexing || loadingProject || acquisition.IsBusy || preparing || shutdownRequested;
+    private void SetElfFeedback(ElfParseFeedback feedback)
+    {
+        observationView.ElfStatus = feedback.Message; observationView.ElfDetails = feedback.Details;
+        ProjectPage.ElfStatus.Text = feedback.Message;
+        ProjectPage.ElfDetails.Text = feedback.Details;
+        ProjectPage.ElfDetailsPanel.Visibility = feedback.Details.Length == 0 ? Visibility.Collapsed : Visibility.Visible;
+    }
+    private async Task<Variable[]> ReadElfWithFeedbackAsync(string path, string tool)
+    {
+        SetElfFeedback(new("正在解析 ELF，请稍候…"));
+        try
+        {
+            var result = await ElfIndexService.ReadAsync(path, tool);
+            SetElfFeedback(ElfParseFeedback.Success(result));
+            return result;
+        }
+        catch (Exception ex)
+        {
+            SetElfFeedback(ElfParseFeedback.Failure(ex));
+            observationView.ReplaceRows(Variables.Where(v => v.Selected).Select(v => new VariableRow(v.Variable with { Status = "ELF 解析失败，地址不可用" }) { Selected = true }).ToArray());
+            observationView.Series = []; elfStamp = default;
+            throw;
+        }
+    }
 
     private void SyncObservationState()
     {
@@ -31,6 +55,8 @@ public partial class MainWindow
         RttPage.StartButton.IsEnabled = !ObservationBusy && !configurationBusy && (!acquisition.HasSession || (rttSession && acquisition.CanRetry));
         RttPage.StopButton.IsEnabled = rttSession && acquisition.HasSession && !acquisition.IsBusy;
         ProjectPage.TargetBox.IsEnabled = observationView.CanEdit;
+        ProjectPage.ParseElfButton.IsEnabled = observationView.CanEdit;
+        ProjectPage.BrowseElfButton.IsEnabled = observationView.CanEdit;
         EnableConnectionFields(observationView.CanEdit);
         UpdateProjectHeader();
     }
@@ -48,7 +74,7 @@ public partial class MainWindow
         try
         {
             var path = ProjectPage.ElfPath.Text;
-            var indexed = await ElfIndexService.ReadAsync(path, SettingsPage.ReadElfPath.Text);
+            var indexed = await ReadElfWithFeedbackAsync(path, SettingsPage.ReadElfPath.Text);
             var selected = Variables.Where(v => v.Selected).Select(v => v.Variable.Identity).ToHashSet();
             if (selected.Count == 0 && project != null)
             {
@@ -63,11 +89,21 @@ public partial class MainWindow
                 ResetObservationDisplay();
             }
             observationView.ReplaceRows(rows);
+            if (!indexed.Any(v => v.Supported)) { prepared = null; observationView.Ready = false; }
             elfStamp = File.GetLastWriteTimeUtc(path);
             RefreshProjectDiagnostics(path);
             RefreshViewerRows(); displayDirty = true;
             observationView.Status = $"ELF 已解析：{indexed.Length} 项，{indexed.Count(v => v.Supported)} 项可读取 · 与目标固件匹配未核验";
             Report(!acquisition.HasSession ? "变量索引完成；地址来自 ELF，尚未连接硬件。" : $"读计划第 {acquisition.Generation} 代已在批次边界应用；新曲线重新开始，缺失项标为无效。固件与 ELF 仍未核验。");
+        }
+        catch (Exception ex)
+        {
+            SetElfFeedback(ElfParseFeedback.Failure(ex));
+            observationView.ReplaceRows(Variables.Where(v => v.Selected).Select(v => new VariableRow(v.Variable with { Status = "ELF 解析失败，地址不可用" }) { Selected = true }).ToArray());
+            elfStamp = default;
+            ShowViewerIssue(observationView.ElfStatus, false, ObservationConfigurationArea.Project);
+            RefreshViewerRows(); observationView.Series = [];
+            throw;
         }
         finally { indexing = false; SyncObservationState(); }
     }

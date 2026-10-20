@@ -33,7 +33,26 @@ public static class ElfIndex
             throw new InvalidDataException("当前支持 ELF32 小端 ARM 文件。");
         stream.Position = 0;
         var elf = ElfFile.Read(stream);
+        var debug = elf.Sections.OfType<ElfStreamSection>().FirstOrDefault(s => s.Name.ToString() == ".debug_info")?.Stream;
+        if (debug == null || debug.Length == 0) throw new InvalidDataException("ELF 缺少可用调试信息。");
+        var originalPosition = debug.Position;
+        try
+        {
+            debug.Position = 0;
+            using var reader = new BinaryReader(debug, System.Text.Encoding.UTF8, leaveOpen: true);
+            while (debug.Position < debug.Length)
+            {
+                ulong length = reader.ReadUInt32();
+                if (length == uint.MaxValue) length = reader.ReadUInt64();
+                if (length < 2 || length > (ulong)(debug.Length - debug.Position)) throw new InvalidDataException("ELF 调试信息长度无效。");
+                var end = debug.Position + (long)length;
+                if (reader.ReadUInt16() >= 5) throw new NotSupportedException("DWARF5 需要 ARM readelf。");
+                debug.Position = end;
+            }
+        }
+        finally { debug.Position = originalPosition; }
         var dwarf = DwarfFile.ReadFromElf(elf);
+        if (dwarf.InfoSection.Units.Count == 0) throw new InvalidDataException("ELF 缺少可用调试信息。");
         var result = new List<Variable>();
         foreach (var unit in dwarf.InfoSection.Units)
         {
@@ -41,7 +60,6 @@ public static class ElfIndex
             var cu = Attribute(root, DwarfAttributeKind.Name)?.ValueAsObject as string ?? "";
             Walk(root, cu, "", result);
         }
-        if (result.Count == 0) throw new InvalidDataException("没有找到固定地址变量。请启用 DWARF4 调试信息（-g -gdwarf-4）。");
         return result.OrderBy(v => v.Name, StringComparer.Ordinal).ToArray();
     }
 

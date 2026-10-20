@@ -32,7 +32,6 @@ public static class ObservationPreparation
             if (watch.Identities.Length > 0)
             {
                 area = ObservationConfigurationArea.Project;
-                if (!File.Exists(elfPath)) throw new InvalidDataException("工程目标的 ELF 不存在。请先在工程概览中确认 ELF 并解析变量。");
                 indexed = await index(elfPath);
             }
             area = ObservationConfigurationArea.Connection;

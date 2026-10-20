@@ -20,6 +20,8 @@ public partial class MainWindow
             await LoadProjectAsync(System.IO.Path.Combine(directory, "project"));
             ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf");
             await ParseElfAsync();
+            if (!ProjectPage.ElfStatus.Text.Contains("解析成功：7") || observationView.HasElfDetails)
+                throw new InvalidDataException("ELF 成功反馈未就地显示。");
             if (ProjectPage.ProjectDiagnostics.Text.Contains($"目标 {Target!.Name} 的 ELF 不存在")) throw new InvalidDataException("成功解析后仍保留旧ELF缺失诊断。");
             if (Variables.Count(v => v.Variable.Supported) != 7) throw new InvalidDataException("标量类型自检失败。");
             remoteView.Host = "test.example.invalid"; PreviewConfig(null, null!);
@@ -48,7 +50,13 @@ public partial class MainWindow
             ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "missing.elf");
             await Guard(ParseElfAsync);
             if (!StatusLabel.Text.StartsWith("操作未完成：", StringComparison.Ordinal)) throw new InvalidDataException("ELF 错误未反馈到界面。");
+            if (!ProjectPage.ElfStatus.Text.StartsWith("解析失败") || !observationView.HasElfDetails || Variables.Any(v => v.Variable.Supported))
+                throw new InvalidDataException("解析失败后仍显示旧成功或可读取地址。");
+            SaveSmokeScreenshot(directory, "elf-missing-feedback.png");
             ProjectPage.ElfPath.Text = savedElf;
+            await ParseElfAsync();
+            if (!ProjectPage.ElfStatus.Text.Contains("解析成功：7") || observationView.HasElfDetails)
+                throw new InvalidDataException("ELF 失败后重试未恢复成功反馈。");
             await Guard(() => SendSerialAsync(CancellationToken.None));
             if (!StatusLabel.Text.Contains("请先打开串口")) throw new InvalidDataException("未连接串口的错误未反馈。");
             SerialPage.SerialPortBox.Text = "";
