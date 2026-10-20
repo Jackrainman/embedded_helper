@@ -106,6 +106,7 @@ public partial class MainWindow
         // All files below belong to the caller's isolated smoke project; no SDK is loaded.
         var watchPath = System.IO.Path.Combine(root, ".embedded_helper", "watch.json");
         if (File.Exists(watchPath)) File.Delete(watchPath);
+        ApplyWatchToSetup(null);
         Pages.SelectedIndex = 1;
         await viewerPreparation;
         if (preparedWatch != null || ObservationPage.StartButton.IsEnabled || ObservationPage.ConfigurationRequired.Visibility != Visibility.Visible) throw new InvalidDataException("缺少工程观察设置时未阻止采集。");
@@ -122,7 +123,9 @@ public partial class MainWindow
                 var picker = panel.Children.OfType<VariablePicker>().Single();
                 if (!ReferenceEquals(picker.Variables, Variables) || picker.AddedVariables.Visibility != Visibility.Collapsed || ObservationPage.Picker.SearchBox.Visibility != Visibility.Collapsed)
                     throw new InvalidDataException("变量弹窗与主页面职责或集合不一致。");
-                picker.SearchBox.Text = Variables.First(v => v.Variable.Supported).Variable.Name;
+                var candidate = Variables.First(v => v.Variable.Supported);
+                candidate.Selected = false;
+                picker.SearchBox.Text = candidate.Variable.Name;
                 if (picker.Results.Items.Count == 0) throw new InvalidDataException("弹窗搜索未返回变量。");
                 dialogChecked = true;
             }
