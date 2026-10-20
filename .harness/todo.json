@@ -592,7 +592,7 @@
     },
     {
       "id": "R-30",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "REL-01",
         "NFR-01"
@@ -600,7 +600,7 @@
       "dependsOn": [
         "R-29"
       ],
-      "doneWhen": "固化修改、提交、编译、桌面交付、软件及 UI 测试、关闭本次窗口的默认 workflow；版本按语义自动升级，提交/打包/CI 强制校验。隔离仓库测试覆盖自动升级、重复提交、版本冲突及绕过钩子的阻断；交付新包并完成本机检查。"
+      "doneWhen": "固化修改、提交、编译、桌面交付、软件及 UI 测试、关闭本次窗口的默认 workflow；版本按语义自动升级，提交/打包/CI 强制校验。隔离仓库测试覆盖自动升级、重复提交、版本冲突及绕过钩子的阻断；交付新包并完成本机检查。 R-30 已完成：源码 8de3625，版本 0.3.1-alpha.1；28 项 Harness 和 77 项 C# 测试、成品启动自检、桌面 EXE/ZIP 校验通过。交付 C:/Users/Mechrevo/Desktop/EmbeddedHelper_test/EmbeddedHelper-0.3.1-alpha.1-8de3625-workflow。Computer Use 确认标题/页头版本、MCU Viewer 频率框上下滚轮不改变数值或居中位置；截图 test-results/workflow-ui/frequency-scroll.png。本次窗口 1446136 已关闭，用户原有旧包窗口 2165978 保留，清理记录 window-cleanup.json。未连接硬件，未运行远程 CI，未 push/tag/release。"
     }
   ]
 }
