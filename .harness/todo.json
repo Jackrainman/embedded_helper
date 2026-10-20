@@ -528,7 +528,7 @@
     },
     {
       "id": "H-07",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "REL-01",
         "AC-14"
