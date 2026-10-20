@@ -554,7 +554,7 @@
     },
     {
       "id": "R-27",
-      "status": "in_progress",
+      "status": "done",
       "refs": [
         "CON-03",
         "NFR-01"
