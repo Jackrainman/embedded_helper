@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using System.Threading.Channels;
 
@@ -33,7 +34,16 @@ public sealed class ObservationSession : IObservationSession
         if (!File.Exists(request.Dll)) throw new FileNotFoundException("未找到 SEGGER JLink_x64.dll，请在设置中选择外部安装的 64 位库。", request.Dll);
         new ReadPlan(Generation, request.SampleRate, request.Variables).Validate();
         if (request.Host.Length == 0 && request.ProbeSerial <= 0) throw new ArgumentException("请输入具体探针序列号，不自动选择其他探针。");
-        var start = new ProcessStartInfo(worker) { UseShellExecute = false, RedirectStandardInput = true, RedirectStandardOutput = true, RedirectStandardError = true, CreateNoWindow = true };
+        var start = new ProcessStartInfo(worker)
+        {
+            UseShellExecute = false,
+            RedirectStandardInput = true,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            StandardOutputEncoding = Encoding.UTF8,
+            StandardErrorEncoding = Encoding.UTF8,
+            CreateNoWindow = true
+        };
         start.ArgumentList.Add("--observe");
         process = Process.Start(start) ?? throw new IOException("无法启动采集进程。");
         State = "连接中";

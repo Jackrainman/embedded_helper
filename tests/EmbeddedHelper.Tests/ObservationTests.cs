@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using EmbeddedHelper.Core;
@@ -70,5 +71,30 @@ public sealed class ObservationTests : TestWorkspace
         await retry.DisposeAsync();
         Assert.NotEqual(session.SessionId, retry.SessionId);
         Assert.Equal("已释放", retry.State);
+    }
+
+    [Fact]
+    public async Task ActualWorkerChineseErrorSurvivesLegacyParentEncoding()
+    {
+        var worker = Path.Combine(AppContext.BaseDirectory, "worker", "EmbeddedHelper.Worker.exe");
+        var invalidLibrary = Path.Combine(root, "not-loaded.dll");
+        File.WriteAllText(invalidLibrary, "Rejected before loading; no device access.");
+        var request = new ObservationRequest(Path.GetRelativePath(Environment.CurrentDirectory, invalidLibrary),
+            1, "", 19011, "STM32G474VE", "SWD", 8000, 100, false, []);
+        Encoding.RegisterProvider(CodePagesEncodingProvider.Instance);
+        var previousEncoding = Console.OutputEncoding;
+        await using var session = new ObservationSession();
+        try
+        {
+            Console.OutputEncoding = Encoding.GetEncoding(936);
+            var error = await Assert.ThrowsAsync<IOException>(() => session.StartAsync(worker, request));
+            Assert.Equal("采集失败：SDK 必须为绝对路径。", error.Message);
+        }
+        finally
+        {
+            Console.OutputEncoding = previousEncoding;
+            await session.DisposeAsync();
+        }
+        Assert.Equal("已释放", session.State);
     }
 }
