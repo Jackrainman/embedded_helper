@@ -6,9 +6,10 @@
       <Button x:Name="StartButton" Content="{Binding StartText}" Style="{StaticResource Primary}" Click="StartObservation" IsEnabled="{Binding CanStart}"/>
       <Button x:Name="StopButton" Content="停止并释放" Click="StopObservation" IsEnabled="{Binding CanStop}"/>
       <CheckBox x:Name="PauseObservation" Content="暂停显示" IsChecked="{Binding Paused}"/>
-      <TextBlock Text="频率设置（Hz）" VerticalAlignment="Center" Margin="10,0,2,0"/><TextBox x:Name="SampleRate" Text="100" Width="64" IsEnabled="{Binding CanEdit}"/>
+      <TextBlock Text="频率设置（Hz）" VerticalAlignment="Center" Margin="10,0,2,0"/><TextBox x:Name="SampleRate" Text="200" Width="64" IsEnabled="{Binding CanEdit}"/>
       <Button Content="保存数据" ToolTip="保存当前变量选择和采样频率；不导出采集数据。" Click="SaveVariables" IsEnabled="{Binding CanEdit}"/>
       <Button Content="更新 ELF" Click="ParseElf" IsEnabled="{Binding CanEdit}"/>
+      <Button Content="添加变量" Click="AddVariables" IsEnabled="{Binding CanEdit}"/>
     </WrapPanel>
     <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="330" MinWidth="260" MaxWidth="600"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*" MinWidth="260"/></Grid.ColumnDefinitions>
       <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition/></Grid.RowDefinitions>

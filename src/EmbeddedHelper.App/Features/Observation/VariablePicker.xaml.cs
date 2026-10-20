@@ -13,7 +13,16 @@ public partial class VariablePicker : UserControl
     public static readonly DependencyProperty CanEditProperty = DependencyProperty.Register(nameof(CanEdit), typeof(bool), typeof(VariablePicker), new PropertyMetadata(true));
     public bool CanEdit { get => (bool)GetValue(CanEditProperty); set => SetValue(CanEditProperty, value); }
     private readonly HashSet<VariableRow> subscribed = [];
-    public VariablePicker() => InitializeComponent();
+    public VariablePicker() { InitializeComponent(); SetSearchMode(false); }
+    public void SetSearchMode(bool search)
+    {
+        SearchBox.Visibility = Hint.Visibility = SearchResults.Visibility = search ? Visibility.Visible : Visibility.Collapsed;
+        AddedVariables.Visibility = search ? Visibility.Collapsed : Visibility.Visible;
+        Divider.Visibility = Visibility.Collapsed;
+        Layout.RowDefinitions[2].Height = search ? new GridLength(1, GridUnitType.Star) : new GridLength(0);
+        Layout.RowDefinitions[3].Height = new GridLength(0);
+        Layout.RowDefinitions[4].Height = search ? new GridLength(0) : new GridLength(1, GridUnitType.Star);
+    }
     private static void SourceChanged(DependencyObject sender, DependencyPropertyChangedEventArgs e)
     {
         var picker = (VariablePicker)sender;
@@ -39,13 +48,13 @@ public partial class VariablePicker : UserControl
         var matches = query.Length == 0 ? [] : rows.Where(r => !r.Selected && (r.Label.Contains(query, StringComparison.OrdinalIgnoreCase) || r.Variable.Identity.Contains(query, StringComparison.OrdinalIgnoreCase))).ToArray();
         Results.ItemsSource = matches.Take(200).ToArray();
         SelectedRows.ItemsSource = rows.Where(r => r.Selected).ToArray();
-        Hint.Text = rows.Length == 0 ? "请先解析 ELF。" : query.Length == 0 ? "输入名称或类型搜索；已观察列表不受搜索影响。修改后请保存。" : $"匹配 {matches.Length} 项{(matches.Length > 200 ? "，仅显示前 200 项，请细化搜索" : "")}；已观察 {rows.Count(r => r.Selected)} 项。修改后请保存。";
+        Hint.Text = rows.Length == 0 ? "请先解析 ELF。" : query.Length == 0 ? "输入名称或类型搜索；已添加列表不受搜索影响。修改后请保存。" : $"匹配 {matches.Length} 项{(matches.Length > 200 ? "，仅显示前 200 项，请细化搜索" : "")}；已添加 {rows.Count(r => r.Selected)} 项。修改后请保存。";
     }
     private void Add(object sender, RoutedEventArgs e)
     {
         if (!CanEdit) return;
         if (((FrameworkElement)sender).DataContext is not VariableRow row || !row.Variable.Supported || row.Selected) return;
-        if ((Variables?.Count(r => r.Selected) ?? 0) >= 64) { Hint.Text = "最多观察 64 项，请先移除不需要的变量。"; return; }
+        if ((Variables?.Count(r => r.Selected) ?? 0) >= 64) { Hint.Text = "最多添加 64 项，请先移除不需要的变量。"; return; }
         row.Selected = true;
     }
     private void Remove(object sender, RoutedEventArgs e) { if (CanEdit && ((FrameworkElement)sender).DataContext is VariableRow row) row.Selected = false; }

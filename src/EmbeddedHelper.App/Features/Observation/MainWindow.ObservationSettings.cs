@@ -44,13 +44,13 @@ public partial class MainWindow
     private void ConfigureObservation(object? sender, RoutedEventArgs e)
     {
         if (configurationDestination == ObservationConfigurationArea.Observation)
-        { ObservationPage.Picker.SearchBox.Focus(); return; }
+        { ObservationPage.ShowAddVariables(); return; }
         if (configurationDestination == ObservationConfigurationArea.Connection) { ConfigureConnection(sender, e); return; }
         Pages.SelectedIndex = configurationDestination == ObservationConfigurationArea.Settings ? 4 : 0;
         ProjectSections.SelectedIndex = configurationDestination switch { ObservationConfigurationArea.Project => 0, ObservationConfigurationArea.Remote => 1, _ => 0 };
     }
     private void ApplyWatchToSetup(WatchSettings? watch)
-    { ObservationPage.SampleRate.Text = (watch?.Rate ?? 100).ToString(CultureInfo.InvariantCulture); }
+    { ObservationPage.SampleRate.Text = (watch?.Rate ?? 200).ToString(CultureInfo.InvariantCulture); }
     private async Task LoadConnectionAsync()
     {
         var loaded = project; var target = Target;

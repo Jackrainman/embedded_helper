@@ -7,6 +7,34 @@ namespace EmbeddedHelper.App;
 public partial class ObservationView : UserControl
 {
     public ObservationView() => InitializeComponent();
+    private void AddVariables(object sender, RoutedEventArgs e) => ShowAddVariables();
+    public void ShowAddVariables()
+    {
+        if (!Picker.CanEdit) return;
+        var picker = new VariablePicker { Variables = Picker.Variables, CanEdit = Picker.CanEdit };
+        picker.SetSearchMode(true);
+        var panel = new DockPanel { Margin = new Thickness(16) };
+        var close = new Button { Content = "完成", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 8, 0, 0), MinWidth = 80 };
+        DockPanel.SetDock(close, Dock.Bottom);
+        panel.Children.Add(close);
+        panel.Children.Add(picker);
+        var dialog = new Window
+        {
+            Title = "添加变量",
+            Owner = Window.GetWindow(this),
+            Content = panel,
+            Width = 720,
+            Height = 560,
+            MinWidth = 440,
+            MinHeight = 320,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            Background = (System.Windows.Media.Brush)FindResource("MainBackground")
+        };
+        close.Click += (_, _) => dialog.Close();
+        dialog.Loaded += (_, _) => picker.SearchBox.Focus();
+        try { dialog.ShowDialog(); }
+        finally { picker.Variables = null; }
+    }
     public event RoutedEventHandler? SaveVariablesRequested;
     private void SaveVariables(object sender, RoutedEventArgs e) => SaveVariablesRequested?.Invoke(sender, e);
     public event RoutedEventHandler? ConnectionRequested;
