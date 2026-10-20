@@ -24,6 +24,7 @@ public partial class MainWindow
     {
         if (project == null || Target == null) { Report("请先打开项目并选择目标。"); return; }
         if (ObservationBusy || configurationBusy || acquisition.HasSession) { Report("请先停止并释放当前采集，再修改连接配置。"); return; }
+        if (activeTransport == "remote") { Pages.SelectedIndex = 0; ProjectSections.SelectedIndex = 1; return; }
         var dialog = new Window
         {
             Title = "连接配置",
@@ -58,7 +59,7 @@ public partial class MainWindow
         if (loaded == null || target == null) { ConnectionPage.ProbeSerial.Text = ""; return; }
         try
         {
-            var saved = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name);
+            var saved = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name, "local", validate: false);
             if (project != loaded || Target != target) return;
             ConnectionPage.ProbeSerial.Text = saved?.ProbeSerial ?? "";
             ConnectionPage.SetupStatus.Text = saved == null ? "当前目标尚未保存连接。" : "已读取共享连接；旧 watch.json 连接字段可兼容使用。修改后请保存。";
@@ -71,6 +72,7 @@ public partial class MainWindow
         var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
         var target = Target ?? throw new InvalidOperationException("请选择目标。");
         ConnectionSettingsStore.Save(loaded.Root, new(target.Name, activeTransport, ConnectionPage.ProbeSerial.Text.Trim()));
+        connectionFailure = "";
         InvalidateViewer();
         ConnectionPage.SetupStatus.Text = "共享连接已保存；变量列表和采样率未改动。";
         await RefreshRttConnectionAsync();
@@ -132,10 +134,12 @@ public partial class MainWindow
         {
             if (project != loaded || Target != target || shutdownRequested) return;
             ShowViewerIssue(ex.Message, true, ex.Area);
+            RefreshViewerRows();
             if (ex.SavedSettings is { } saved)
             {
                 ApplyWatchToSetup(saved);
-                observationView.LoadIndex(ex.Index, saved.Identities);
+                if (ex.Index.Length > 0 || Variables.Count == 0)
+                    observationView.LoadIndex(ex.Index, saved.Identities);
                 observationView.Summary = $"已保存变量 · {saved.Rate} Hz · {saved.Identities.Length} 项 · 配置未就绪";
             }
         }

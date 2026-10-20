@@ -80,7 +80,15 @@ public partial class MainWindow
         var ready = prepared;
         if (ready == null || shutdownRequested) return;
         rttSession = false;
-        await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request);
+        connectionFailure = "";
+        try { await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request); }
+        catch (Exception ex)
+        {
+            connectionFailure = ex.Message;
+            observationView.Status = "连接失败：" + ex.Message + "；可重试连接。";
+            SyncObservationState();
+            throw;
+        }
         if (!acquisition.HasSession || shutdownRequested) return;
         ResetObservationDisplay();
         foreach (var row in Variables) { row.History.Clear(); row.LatestValue = null; row.LastObservedAt = null; row.Value = row.Variable.Supported ? "等待新会话数据" : row.Variable.Status; }

@@ -3,11 +3,37 @@ using System.Text.Json;
 namespace EmbeddedHelper.Core;
 
 public sealed record ConnectionSettings(string Target, string Transport, string ProbeSerial);
+public enum ConnectionConfigurationState { Pending, Valid, Invalid }
+public sealed record ConnectionConfiguration(ConnectionConfigurationState State, string Message);
 
 public static class ConnectionSettingsStore
 {
-    public static async Task<ConnectionSettings?> LoadAsync(string root, string target, string? transport = null)
+    public static async Task<ConnectionConfiguration> InspectAsync(ProjectInfo project, BuildTarget? target, string transport)
     {
+        try
+        {
+            if (target == null) return new(ConnectionConfigurationState.Pending, "请选择工程目标");
+            if (string.IsNullOrWhiteSpace(target.Device) || target.Interface is not ("SWD" or "JTAG") || target.SpeedKHz <= 0)
+                return new(ConnectionConfigurationState.Invalid, "工程目标的 J-Link 参数不完整，请检查目标配置");
+            if (transport == "remote")
+            {
+                if (!File.Exists(project.RemotePath)) return new(ConnectionConfigurationState.Pending, "请到远程配置填写主机和端口");
+                await RemoteEndpointAsync(project);
+            }
+            else
+            {
+                var saved = await LoadAsync(project.Root, target.Name, transport, validate: false);
+                if (saved == null || string.IsNullOrWhiteSpace(saved.ProbeSerial))
+                    return new(ConnectionConfigurationState.Pending, "请填写本地 J-Link 序列号");
+                Validate(saved);
+            }
+            return new(ConnectionConfigurationState.Valid, "连接配置有效");
+        }
+        catch (Exception ex) { return new(ConnectionConfigurationState.Invalid, ex.Message); }
+    }
+    public static async Task<ConnectionSettings?> LoadAsync(string root, string target, string? transport = null, bool validate = true)
+    {
+        if (transport == "remote") return new(target, "remote", "");
         var path = Path.Combine(root, ".embedded_helper", "connection.json");
         ConnectionSettings? connection;
         if (File.Exists(path))
@@ -22,7 +48,7 @@ public static class ConnectionSettingsStore
         if (string.IsNullOrWhiteSpace(connection.Target)) throw new InvalidDataException("连接配置缺少目标。");
         if (connection.Target != target) return transport == "remote" ? new(target, "remote", "") : null;
         if (transport != null) connection = connection with { Transport = transport };
-        Validate(connection);
+        if (validate) Validate(connection);
         return connection;
     }
     public static void Validate(ConnectionSettings settings)

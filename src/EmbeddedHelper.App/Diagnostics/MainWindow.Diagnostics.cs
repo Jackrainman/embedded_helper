@@ -158,7 +158,7 @@ public partial class MainWindow
         WatchSettingsStore.Save(root, saved with { Transport = "remote", EnableRtt = false });
         await PrepareViewerAsync();
         if (preparedWatch != null || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("缺少远程配置时未阻止采集。");
-        if (observationView.VisibleRows.Length != 2 || observationView.VisibleRows.Any(r => r.Address != "未解析") || !observationView.Summary.Contains("已保存")) throw new InvalidDataException("缺远程配置时丢失已保存变量或显示错误RTT状态。");
+        if (observationView.VisibleRows.Length != 2 || observationView.VisibleRows.Any(r => r.Address == "未解析") || !observationView.Summary.Contains("已保存")) throw new InvalidDataException("缺远程配置时丢失已解析变量或显示错误RTT状态。");
         await SaveObservationSmokeStateAsync(directory, "page-1-missing-remote.png");
         ConfigureObservation(null, null!);
         if (Pages.SelectedIndex != 0 || ProjectSections.SelectedIndex != 1) throw new InvalidDataException("缺少远程配置时恢复入口未到远程配置。");
@@ -205,11 +205,11 @@ public partial class MainWindow
         var remoteText = File.Exists(remotePath) ? await File.ReadAllTextAsync(remotePath) : null;
         File.Delete(remotePath);
         await RefreshProjectConnectionAsync();
-        if (activeTransport != "local" || GlobalTransport.SelectedIndex != 0 || ProjectStateLabel.Foreground != Brushes.LightGreen || ConnectionStateLabel.Text != "未连接")
+        if (activeTransport != "local" || GlobalTransport.SelectedIndex != 0 || ProjectStateLabel.Foreground != Brushes.LightGreen || !ConnectionStateLabel.Text.Contains("连接配置有效 · 未连接"))
             throw new InvalidDataException("本地默认状态或已就绪状态错误。");
         await Guard(() => SelectTransportAsync("remote"));
-        if (activeTransport != "local" || GlobalTransport.SelectedIndex != 0 || !StatusLabel.Text.Contains("项目未配置远程连接"))
-            throw new InvalidDataException("缺少远程连接时未保留原选择。");
+        if (activeTransport != "remote" || GlobalTransport.SelectedIndex != 1 || !ConnectionStateLabel.Text.Contains("连接待设置") || ProjectStateLabel.Foreground != Brushes.LightGreen)
+            throw new InvalidDataException("缺少远程连接时未显示待设置或污染项目状态。");
         await File.WriteAllTextAsync(remotePath, "{\"ServerName\":\"saved.invalid\",\"Port\":19011,\"WebUrl\":\"http://saved.invalid:8000\"}");
         await SelectTransportAsync("remote");
         if (activeTransport != "remote" || GlobalTransport.SelectedIndex != 1 || ProjectStateLabel.Foreground != Brushes.LightGreen)
@@ -222,7 +222,7 @@ public partial class MainWindow
         preparing = false; SyncObservationState();
         File.Delete(remotePath);
         await RefreshProjectConnectionAsync();
-        if (ProjectStateLabel.Foreground != Brushes.Salmon || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("远程配置丢失未显示红色。");
+        if (ProjectStateLabel.Foreground != Brushes.LightGreen || !ConnectionStateLabel.Text.Contains("连接待设置") || ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("远程配置丢失未显示待设置或未阻止采集。");
         SaveSmokeScreenshot(directory, "header-invalid-remote.png");
         await SelectTransportAsync("local");
         if (remoteText != null) await File.WriteAllTextAsync(remotePath, remoteText);

@@ -83,7 +83,7 @@
     },
     {
       "id": "R-32",
-      "status": "todo",
+      "status": "in_progress",
       "refs": [
         "CON-03",
         "NFR-01"

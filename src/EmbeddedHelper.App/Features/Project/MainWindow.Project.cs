@@ -36,6 +36,7 @@ public partial class MainWindow
         {
             var loaded = await Task.Run(() => ProjectReader.Read(path));
             project = loaded;
+            connectionFailure = "";
             activeTransport = "local";
             SetTransportSelection();
             ProjectPage.ProjectPath.Text = loaded.Root;
@@ -59,10 +60,14 @@ public partial class MainWindow
                 SettingsPage.ToolVersionBox.SelectedItem = ToolCache.ReadLock(loaded.Root);
             if (File.Exists(loaded.RemotePath))
             {
-                using var remote = JsonDocument.Parse(await File.ReadAllTextAsync(loaded.RemotePath), ProjectReader.JsonOptions);
-                remoteView.Host = remote.RootElement.GetProperty("ServerName").GetString() ?? "";
-                remoteView.Port = remote.RootElement.GetProperty("Port").GetInt32().ToString(CultureInfo.InvariantCulture);
-                remoteView.Web = remote.RootElement.TryGetProperty("WebUrl", out var web) ? web.GetString() ?? "" : "";
+                try
+                {
+                    using var remote = JsonDocument.Parse(await File.ReadAllTextAsync(loaded.RemotePath), ProjectReader.JsonOptions);
+                    remoteView.Host = remote.RootElement.GetProperty("ServerName").GetString() ?? "";
+                    remoteView.Port = remote.RootElement.GetProperty("Port").GetInt32().ToString(CultureInfo.InvariantCulture);
+                    remoteView.Web = remote.RootElement.TryGetProperty("WebUrl", out var web) ? web.GetString() ?? "" : "";
+                }
+                catch (Exception ex) { ProjectPage.ProjectDiagnostics.AppendText("\n远程配置读取失败，可继续使用本地连接及解析 ELF：" + ex.Message); }
             }
             settings = settings with { Recent = new[] { loaded.Root }.Concat(settings.Recent ?? []).Distinct(StringComparer.OrdinalIgnoreCase).Take(8).ToArray() };
             ProjectPage.RecentProjects.ItemsSource = settings.Recent;
@@ -75,6 +80,7 @@ public partial class MainWindow
     }
     private async void TargetChanged(object? sender, SelectionChangedEventArgs e)
     {
+        connectionFailure = "";
         InvalidateViewer(); remoteView.Invalidate();
         Variables.Clear();
         if (Target is not { } target) { ProjectPage.ElfPath.Text = ""; return; }

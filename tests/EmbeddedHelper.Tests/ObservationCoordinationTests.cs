@@ -17,6 +17,41 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         return (new ProjectInfo(root, "test", "G4", target.Device, [target], Path.Combine(root, "remote.json"), []), target, dll, elf);
     }
     [Fact]
+    public async Task ConnectionConfigurationSeparatesPendingInvalidAndValidWithoutCrossModeRequirements()
+    {
+        var input = Inputs();
+        Assert.Equal(ConnectionConfigurationState.Pending, (await ConnectionSettingsStore.InspectAsync(input.Project, input.Target, "local")).State);
+        WatchSettingsStore.Save(root, new("Debug", [value.Identity], 200));
+        Assert.Equal(ConnectionConfigurationState.Pending, (await ConnectionSettingsStore.InspectAsync(input.Project, input.Target, "local")).State);
+        Assert.Equal(ConnectionConfigurationState.Pending, (await ConnectionSettingsStore.InspectAsync(input.Project, input.Target, "remote")).State);
+        File.WriteAllText(input.Project.RemotePath, "broken json");
+        ConnectionSettingsStore.Save(root, new("Debug", "local", "123"));
+        Assert.Equal(ConnectionConfigurationState.Valid, (await ConnectionSettingsStore.InspectAsync(input.Project, input.Target, "local")).State);
+        Assert.Equal(ConnectionConfigurationState.Invalid, (await ConnectionSettingsStore.InspectAsync(input.Project, input.Target, "remote")).State);
+        File.WriteAllText(Path.Combine(root, ".embedded_helper", "connection.json"), "broken json");
+        Assert.Equal(ConnectionConfigurationState.Invalid, (await ConnectionSettingsStore.InspectAsync(input.Project, input.Target, "local")).State);
+        File.WriteAllText(input.Project.RemotePath, "{\"ServerName\":\"saved.invalid\",\"Port\":19011}");
+        Assert.Equal(ConnectionConfigurationState.Valid, (await ConnectionSettingsStore.InspectAsync(input.Project, input.Target, "remote")).State);
+        var ready = await ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll,
+            _ => Task.FromResult(new[] { value }), transport: "remote");
+        Assert.Equal(0, ready.Request.ProbeSerial);
+        Assert.Equal(ConnectionConfigurationState.Pending, (await ConnectionSettingsStore.InspectAsync(input.Project, null, "remote")).State);
+    }
+    [Fact]
+    public async Task MissingConnectionPreservesReadableVariablesAndStartFailureClearsBusyState()
+    {
+        var input = Inputs();
+        WatchSettingsStore.Save(root, new("Debug", [value.Identity], 200));
+        var error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(
+            input.Project, input.Target, input.Elf, input.Dll, _ => Task.FromResult(new[] { value })));
+        Assert.Equal(ObservationConfigurationArea.Connection, error.Area);
+        Assert.Equal(value, Assert.Single(error.Index));
+        var session = new FakeSession { FailStart = true };
+        var coordinator = new ObservationCoordinator(() => session);
+        await Assert.ThrowsAsync<IOException>(() => coordinator.StartAsync("unused", Request));
+        Assert.False(coordinator.IsBusy); Assert.False(coordinator.HasSession); Assert.True(session.Disposed);
+    }
+    [Fact]
     public async Task PreparationUsesSavedSnapshotAndLocalDoesNotReadRemoteFile()
     {
         var input = Inputs();
@@ -69,7 +104,7 @@ public sealed class ObservationCoordinationTests : TestWorkspace
         var error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => Task.FromResult(new[] { value })));
         Assert.Equal(ObservationConfigurationArea.Remote, error.Area);
         Assert.Equal(value.Identity, Assert.Single(error.SavedSettings!.Identities));
-        Assert.Empty(error.Index);
+        Assert.Equal(value, Assert.Single(error.Index));
         File.WriteAllText(input.Project.RemotePath, "{\"ServerName\":\"saved.invalid\",\"Port\":19011}");
         error = await Assert.ThrowsAsync<ObservationPreparationException>(() => ObservationPreparation.PrepareAsync(input.Project, input.Target, input.Elf, input.Dll, _ => throw new IOException("ELF changed")));
         Assert.Equal(ObservationConfigurationArea.Project, error.Area);

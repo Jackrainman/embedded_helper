@@ -1,5 +1,5 @@
 <UserControl x:Class="EmbeddedHelper.App.ConnectionView" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 <StackPanel Margin="0,6,0,18"><TextBlock Text="连接配置" Style="{StaticResource PageTitle}"/><TextBlock Text="MCU Viewer 与 RTT 监视共用此工程连接；本地/远程在顶部选择。切换用途前请停止并释放当前采集。" Style="{StaticResource Description}"/>
-<GroupBox Header="工程连接"><StackPanel><WrapPanel><StackPanel><TextBlock Text="本地探针序列号"/><TextBox x:Name="ProbeSerial" Width="200"/></StackPanel></WrapPanel><TextBlock Text="MCU、SWD/JTAG 和调试速度取自工程目标；远程地址及 RTT 网页地址在“远程配置”中预览并保存。" TextWrapping="Wrap"/><Button Content="保存共享连接" Click="Save" HorizontalAlignment="Left" Style="{StaticResource Primary}"/></StackPanel></GroupBox>
+<GroupBox Header="工程连接"><StackPanel><WrapPanel><StackPanel><TextBlock Text="本地 J-Link 序列号"/><TextBox x:Name="ProbeSerial" Width="200"/></StackPanel></WrapPanel><TextBlock Text="MCU、SWD/JTAG 和调试速度取自工程目标；远程连接不需要本地序列号，地址在“远程配置”中保存。" TextWrapping="Wrap"/><Button Content="保存共享连接" Click="Save" HorizontalAlignment="Left" Style="{StaticResource Primary}"/></StackPanel></GroupBox>
 <TextBlock x:Name="SetupStatus" Text="先打开工程并选择目标。" TextWrapping="Wrap"/>
 </StackPanel></UserControl>

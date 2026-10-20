@@ -29,6 +29,12 @@ public static class ObservationPreparation
             if (!rttOnly && (watch.Rate is < 1 or > 1000 || watch.Identities == null || watch.Identities.Length > 64 || watch.Identities.Any(string.IsNullOrWhiteSpace) || watch.Identities.Distinct().Count() != watch.Identities.Length))
                 throw new InvalidDataException("变量列表或采样率无效，请在 MCU Viewer 中重新保存。");
             saved = watch;
+            if (watch.Identities.Length > 0)
+            {
+                area = ObservationConfigurationArea.Project;
+                if (!File.Exists(elfPath)) throw new InvalidDataException("工程目标的 ELF 不存在。请先在工程概览中确认 ELF 并解析变量。");
+                indexed = await index(elfPath);
+            }
             area = ObservationConfigurationArea.Connection;
             var connection = await ConnectionSettingsStore.LoadAsync(project.Root, target.Name, transport)
                 ?? throw new InvalidDataException("请先为当前目标保存共享连接配置。");
@@ -50,12 +56,6 @@ public static class ObservationPreparation
             area = ObservationConfigurationArea.Observation;
             var rtt = rttOnly;
             if (watch.Identities.Length == 0 && !rtt) throw new InvalidDataException("请在 MCU Viewer 中搜索添加变量并保存；RTT 请到 RTT 监视。");
-            if (watch.Identities.Length > 0)
-            {
-                area = ObservationConfigurationArea.Project;
-                if (!File.Exists(elfPath)) throw new InvalidDataException("工程目标的 ELF 不存在。请先在工程概览中确认 ELF 并解析变量。");
-                indexed = await index(elfPath);
-            }
             area = ObservationConfigurationArea.Observation;
             var byIdentity = indexed.ToDictionary(v => v.Identity);
             if (watch.Identities.Any(id => !byIdentity.ContainsKey(id))) throw new InvalidDataException("已保存的变量在当前 ELF 中缺失，请回工程检查变量选择后重新保存。");

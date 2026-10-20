@@ -8,7 +8,8 @@ namespace EmbeddedHelper.App;
 public partial class MainWindow
 {
     private string activeTransport = "local";
-    private string connectionIssue = "";
+    private ConnectionConfiguration connectionConfiguration = new(ConnectionConfigurationState.Pending, "请打开工程");
+    private string connectionFailure = "";
     private bool settingTransport;
     private long connectionRevision;
     private void SetTransportSelection()
@@ -22,38 +23,38 @@ public partial class MainWindow
         if (GlobalTransport == null) return;
         GlobalTransport.IsEnabled = project != null && Target != null && !ObservationBusy && !configurationBusy && !acquisition.HasSession;
         ConnectionButton.IsEnabled = GlobalTransport.IsEnabled;
-        ConnectionButton.ToolTip = project == null || Target == null ? "请先打开项目并选择目标" : "配置当前项目的共享连接";
+        ConnectionButton.ToolTip = project == null || Target == null ? "请先打开项目并选择目标" : activeTransport == "remote" ? "前往远程配置" : "配置当前项目的共享连接";
         ProjectStateLabel.Text = project == null ? "● 未打开项目" :
-            $"● {project.Name} / {Target?.Name ?? "未选择目标"} · {(connectionIssue.Length == 0 ? "项目已就绪" : "连接配置错误")}";
-        ProjectStateLabel.Foreground = project == null ? Brushes.LightGray : connectionIssue.Length == 0 ? Brushes.LightGreen : Brushes.Salmon;
-        ProjectStateLabel.ToolTip = project == null ? "请打开工程" : project.Root + "\n" + (connectionIssue.Length == 0 ? "配置有效不代表设备已经连接。" : connectionIssue);
-        ConnectionStateLabel.Text = acquisition.HasSession
+            $"● 已打开 · {project.Name} / {Target?.Name ?? "未选择目标"}";
+        ProjectStateLabel.Foreground = project == null ? Brushes.LightGray : Brushes.LightGreen;
+        ProjectStateLabel.ToolTip = project?.Root ?? "请打开工程";
+        var configuration = connectionConfiguration.State switch
+        {
+            ConnectionConfigurationState.Valid => "连接配置有效",
+            ConnectionConfigurationState.Pending => "连接待设置：" + connectionConfiguration.Message,
+            _ => "连接配置无效：" + connectionConfiguration.Message
+        };
+        var session = acquisition.HasSession
             ? $"{(rttSession ? "RTT 监视" : "MCU Viewer")} · {acquisition.State}"
-            : ObservationBusy || configurationBusy ? "正在处理，请稍候" : connectionIssue.Length == 0 ? "未连接" : connectionIssue;
+            : ObservationBusy || configurationBusy ? "正在处理，请稍候" : connectionFailure.Length > 0 ? "连接失败：" + connectionFailure : "未连接";
+        ConnectionStateLabel.Text = project == null ? "未连接" : configuration + " · " + session;
+        ConnectionStateLabel.Foreground = connectionConfiguration.State == ConnectionConfigurationState.Invalid || connectionFailure.Length > 0
+            ? Brushes.Salmon : (Brush)FindResource("HeaderMuted");
         ConnectionStateLabel.ToolTip = ConnectionStateLabel.Text;
     }
     private async Task RefreshProjectConnectionAsync()
     {
         var revision = ++connectionRevision;
         var loaded = project; var target = Target; var mode = activeTransport;
-        var issue = "";
-        try
-        {
-            if (loaded != null)
-            {
-                if (target == null) throw new InvalidOperationException("请选择工程目标。");
-                if (string.IsNullOrWhiteSpace(target.Device) || target.Interface is not ("SWD" or "JTAG") || target.SpeedKHz <= 0)
-                    throw new InvalidOperationException("工程目标的 J-Link 参数不完整。");
-                _ = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name, mode)
-                    ?? throw new InvalidOperationException("请先保存本地探针序列号。");
-                if (mode == "remote") await ConnectionSettingsStore.RemoteEndpointAsync(loaded);
-            }
-        }
-        catch (Exception ex) { issue = ex.Message; }
+        var result = loaded == null ? new ConnectionConfiguration(ConnectionConfigurationState.Pending, "请打开工程")
+            : await ConnectionSettingsStore.InspectAsync(loaded, target, mode);
         if (revision != connectionRevision || project != loaded || Target != target || activeTransport != mode) return;
-        connectionIssue = issue;
-        if (issue.Length > 0 && !acquisition.HasSession)
-            ShowViewerIssue(issue, false, mode == "remote" ? ObservationConfigurationArea.Remote : ObservationConfigurationArea.Connection);
+        connectionConfiguration = result;
+        if (result.State != ConnectionConfigurationState.Valid && !acquisition.HasSession)
+        {
+            ShowViewerIssue(result.Message, false, mode == "remote" ? ObservationConfigurationArea.Remote : ObservationConfigurationArea.Connection);
+            RefreshViewerRows();
+        }
         UpdateProjectHeader();
     }
     private async void GlobalTransportChanged(object sender, SelectionChangedEventArgs e)
@@ -72,9 +73,9 @@ public partial class MainWindow
         preparing = true; SyncObservationState();
         try
         {
-            if (requested == "remote") await ConnectionSettingsStore.RemoteEndpointAsync(loaded);
             if (shutdownRequested) return;
             activeTransport = requested;
+            connectionFailure = "";
             SetTransportSelection();
             InvalidateViewer();
         }
