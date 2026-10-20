@@ -28,6 +28,7 @@ SKILL_DATA_ROOTS = {'.agents/skills/ui-ux-pro-max/data',
 SEMVER = re.compile(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)'
                     r'(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)'
                     r'(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?')
+DOCS.add('.agents/workflows/change-test-deliver.md')
 SOLUTION = 'EmbeddedHelper.slnx'
 CLIENT_PROJECTS = ('src/EmbeddedHelper.App/EmbeddedHelper.App.csproj',
                    'src/EmbeddedHelper.Core/EmbeddedHelper.Core.csproj',

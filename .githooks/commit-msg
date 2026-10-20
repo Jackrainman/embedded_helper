@@ -1,0 +1,2 @@
+#!/bin/sh
+exec python scripts/version_guard.py --commit-msg "$1"

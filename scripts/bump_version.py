@@ -3,6 +3,7 @@ import argparse
 from pathlib import Path
 
 from verify import SEMVER
+from version_guard import next_version
 
 
 def bump(path, version):
@@ -19,10 +20,14 @@ def bump(path, version):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--to', required=True)
+    group = parser.add_mutually_exclusive_group(required=True)
+    group.add_argument('--to')
+    group.add_argument('--level', choices=['patch', 'minor', 'major'])
     args = parser.parse_args()
     try:
-        previous = bump(Path(__file__).resolve().parents[1] / 'VERSION', args.to)
+        path = Path(__file__).resolve().parents[1] / 'VERSION'
+        args.to = args.to or next_version(path.read_text(encoding='utf-8').strip(), args.level)
+        previous = bump(path, args.to)
     except (OSError, ValueError) as exc:
         print(f'FAIL 版本更新: {exc}')
         return 1

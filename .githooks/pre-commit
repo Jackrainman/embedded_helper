@@ -1,2 +1,3 @@
 #!/bin/sh
+python scripts/version_guard.py --prepare || exit $?
 exec python scripts/verify.py --staged

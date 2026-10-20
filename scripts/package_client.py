@@ -58,6 +58,7 @@ def main():
     commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=ROOT, text=True).strip()
     if subprocess.check_output(['git', 'status', '--porcelain'], cwd=ROOT):
         raise RuntimeError('Commit source and documentation before creating a candidate.')
+    run([sys.executable, 'scripts/version_guard.py', '--check'])
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     package = output / f'EmbeddedHelper-{version}-win-x64.zip'
