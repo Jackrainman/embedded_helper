@@ -46,11 +46,15 @@ If `python` is not found, try `python3`, then `py -3`, preserving the remaining 
 
 ## Workflow
 
+### Task and evidence boundary
+
+For an interaction, settings or onboarding issue, first identify the user task and inspect the actual handlers/state/persistence. Use the available user-task-review skill when a flow audit is needed; design search is supporting guidance, not proof that a button works. Do not route an ordinary wording fix into a full design-system generation. WPF uses the existing repository documents; no parallel PRODUCT.md/DESIGN.md or design-system tree is required. Verification, packaging and task-created-window cleanup follow the repository workflow.
+
 ## Query Contract
 
 Choose the smallest search mode that fits the request:
 
-1. **New project/page or system-wide visual direction** → use `--design-system`.
+1. **New product or explicitly requested system-wide visual direction** → use `--design-system`. An added page in an existing product reuses its design and uses targeted domain/stack guidance.
 2. **Targeted concern or component bug** → use one explicit `--domain`.
 3. **Known implementation stack** → use `--stack`; add a separate domain search only for a distinct design concern.
 
@@ -70,7 +74,7 @@ Extract from the user request:
 - **Style keywords**: playful, vibrant, minimal, dark mode, content-first, immersive, etc.
 - **Stack**: detect from the project — check `package.json` deps (react/next/vue/svelte/nuxt/@angular), `pubspec.yaml` (Flutter), `*.xcodeproj`/`Package.swift` (SwiftUI), `composer.json` (Laravel), React Native markers (`app.json` + `react-native` dep), or `*.csproj` (`UseWPF` for WPF; otherwise inspect references for WinUI, Avalonia, Uno, or UWP). This repository's client uses WPF, so use `--stack wpf` for its implementation guidance. If nothing is detectable and stack guidance matters, ask the user. **Never assume a stack** — a hardcoded default silently misroutes every recommendation.
 
-### Step 2: Generate Design System (REQUIRED for new pages/projects)
+### Step 2: Generate Design System (only for product-wide visual direction)
 
 Use `--design-system` when the task needs a coherent product-wide visual direction:
 
@@ -198,7 +202,7 @@ Then synthesize the design system + detailed searches and implement.
 
 - Keep one dominant intent and 2–5 meaningful terms per query: `"keyboard focus modal"`, not a full audit checklist
 - Retry once with a narrower phrase or explicit domain/stack; do not cycle through unrelated keywords
-- Use `--design-system` for a new project/page and `--domain` for a focused concern
+- Use `--design-system` for a new product or explicit overall redesign; existing-product pages and focused concerns use its established design plus domain/stack guidance
 - Pass the detected stack explicitly for implementation-specific guidance
 
 | Problem | What to Do |
@@ -213,4 +217,4 @@ Then synthesize the design system + detailed searches and implement.
 
 ## Before Delivering App UI
 
-Read `references/pro-rules.md` and run through its canonical Pre-Delivery Checklist. It covers icon/visual-element discipline, interaction feedback, light/dark contrast, safe-area layout, and accessibility — scoped to native/mobile app UI (iOS/Android/React Native/Flutter).
+Read the applicable portions of `references/pro-rules.md` for icon discipline, feedback, contrast, layout and accessibility. Its mobile safe-area/touch rules are not WPF acceptance criteria; use the detected stack, current UI and repository workflow. Search/checklist completion alone is not UI verification.

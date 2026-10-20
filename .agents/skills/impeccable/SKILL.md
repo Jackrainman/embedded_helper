@@ -1,18 +1,20 @@
 ---
 name: impeccable
-description: Use when the user wants to design, redesign, shape, critique, audit, polish, clarify, distill, harden, optimize, adapt, animate, colorize, extract, or otherwise improve a frontend interface. Covers websites, landing pages, dashboards, product UI, app shells, components, forms, settings, onboarding, and empty states. Handles UX review, visual hierarchy, information architecture, cognitive load, accessibility, performance, responsive behavior, theming, anti-patterns, typography, fonts, spacing, layout, alignment, color, motion, micro-interactions, UX copy, error states, edge cases, i18n, and reusable design systems or tokens. Also use for bland designs that need to become bolder or more delightful, loud designs that should become quieter, live browser iteration on UI elements, or ambitious visual effects that should feel technically extraordinary. Not for backend-only or non-UI tasks.
+description: Design or review interface hierarchy, layout, interaction and UX copy. Use the applicable platform and repository constraints; targeted refinements stay within the existing product. Not for backend-only tasks.
 metadata:
   version: 4.5.2
 ---
 
-This skill gives you the tools and permission to create design that earns to be called out-of-distribution craft: Whereas before, your design work would have been safe, timid and measured, you now approach every design task as an award-winning design director with impeccable understanding for what makes exceptional design work: production-grade code, peak creativity, a clear POV, deep understanding of the needs of the client and users, and exceptional craft.
+Use the requested surface and user task to choose the design approach. Operable, consistent interfaces take priority for tools and settings; expressive visual direction is appropriate only when the brief calls for it. This skill does not expand permissions.
 
 Core principles:
-- Go all out. No hedging, no shortcuts. The deliverable must be complete (except assets the user must provide).
-- Dream big and bold. Distinct, beautiful, outstanding and highly inspiring work.
-- Verify in bounded passes, not a loop, and the ceiling covers the whole cycle: screenshots, defect scans, micro-edits, and rebuilds alike. Build fully, inspect once with a batched round (desktop and mobile together on the web; the shipped device classes on a native platform), fix everything it shows in one batch, confirm with at most one more round, and stop polishing. Open-ended self-QA burns the user's money doing worse what the finish handoffs do better.
+- Complete the requested scope and report any concrete dependencies that prevent verification.
+- Match visual ambition to the brief; routine tool refinements preserve the established design.
+- Bound purely stylistic polishing; batch observed fixes and confirm the result. This is not a limit on required tests or unresolved functional/accessibility defects: keep repairing and verifying actual failures, or report a concrete blocker.
 
 ## Setup
+
+0. In this repository, first read [WPF repository adaptation](reference/repository-wpf.md). It overrides the generic setup/file conventions below: use existing design documents and do not run unsupported web/mobile context setup or generate PRODUCT.md/DESIGN.md merely because they are absent.
 
 1. Run `<skill-base-dir>/scripts/impeccable context` once per session, where `<skill-base-dir>` is the directory that contains this SKILL.md (the skill folder, not a plugin root two levels above it); keep cwd at the user's project. That base directory resolves every `.agents/skills/impeccable/scripts/impeccable <verb>` command in this skill and its references, and `.agents/skills/impeccable/scripts` is the fallback only when the runtime reports no base directory. On a Windows shell without `sh`, call `.agents/skills/impeccable/scripts/impeccable.cmd` instead. The launcher runs a self-contained binary that ships next to it or is downloaded once on first run; no Node or other runtime is required. Pass a named source file or route as `--target <path>`. It loads PRODUCT.md, DESIGN.md, the matching surface brief, and native-platform guidance when applicable; follow its directives and do not rerun it.
 2. Load the request's playbook: its Commands-table reference for an explicit/implied sub-command, or [reference/new-work.md](reference/new-work.md) for a new surface or replacement visual world. Inspect target and incumbent visual truth before editing. When the app cannot run, start with committed visual-regression goldens or screenshot fixtures; verify target and freshness against current tokens, CSS, components, or assets, resolve conflicts, and compare theme/variant captures.
@@ -70,7 +72,7 @@ Choose the mode from the requested surface, not the product, and persist it only
 Routing:
 
 - **No argument:** read [routing.md](reference/routing.md) and present its context-aware menu; never auto-run a command.
-- **Explicit or clearly implied request to run a command:** load its reference (native variant on native platforms) and follow it. Ask once if two commands fit.
+- **Explicit or clearly implied request to run a command:** load its reference (native variant on native platforms) and follow it. Choose the closest method from the task; clarify only when the choice materially changes scope.
 - **Workflow or command-selection question:** read [Workflow questions](reference/routing.md#workflow-questions).
 - **Otherwise:** treat the request as general design work. Missing PRODUCT.md routes a new surface or replacement world through init, then new-work; a narrow refinement of existing code proceeds on the incumbent implementation as `impeccable context` directs, offering init afterward rather than blocking on it.
 - `teach` aliases `init`. `craft` is a deprecated alias for ordinary new-work and adds nothing. `shape` owns task discovery, then enters new-work only for visual-world and surface-concept decisions.
