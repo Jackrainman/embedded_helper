@@ -4,6 +4,10 @@ import os
 from pathlib import Path
 import re
 import subprocess
+import sys
+
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
 
 VERSION = re.compile(r'(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-([a-zA-Z][a-zA-Z0-9-]*)\.(0|[1-9]\d*))?')
 ROOT = Path(__file__).resolve().parents[1]

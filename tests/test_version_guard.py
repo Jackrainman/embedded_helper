@@ -1,9 +1,11 @@
 import importlib.util
+import os
 from pathlib import Path
 import subprocess
 import shutil
 import tempfile
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 spec = importlib.util.spec_from_file_location('version_guard', ROOT / 'scripts/version_guard.py')
@@ -85,6 +87,8 @@ class VersionGuardTests(unittest.TestCase):
             git('config', 'core.hooksPath', '.hooks')
             (root / 'src/code.cs').write_text('after')
             git('add', '.')
-            git('commit', '-qm', 'fix: verify actual commit')
+            # Git captures hook output; English Windows defaults to cp1252.
+            with patch.dict(os.environ, {'PYTHONIOENCODING': 'cp1252'}):
+                git('commit', '-qm', 'fix: verify actual commit')
             self.assertEqual(git('show', 'HEAD:VERSION'), '0.3.1-alpha.1')
             self.assertEqual(git('status', '--porcelain'), '')
