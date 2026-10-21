@@ -20,6 +20,7 @@ public partial class MainWindow
     private DateTime elfStamp;
     private bool indexing, displayDirty, rttDirty, wasPaused;
     private long samples;
+    private long? observationOriginTicks;
     private readonly Stopwatch sampling = new();
     private bool ObservationBusy => indexing || loadingProject || acquisition.IsBusy || preparing || shutdownRequested;
     private void SetElfFeedback(ElfParseFeedback feedback)
@@ -127,11 +128,11 @@ public partial class MainWindow
         }
         if (!acquisition.HasSession || shutdownRequested) return;
         ResetObservationDisplay();
-        foreach (var row in Variables) { row.History.Clear(); row.LatestValue = null; row.LastObservedAt = null; row.Value = row.Variable.Supported ? "等待新会话数据" : row.Variable.Status; }
+        foreach (var row in Variables) { row.History.Clear(); row.HistorySeconds.Clear(); row.LatestValue = null; row.LastObservedAt = null; row.Value = row.Variable.Supported ? "等待新会话数据" : row.Variable.Status; }
         displayDirty = rttDirty = true;
     });
     private void ResetObservationDisplay()
-    { samples = 0; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear(); displayDirty = rttDirty = true; }
+    { samples = 0; observationOriginTicks = null; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear(); displayDirty = rttDirty = true; }
     private async void StopObservation(object? sender, RoutedEventArgs e) => await Guard(StopObservationAsync);
     private async Task StopObservationAsync()
     {
@@ -165,12 +166,17 @@ public partial class MainWindow
                 if (item == null) continue;
                 if (item.Kind != "sample") { if (item.Message.Length > 0) Report(item.Message); continue; }
                 samples++;
+                var readTicks = item.ReadEndTicks > 0 ? item.ReadEndTicks : Stopwatch.GetTimestamp();
+                observationOriginTicks ??= readTicks;
+                var elapsedSeconds = Math.Max(0, (readTicks - observationOriginTicks.Value) / (double)Stopwatch.Frequency);
                 if (item.Values != null) foreach (var (identity, value) in item.Values)
                     if (byIdentity.TryGetValue(identity, out var row))
                     {
                         row.LatestValue = value; row.LastObservedAt = item.ObservedAt;
-                        if (double.TryParse(value, CultureInfo.InvariantCulture, out var number) && double.IsFinite(number))
-                        { row.History.Enqueue(number); if (row.History.Count > 2000) row.History.Dequeue(); displayDirty = true; }
+                        var number = double.TryParse(value, CultureInfo.InvariantCulture, out var parsed) && double.IsFinite(parsed) ? parsed : double.NaN;
+                        row.History.Enqueue(number); row.HistorySeconds.Enqueue(elapsedSeconds);
+                        if (row.History.Count > 2000) { row.History.Dequeue(); row.HistorySeconds.Dequeue(); }
+                        displayDirty = true;
                     }
                 if (item.RttBase64 != null)
                 {
@@ -186,7 +192,7 @@ public partial class MainWindow
             if (!rttSession && !observationView.Paused && ObservationPage.IsVisible)
             {
                 foreach (var row in Variables.Where(v => v.LatestValue != null)) row.Value = row.LatestValue + (acquisition.CanRetry || DateTimeOffset.UtcNow - row.LastObservedAt > TimeSpan.FromSeconds(3) ? " / 过期" : "");
-                if (displayDirty || wasPaused) { var plotted = Variables.Where(v => v.Selected && v.History.Count > 1).Take(16).ToArray(); observationView.PlotLabels = plotted.Select(v => v.Variable.Name).ToArray(); observationView.Series = plotted.Select(v => v.History.ToArray()).ToArray(); displayDirty = false; }
+                if (displayDirty || wasPaused) { var plotted = Variables.Where(v => v.Selected && v.History.Count > 1).Take(16).ToArray(); observationView.PlotLabels = plotted.Select(v => v.Variable.Name).ToArray(); observationView.Times = plotted.Select(v => v.HistorySeconds.ToArray()).ToArray(); observationView.Series = plotted.Select(v => v.History.ToArray()).ToArray(); displayDirty = false; }
             }
             wasPaused = observationView.Paused;
         }

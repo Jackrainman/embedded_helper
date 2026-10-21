@@ -13,6 +13,7 @@ public sealed class VariableRow(Variable variable) : INotifyPropertyChanged
     private bool selected;
     public bool Selected { get => selected; set { if (selected == value) return; selected = value; Changed(); } }
     public Queue<double> History { get; } = new();
+    public Queue<double> HistorySeconds { get; } = new();
     public string? LatestValue { get; set; }
     public DateTimeOffset? LastObservedAt { get; set; }
     private string value = variable.Supported ? "未采集" : variable.Status;

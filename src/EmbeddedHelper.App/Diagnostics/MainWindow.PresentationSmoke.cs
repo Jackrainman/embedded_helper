@@ -34,6 +34,7 @@ public partial class MainWindow
         if (ObservationPage.StartButton.IsEnabled) throw new InvalidDataException("准备期间开始按钮未禁用。");
         SyncObservationState();
         RttPage.RttText.Text = "离线合成 RTT 显示，不代表硬件输出。";
+        PopulatePlotPreview(16);
         var series = Enumerable.Range(0, 16).Select(row => Enumerable.Range(0, 2000).Select(i => Math.Sin(i * 0.03 + row) + row * 0.15).ToArray()).ToArray();
         series[0][1001] = 8;
         observationView.Series = series;
@@ -48,6 +49,7 @@ public partial class MainWindow
         bitmap.CopyPixels(pixels, bitmap.PixelWidth * 4, 0);
         if (!pixels.Any(b => b != 0)) throw new InvalidDataException("独立绘图控件没有渲染曲线。");
         SaveSmokeScreenshot(directory, "page-1-plot.png");
+        if (ObservationPage.IndependentScale.IsEnabled || ObservationPage.Plot.Independent || observationView.ScaleHint != "仅显示少于2个参数") throw new InvalidDataException("超过两个变量时没有禁用分道缩放。");
         object Measure(bool updateSnapshot)
         {
             var allocated = GC.GetAllocatedBytesForCurrentThread();
@@ -60,6 +62,16 @@ public partial class MainWindow
             return new { frames = 30, elapsedMs = watch.Elapsed.TotalMilliseconds, allocatedBytes = GC.GetAllocatedBytesForCurrentThread() - allocated };
         }
         plotSmoke = new { source = "synthetic", series = 16, pointsPerSeries = 2000, sameSnapshotRedraw = Measure(false), snapshotUpdates = Measure(true), longRunning = "not-tested" };
+        PopulatePlotPreview(2);
+        observationView.IndependentScale = true;
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+        UpdateLayout();
+        if (!ObservationPage.IndependentScale.IsEnabled || !ObservationPage.Plot.Independent) throw new InvalidDataException("两个变量时分道缩放不可用。");
+        SaveSmokeScreenshot(directory, "page-1-plot-two-lanes.png");
+        observationView.IndependentScale = false;
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+        UpdateLayout();
+        SaveSmokeScreenshot(directory, "page-1-plot-two-common.png");
         observationView.Series = []; RttPage.RttText.Text = "";
         await PrepareViewerAsync();
     }

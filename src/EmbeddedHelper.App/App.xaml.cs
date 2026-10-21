@@ -22,6 +22,8 @@ public partial class App : Application
             var window = new MainWindow();
             MainWindow = window;
             if (e.Args is ["--smoke", var directory]) window.Loaded += async (_, _) => await window.SmokeAsync(directory);
+            if (e.Args is ["--plot-preview", var count] && int.TryParse(count, out var rows) && rows is >= 1 and <= 16)
+                window.Loaded += async (_, _) => await window.PreviewPlotAsync(rows);
             window.Show();
         }
         catch (Exception ex)

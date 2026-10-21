@@ -9,6 +9,19 @@ namespace EmbeddedHelper.App;
 public sealed class ObservationViewModel : INotifyPropertyChanged
 {
     private readonly VariableCollection variables = new();
+    private readonly HashSet<VariableRow> subscribed = [];
+    public ObservationViewModel()
+    {
+        variables.CollectionChanged += (_, _) =>
+        {
+            foreach (var row in subscribed) row.PropertyChanged -= SelectionChanged;
+            subscribed.Clear();
+            foreach (var row in variables) { subscribed.Add(row); row.PropertyChanged += SelectionChanged; }
+            VisibleRows = variables.Where(row => row.Selected).ToArray();
+        };
+    }
+    private void SelectionChanged(object? sender, PropertyChangedEventArgs e)
+    { if (e.PropertyName == nameof(VariableRow.Selected)) VisibleRows = variables.Where(row => row.Selected).ToArray(); }
     public ObservableCollection<VariableRow> Variables => variables;
     public void ReplaceRows(VariableRow[] rows) => variables.Replace(rows);
     public void LoadIndex(Variable[] index, string[] selected)
@@ -22,7 +35,20 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
         VisibleRows = Variables.Where(v => v.Selected).ToArray();
     }
     private VariableRow[] visibleRows = [];
-    public VariableRow[] VisibleRows { get => visibleRows; set { Set(ref visibleRows, value); Notify(nameof(HasVariables)); Notify(nameof(VariablesMissing)); } }
+    public VariableRow[] VisibleRows
+    {
+        get => visibleRows;
+        set
+        {
+            Set(ref visibleRows, value); Notify(nameof(HasVariables)); Notify(nameof(VariablesMissing));
+            Notify(nameof(CanScaleIndependently)); Notify(nameof(ScaleHint));
+            if (!CanScaleIndependently) IndependentScale = false;
+        }
+    }
+    public bool CanScaleIndependently => VisibleRows.Length <= 2;
+    public string? ScaleHint => CanScaleIndependently ? null : "仅显示少于2个参数";
+    private bool independentScale = true;
+    public bool IndependentScale { get => independentScale; set => Set(ref independentScale, value && CanScaleIndependently); }
     public bool HasVariables => VisibleRows.Length > 0;
     private bool ready, busy, hasSession, canRetry, paused;
     public bool Ready { get => ready; set { if (Set(ref ready, value)) StateChanged(); } }
@@ -38,6 +64,8 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     private string summary = "读取本工程已保存的变量与共享连接配置。", issue = "请打开工程，保存共享连接并搜索添加变量。", configureText = "设置观察变量";
     private string status = "未连接 · ELF 与固件匹配未核验", variablesEmpty = "尚无已配置变量\n请搜索添加变量并保存。", plotEmpty = "开始采集后显示曲线";
     private double[][] series = [];
+    private double[][] times = [];
+    public double[][] Times { get => times; set => Set(ref times, value); }
     private string[] plotLabels = [];
     public string[] PlotLabels { get => plotLabels; set => Set(ref plotLabels, value); }
     public string Summary { get => summary; set => Set(ref summary, value); }
