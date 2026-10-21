@@ -37,6 +37,7 @@ class HarnessTests(unittest.TestCase):
         p = self.root / '.harness/todo.json'
         ledger = json.loads(p.read_text(encoding='utf-8'))
         ledger['tasks'][0]['dependsOn'] = [ledger['tasks'][1]['id']]
+        ledger['tasks'][1]['dependsOn'] = [ledger['tasks'][0]['id']]
         p.write_text(json.dumps(ledger), encoding='utf-8')
         self.assertTrue(any('账本' in x for x in verify.validate(self.root)))
         (self.root / 'tests/fixtures/serial.bin').write_bytes(b'corrupt')
