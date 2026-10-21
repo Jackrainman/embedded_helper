@@ -71,7 +71,7 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 [Windows工作流](.github/workflows/verify.yml)运行仓库及客户端门。[内测发布工作流](.github/workflows/release.yml)核对候选运行来源和同包证据后上传原包；发布输入由[scripts/release_gate.py](scripts/release_gate.py)检查。用户授权先发布离线开发内测：developer-preview只接受软件门真实通过，并强制列明硬件与纯净Windows未验证；完整验收仍保留tested-prerelease门，契约见详细12.4。仓库管理员权限已核实，远端运行结果随批次记录，分支保护未配置。
 
-已发布的开发内测版本：[0.2.0-alpha.8](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.8)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.2.0-alpha.8/EmbeddedHelper.exe)，约98MiB。该版本补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
+已发布的开发内测版本：[0.7.3-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.7.3-alpha.1)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.7.3-alpha.1/EmbeddedHelper.exe)，约98MiB。本次补齐ELF/AXF自动定位与DWARF兼容回退；发布使用成功CI的原始候选，软件门通过，硬件与纯净Windows未验收。
 
 当前开发版本以 VERSION 为准，包含 MCU Viewer 坐标轴、完整记录 Excel 导出及 LAN_Debug 工程接入。最终同包远程实测与发布仍由 C-07 跟踪；构建成功不代表硬件验收通过。
 
