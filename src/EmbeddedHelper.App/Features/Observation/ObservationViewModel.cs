@@ -59,6 +59,12 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     public bool CanStart => !Busy && ((!HasSession && Ready) || CanRetry);
     public bool CanStop => HasSession;
     public bool CanEdit => !Busy && !HasSession;
+    private bool hasRecording, exporting;
+    public bool HasRecording { get => hasRecording; set { Set(ref hasRecording, value); Notify(nameof(CanExport)); } }
+    public bool Exporting { get => exporting; set { Set(ref exporting, value); Notify(nameof(CanExport)); } }
+    public bool CanExport => HasRecording && !HasSession && !Busy && !Exporting;
+    private string exportStatus = "停止采集后可导出本次完整记录。";
+    public string ExportStatus { get => exportStatus; set => Set(ref exportStatus, value); }
     public string StartText => CanRetry ? "清理并重试" : "开始采集";
     public bool NeedsConfiguration => !Ready && !HasSession && !Busy;
     private string summary = "读取本工程已保存的变量与共享连接配置。", issue = "请打开工程，保存共享连接并搜索添加变量。", configureText = "设置观察变量";
@@ -88,7 +94,7 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     private void Notify([CallerMemberName] string? name = null) => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     private void StateChanged()
     {
-        Notify(nameof(CanStart)); Notify(nameof(CanStop)); Notify(nameof(CanEdit)); Notify(nameof(StartText)); Notify(nameof(NeedsConfiguration));
+        Notify(nameof(CanStart)); Notify(nameof(CanStop)); Notify(nameof(CanEdit)); Notify(nameof(StartText)); Notify(nameof(NeedsConfiguration)); Notify(nameof(CanExport));
     }
 }
 

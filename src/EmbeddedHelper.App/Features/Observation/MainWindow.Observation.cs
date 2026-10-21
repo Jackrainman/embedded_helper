@@ -122,7 +122,19 @@ public partial class MainWindow
         {
             preparing = true; SyncObservationState();
             await VerifySelectedProbeAsync(ready.Request);
-            if (!shutdownRequested) await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request);
+            if (!shutdownRequested)
+            {
+                var path = Path.Combine(App.Data.Root, "observations", DateTime.UtcNow.ToString("yyyyMMdd-HHmmss", CultureInfo.InvariantCulture) + "-" + Guid.NewGuid().ToString("N") + ".jsonl");
+                try { await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request with { RecordingPath = path }); }
+                finally
+                {
+                    if (File.Exists(path))
+                    {
+                        recordingPath = path; observationView.HasRecording = true;
+                        observationView.ExportStatus = "正在记录本次采集；暂停显示仍记录，停止后可导出 Excel。";
+                    }
+                }
+            }
         }
         catch (Exception ex)
         {
@@ -147,6 +159,7 @@ public partial class MainWindow
         foreach (var row in Variables.Where(v => v.Selected)) row.Value = "已停止 / 过期";
         if (rttSession) RttPage.Status.Text = "已释放 · 可使用外部烧录/调试工具";
         else observationView.Status = "已释放 · 可使用外部烧录/调试工具";
+        if (!rttSession && recordingPath != null) observationView.ExportStatus = "可导出最近一次采集记录，包含暂停显示期间的数据。";
         if (!acquisition.HasSession) rttSession = false;
         SyncObservationState();
     }

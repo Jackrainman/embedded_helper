@@ -5,7 +5,7 @@ using System.Threading.Channels;
 
 namespace EmbeddedHelper.Core;
 
-public sealed record ObservationRequest(string Dll, int ProbeSerial, string Host, int Port, string Device, string Interface, int SpeedKHz, int SampleRate, bool Rtt, Variable[] Variables, string SessionId = "", long Generation = 1);
+public sealed record ObservationRequest(string Dll, int ProbeSerial, string Host, int Port, string Device, string Interface, int SpeedKHz, int SampleRate, bool Rtt, Variable[] Variables, string SessionId = "", long Generation = 1, string? RecordingPath = null);
 public sealed record ObservationEvent(string Kind, string Message, Dictionary<string, string>? Values = null, string? RttBase64 = null, long Sequence = 0, string SessionId = "", long Generation = 1, long ReadStartTicks = 0, long ReadEndTicks = 0, DateTimeOffset? ObservedAt = null);
 
 public sealed class ObservationSession : IObservationSession
@@ -19,6 +19,7 @@ public sealed class ObservationSession : IObservationSession
     private Task? watchdog;
     private long lastEvent;
     private bool faulted, stopping;
+    private ObservationRecording? recording;
     public long Generation { get; private set; } = 1;
     public string SessionId { get; } = Guid.NewGuid().ToString("N");
     public bool CanRetry => faulted;
@@ -45,7 +46,9 @@ public sealed class ObservationSession : IObservationSession
             CreateNoWindow = true
         };
         start.ArgumentList.Add("--observe");
-        process = Process.Start(start) ?? throw new IOException("无法启动采集进程。");
+        if (request.RecordingPath is { } path) recording = new(path, request.Variables, request.SampleRate, SessionId, Generation);
+        try { process = Process.Start(start) ?? throw new IOException("无法启动采集进程。"); }
+        catch { recording?.Dispose(); recording = null; throw; }
         State = "连接中";
         var child = process;
         request = request with { SessionId = SessionId, Generation = Generation };
@@ -56,6 +59,7 @@ public sealed class ObservationSession : IObservationSession
         await child.StandardInput.FlushAsync();
         reader = Task.Run(async () =>
         {
+            var recordingFailed = false;
             try
             {
                 while (await child.StandardOutput.ReadLineAsync() is { } line)
@@ -63,6 +67,7 @@ public sealed class ObservationSession : IObservationSession
                     if (line.Length > 1024 * 1024) throw new InvalidDataException("采集进程输出超出协议上限。");
                     var item = JsonSerializer.Deserialize<ObservationEvent>(line) ?? throw new InvalidDataException("采集事件为空。");
                     if (item.SessionId != SessionId) throw new InvalidDataException("采集会话身份不匹配。");
+                    recording?.Append(item);
                     Interlocked.Exchange(ref lastEvent, Stopwatch.GetTimestamp());
                     if (item.Kind == "plan") acknowledgement?.TrySetResult(item.Generation);
                     if (item.Kind is "state" or "error") State = item.Message;
@@ -76,7 +81,23 @@ public sealed class ObservationSession : IObservationSession
                     acknowledgement?.TrySetException(new IOException(State));
                 }
             }
-            catch (Exception ex) { State = "采集协议错误：" + ex.Message; faulted = true; acknowledgement?.TrySetException(ex); }
+            catch (Exception ex)
+            {
+                recordingFailed = true;
+                State = "采集或数据记录失败：" + ex.Message; faulted = true; acknowledgement?.TrySetException(ex);
+                // Stop producing samples when they can no longer be recorded; normal Stop still owns release.
+                try { child.StandardInput.Close(); } catch (IOException) { }
+            }
+            finally
+            {
+                try { if (!recordingFailed) recording?.Complete(); }
+                catch (IOException ex) { State = "数据记录保存失败：" + ex.Message; faulted = true; }
+                finally
+                {
+                    try { recording?.Dispose(); }
+                    catch (IOException ex) { State = "数据记录关闭失败：" + ex.Message; faulted = true; }
+                }
+            }
         });
         watchdog = Task.Run(async () =>
         {
@@ -105,6 +126,7 @@ public sealed class ObservationSession : IObservationSession
         {
             if (process is not { } child || stopping || faulted || child.HasExited) throw new IOException("采集连接不可用，请先重试。");
             acknowledgement = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            recording?.Plan(variables, sampleRate, plan.Generation);
             await child.StandardInput.WriteLineAsync(JsonSerializer.Serialize(plan)); await child.StandardInput.FlushAsync();
             if (await acknowledgement.Task.WaitAsync(TimeSpan.FromSeconds(5)) != plan.Generation) throw new InvalidDataException("计划更新确认不匹配。");
             Generation = plan.Generation;
@@ -126,6 +148,7 @@ public sealed class ObservationSession : IObservationSession
                 catch (TimeoutException) { child.Kill(true); await child.WaitForExitAsync().WaitAsync(TimeSpan.FromSeconds(5)); }
             }
             if (reader != null) await reader;
+            else recording?.Dispose();
             if (watchdog != null) await watchdog;
             State = "已释放";
             child.Dispose();

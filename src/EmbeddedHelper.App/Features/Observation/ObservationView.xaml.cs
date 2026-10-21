@@ -37,6 +37,8 @@ public partial class ObservationView : UserControl
         finally { picker.Variables = null; }
     }
     public event RoutedEventHandler? SaveVariablesRequested;
+    public event RoutedEventHandler? ExportRecordingRequested;
+    private void ExportRecording(object sender, RoutedEventArgs e) => ExportRecordingRequested?.Invoke(sender, e);
     private void SaveVariables(object sender, RoutedEventArgs e) => SaveVariablesRequested?.Invoke(sender, e);
     public event RoutedEventHandler? ConnectionRequested;
     private void Connection(object sender, RoutedEventArgs e) => ConnectionRequested?.Invoke(sender, e);

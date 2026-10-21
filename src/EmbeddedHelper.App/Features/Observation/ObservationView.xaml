@@ -49,7 +49,8 @@
             </ControlTemplate>
           </TextBox.Template>
         </TextBox>
-        <Button Content="保存数据" Style="{StaticResource ToolbarButton}" ToolTip="保存当前变量选择和采样频率；不导出采集数据。" Click="SaveVariables" IsEnabled="{Binding CanEdit}"/>
+        <Button Content="保存变量设置" Style="{StaticResource ToolbarButton}" ToolTip="保存变量选择和采样频率" Click="SaveVariables" IsEnabled="{Binding CanEdit}"/>
+        <Button Content="保存调试数据" Style="{StaticResource ToolbarButton}" ToolTip="{Binding ExportStatus}" ToolTipService.ShowOnDisabled="True" Click="ExportRecording" IsEnabled="{Binding CanExport}"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal">
         <Button Content="更新 ELF" Style="{StaticResource ToolbarButton}" Click="ParseElf" IsEnabled="{Binding CanEdit}"/>

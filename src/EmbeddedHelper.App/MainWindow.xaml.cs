@@ -27,6 +27,7 @@ public partial class MainWindow : Window
         SettingsPage.ReadElfPath.LostKeyboardFocus += (_, _) => { if (SettingsPage.ReadElfPath.Text != settings.ReadElf) SaveToolPath(LocalToolKind.ReadElf, SettingsPage.ReadElfPath.Text); };
         ObservationPage.DataContext = observationView;
         ObservationPage.SaveVariablesRequested += SaveObservationSettings;
+        ObservationPage.ExportRecordingRequested += ExportRecording;
         ObservationPage.ConnectionRequested += ConfigureConnection;
         RemotePage.DataContext = remoteView;
         SerialPage.DataContext = serialView;
@@ -64,7 +65,7 @@ public partial class MainWindow : Window
     {
         if (closing) return;
         e.Cancel = true;
-        if (toolBusy) { Report("正在准备工具，请等待下载或校验完成后关闭。"); return; }
+        if (toolBusy || observationView.Exporting) { Report("正在保存数据或准备工具，请等待完成后关闭。"); return; }
         if (shutdownRequested) return;
         shutdownRequested = true; SyncObservationState();
         // Let the cancelled Closing event return before calling Close again, even when cleanup completes synchronously.

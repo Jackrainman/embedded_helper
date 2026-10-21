@@ -65,6 +65,7 @@ public partial class MainWindow
             await SmokeObservationSettingsAsync(directory);
             await SmokeProjectStatusAsync(directory);
             await SmokePresentationAsync(directory);
+            await SmokeRecordingAsync(directory);
             await SmokeSerialAsync(directory);
             SmokeLocalToolSettings(directory);
             await SmokeProjectRestoreAsync(directory);
