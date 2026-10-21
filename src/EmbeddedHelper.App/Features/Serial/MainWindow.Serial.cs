@@ -42,7 +42,7 @@ public partial class MainWindow
         lastReceived = lastSent = 0; lastSerialTime = 0; serialClock.Restart();
         await serialController.OpenAsync(parameters, SerialPage.RecordSerial.IsChecked == true ? System.IO.Path.Combine(App.Data.Root, "serial", "records") : null);
         SaveSerialPreferences(parameters);
-        if (!serialClosing) Report(parameters.Baud > 1000000 ? "实验波特率请求已被驱动接受；实际速率和链路完整性未验收。" : "串口已打开；发送结果表示驱动已接受，尚无对端确认。");
+        if (!serialClosing) Report(parameters.Baud > 1000000 ? "实验波特率请求已被驱动接受；实际速率和链路完整性未验收。" : "串口已打开。");
     }
     private void UpdateSerialConnection()
     {
@@ -69,7 +69,7 @@ public partial class MainWindow
             RenderSerialLog();
             serialClock.Stop();
             if (result.PeriodicError != null) Report("周期发送已停止：" + result.PeriodicError);
-            SerialPage.SerialStats.Text = result.RecorderError != null ? "串口已关闭；记录失败：" + result.RecorderError : $"串口已关闭；记录缺口 {result.Discarded} 块。";
+            SerialPage.SerialStats.Text = result.RecorderError != null ? "串口已关闭；记录失败：" + result.RecorderError : result.Discarded > 0 ? $"串口已关闭；原始记录缺失 {result.Discarded} 块，详见诊断。" : "串口已关闭。";
         }
         finally { serialDraining = false; UpdateSerialConnection(); }
     }
@@ -111,7 +111,7 @@ public partial class MainWindow
     {
         var started = Stopwatch.GetTimestamp();
         for (var count = 0; count < 256 && Stopwatch.GetElapsedTime(started).TotalMilliseconds < 8 && session.Display.TryRead(out var block); count++)
-            if (block.Sequence > skipDecodeThrough) serialText.Append(block, block.Sequence > clearThrough);
+            if (block.Sequence > skipDecodeThrough) serialText.Append(block, block.Sequence > clearThrough, formatSentLines: true);
     }
     private void RenderSerialLog()
     {
@@ -125,7 +125,8 @@ public partial class MainWindow
             DrainSerialDisplay(serial);
             var elapsed = serialClock.Elapsed.TotalSeconds;
             var delta = Math.Max(0.001, elapsed - lastSerialTime);
-            SerialPage.SerialStats.Text = $"{(serialOpening ? "打开中" : serialClosing ? "关闭中" : serial.Connected ? "已连接" : "连接故障")} · RX {serial.Received:N0} B / {(serial.Received - lastReceived) / delta:N0} B/s · TX 驱动已接受 {serial.Sent:N0} B / {(serial.Sent - lastSent) / delta:N0} B/s\n显示队列丢弃 {serial.Clipped:N0} B · 历史裁剪 {serialText.TrimmedCharacters:N0} 字符 · 记录积压 {serial.Recorder?.QueuedBytes ?? 0:N0} B · 记录缺口 {serial.Recorder?.Discarded ?? 0} 块 / {serial.Recorder?.DiscardedBytes ?? 0:N0} B · 驱动错误通知 {serial.DriverErrors} · {serial.LastDriverError} · {serial.Error ?? serial.Recorder?.Error}";
+            SerialPage.SerialStats.Text = $"{(serialOpening ? "打开中" : serialClosing ? "关闭中" : serial.Connected ? "已连接" : "连接故障")} · RX {serial.Received:N0} B / {(serial.Received - lastReceived) / delta:N0} B/s · TX 驱动已接受 {serial.Sent:N0} B / {(serial.Sent - lastSent) / delta:N0} B/s · {serial.Error ?? serial.Recorder?.Error ?? serial.LastDriverError}";
+            SerialPage.SerialDetails.Text = $"显示队列丢弃 {serial.Clipped:N0} B · 历史裁剪 {serialText.TrimmedCharacters:N0} 字符 · 记录积压 {serial.Recorder?.QueuedBytes ?? 0:N0} B · 记录缺口 {serial.Recorder?.Discarded ?? 0} 块 / {serial.Recorder?.DiscardedBytes ?? 0:N0} B · 驱动错误通知 {serial.DriverErrors} · {serial.LastDriverError} · {serial.Error ?? serial.Recorder?.Error}";
             lastReceived = serial.Received; lastSent = serial.Sent; lastSerialTime = elapsed;
         }
         if (SerialPage.IsVisible) RenderSerialLog();

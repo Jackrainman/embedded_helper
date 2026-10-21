@@ -52,7 +52,7 @@ public sealed class SerialTextBuffer
     // A display clear must not corrupt a character already partially received.
     public void Clear() { spans.Clear(); Revision++; }
     public SerialTextSnapshot Capture() => new(Start, End, Array.AsReadOnly(spans.ToArray()), Mode);
-    public void Append(DataBlock block, bool display = true)
+    public void Append(DataBlock block, bool display = true, bool formatSentLines = false)
     {
         if (!decoders.TryGetValue(block.Direction, out var decoder)) throw new ArgumentException("未知数据方向。");
         string value;
@@ -63,6 +63,19 @@ public sealed class SerialTextBuffer
             value = new string(chars, 0, decoder.GetChars(block.Bytes, chars, false));
         }
         if (!display || value.Length == 0) return;
+        // Formatting belongs only to display history; the original bytes/recording stay untouched.
+        if (formatSentLines && block.Direction == "TX")
+        {
+            if (hex)
+            {
+                if (block.Bytes.AsSpan().EndsWith(new byte[] { 13, 10 })) value += " (CRLF)";
+                else if (block.Bytes[^1] == 10) value += " (LF)";
+            }
+            else if (value.EndsWith("\r\n", StringComparison.Ordinal)) value = value[..^2] + " (CRLF)";
+            else if (value.EndsWith('\n')) value = value[..^1] + " (LF)";
+            if (spans.Last is { } previous && !previous.Value.Text.EndsWith('\n')) value = "\n" + value;
+            value += "\n";
+        }
         if (spans.Last is { } last && last.Value.Direction == block.Direction && last.Value.Text.Length + value.Length <= 1024)
             last.Value = last.Value with { Text = last.Value.Text + value };
         else spans.AddLast(new SerialTextSpan(End, block.Direction, value));

@@ -39,7 +39,7 @@ public partial class MainWindow
             var selected = remoteView.SelectedRelease;
             RemotePage.ToolVersionBox.ItemsSource = available;
             remoteView.SelectedRelease = available.FirstOrDefault(v => v == selected) ?? available.First();
-            SettingsPage.ToolStatus.Text = $"已核验 {available.Length} 个兼容工具版本。选择后下载或导入，再预览更新工程锁。";
+            SettingsPage.ToolStatus.Text = $"已核验 {available.Length} 个兼容工具版本。选择后下载或导入，在工程页一键接入。";
         }
         catch (Exception ex) { SettingsPage.ToolStatus.Text = "更新检查失败，已安装工具仍可离线使用：" + ex.Message; throw; }
         finally { toolBusy = false; }
@@ -73,7 +73,8 @@ public partial class MainWindow
     private void EnvironmentCheck(object? sender, RoutedEventArgs e)
     {
         RefreshLocalToolStatus();
-        SettingsPage.EnvironmentText.Text = $"版本：{Product.Version}\n系统：{Environment.OSVersion} / {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}\n程序目录：{AppContext.BaseDirectory}\n数据目录：{App.Data.Root}\nSEGGER 库：{SettingsPage.JLinkStatus.Text}\n硬件状态：未检测；仅用户点击开始/打开串口时连接。\n本包自包含运行时；纯净 Windows 与硬件验收仍待用户执行。";
+        SettingsPage.EnvironmentDetails.IsExpanded = true;
+        SettingsPage.EnvironmentText.Text = $"版本：{Product.Version}\n系统：{Environment.OSVersion} / {System.Runtime.InteropServices.RuntimeInformation.ProcessArchitecture}\n程序目录：{AppContext.BaseDirectory}\n数据目录：{App.Data.Root}\nSEGGER 库：{SettingsPage.JLinkStatus.Text}\n硬件状态：未检测；仅用户点击开始/打开串口时连接。";
     }
     private void InitializePageSettings()
     {

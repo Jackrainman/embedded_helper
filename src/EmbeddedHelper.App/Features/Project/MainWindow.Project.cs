@@ -58,7 +58,8 @@ public partial class MainWindow
             SetTransportSelection();
             ProjectPage.ProjectPath.Text = loaded.Root;
             ProjectPage.ProjectSummary.Text = loaded.Name + " · " + loaded.Family;
-            ProjectPage.McuLabel.Text = "MCU：" + loaded.Mcu + "\n来源：.eide/eide.yml";
+            ProjectPage.McuLabel.Text = "MCU：" + loaded.Mcu;
+            ProjectPage.McuLabel.ToolTip = "来源：.eide/eide.yml";
             ProjectPage.ProjectDiagnostics.Text = string.Join("\n", loaded.Diagnostics.Prepend("读取完成；未运行工程钩子、构建或设备命令。"));
             ProjectPage.TargetBox.ItemsSource = loaded.Targets;
             ProjectPage.TargetBox.SelectedIndex = loaded.Targets.Length == 1 ? 0 : -1;

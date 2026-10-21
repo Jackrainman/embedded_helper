@@ -12,6 +12,19 @@ namespace EmbeddedHelper.App;
 
 public partial class MainWindow
 {
+    internal void PreviewSerial()
+    {
+        Title = "Embedded Helper " + Product.Version + " · 离线串口显示演示";
+        Pages.SelectedIndex = 3;
+        serialText.Configure("utf-8", false);
+        var sequence = 0;
+        void Append(string direction, string text) => serialText.Append(new(++sequence, direction, Encoding.UTF8.GetBytes(text)), formatSentLines: true);
+        Append("TX", "AT"); Append("RX", "OK");
+        Append("TX", "AT+LF\n"); Append("RX", "回复一半"); Append("RX", "继续\r\n");
+        Append("TX", "AT+CRLF\r\n"); Append("RX", "OK\r\n");
+        RenderSerialLog();
+        Report("离线合成收发示例；未打开串口。");
+    }
     private object? serialSmoke;
     private async Task SmokeSerialAsync(string directory)
     {
@@ -106,5 +119,12 @@ public partial class MainWindow
         Append("RX", "离线显示演示：接收日志\r\n"); Append("TX", "离线显示演示：发送命令\r\n");
         UpdateSerialConnection();
         SaveSmokeScreenshot(directory, "page-2-log.png");
+        var title = Title;
+        PreviewSerial();
+        if (live.PlainText != "AT\nOK\nAT+LF (LF)\n回复一半继续\r\nAT+CRLF (CRLF)\nOK\r\n")
+            throw new InvalidDataException("发送显示换行或末尾标记不符。");
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
+        SaveSmokeScreenshot(directory, "serial-sent-lines.png");
+        Title = title;
     }
 }

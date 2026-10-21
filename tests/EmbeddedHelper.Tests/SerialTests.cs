@@ -8,6 +8,38 @@ namespace EmbeddedHelper.Tests;
 [Collection("Offline client")]
 public sealed class SerialTests : TestWorkspace
 {
+    [Theory]
+    [InlineData("", "AT\n")]
+    [InlineData("\n", "AT (LF)\n")]
+    [InlineData("\r\n", "AT (CRLF)\n")]
+    public void SentDisplayLinesDoNotChangeWireBytesOrSplitReceivedChunks(string ending, string expected)
+    {
+        var display = new SerialTextBuffer();
+        var sent = SerialSession.ParseSend("AT", false, ending);
+        var original = sent.ToArray();
+        display.Append(new(1, "RX", [65]), formatSentLines: true);
+        display.Append(new(2, "TX", sent), formatSentLines: true);
+        display.Append(new(3, "RX", [0xe4]), formatSentLines: true);
+        display.Append(new(4, "RX", [0xb8, 0xad]), formatSentLines: true);
+        Assert.Equal("A\n" + expected + "中", display.Text);
+        Assert.Equal(original, sent);
+        display.Clear();
+        display.Append(new(5, "TX", sent), display: false, formatSentLines: true);
+        Assert.Empty(display.Text);
+    }
+    [Fact]
+    public void SentLinesRecognizeUtf16AndKeepAllHexBytesVisible()
+    {
+        var display = new SerialTextBuffer();
+        display.Configure("utf-16", false);
+        display.Append(new(1, "TX", SerialSession.ParseSend("中", false, "\r\n", SerialTextBuffer.GetEncoding("utf-16"))), formatSentLines: true);
+        display.Append(new(2, "TX", SerialSession.ParseSend("A", false, "", SerialTextBuffer.GetEncoding("utf-16"))), formatSentLines: true);
+        Assert.Equal("中 (CRLF)\nA\n", display.Text);
+        display.Configure("us-ascii", true);
+        display.Append(new(3, "TX", [65, 13, 10]), formatSentLines: true);
+        display.Append(new(4, "RX", [66]), formatSentLines: true);
+        Assert.Equal("410D0A (CRLF)\n42", display.Text);
+    }
     [Fact]
     public async Task BidirectionalRecordingKeepsRawBytesAndSegmentSequence()
     {

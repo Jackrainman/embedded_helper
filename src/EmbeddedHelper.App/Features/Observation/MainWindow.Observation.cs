@@ -95,7 +95,7 @@ public partial class MainWindow
             RefreshProjectDiagnostics(path);
             RefreshViewerRows(); displayDirty = true;
             observationView.Status = $"ELF 已解析：{indexed.Length} 项，{indexed.Count(v => v.Supported)} 项可读取 · 与目标固件匹配未核验";
-            Report(!acquisition.HasSession ? "变量索引完成；地址来自 ELF，尚未连接硬件。" : $"读计划第 {acquisition.Generation} 代已在批次边界应用；新曲线重新开始，缺失项标为无效。固件与 ELF 仍未核验。");
+            Report(!acquisition.HasSession ? "变量索引完成；地址来自 ELF，尚未连接硬件。" : "变量地址已更新，曲线重新开始；缺失变量标为无效。请确认 ELF 与当前固件一致。");
         }
         catch (Exception ex)
         {
