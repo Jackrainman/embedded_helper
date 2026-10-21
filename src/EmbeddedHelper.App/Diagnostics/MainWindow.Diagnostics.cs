@@ -32,8 +32,10 @@ public partial class MainWindow
                 remoteView.EideUpload = true; remoteView.GdbPort = "2450"; remoteView.Web = "http://test.example.invalid:8000";
                 var badPackage = System.IO.Path.Combine(directory, "invalid-tool.zip");
                 File.WriteAllText(badPackage, "not a trusted tool package");
+                var ownerPath = System.IO.Path.Combine(project!.Root, ".embedded_helper", "integration.json");
+                var beforeOwner = File.Exists(ownerPath) ? File.ReadAllText(ownerPath) : null;
                 await Guard(() => ImportLanAsync(badPackage));
-                if (!remoteView.ToolStatus.Contains("接入未完成") || VsCodeIntegration.ReadState(project!.Root) != null)
+                if (!remoteView.ToolStatus.Contains("接入未完成") || beforeOwner != (File.Exists(ownerPath) ? File.ReadAllText(ownerPath) : null))
                     throw new InvalidDataException("错误 ZIP 没有明确拒绝，或提前写入了工程任务。");
                 Pages.SelectedIndex = 0; ProjectSections.SelectedIndex = 1;
                 SaveSmokeScreenshot(directory, "lan-import-invalid-zip.png");
