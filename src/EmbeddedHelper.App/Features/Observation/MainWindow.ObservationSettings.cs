@@ -25,6 +25,8 @@ public partial class MainWindow
         if (project == null || Target == null) { Report("请先打开项目并选择目标。"); return; }
         if (ObservationBusy || configurationBusy || acquisition.HasSession) { Report("请先停止并释放当前采集，再修改连接配置。"); return; }
         if (activeTransport == "remote") { Pages.SelectedIndex = 0; ProjectSections.SelectedIndex = 1; return; }
+        await RefreshProbeListAsync();
+        if (shutdownRequested) return;
         var dialog = new Window
         {
             Title = "连接配置",
@@ -71,7 +73,12 @@ public partial class MainWindow
         if (!observationView.CanEdit) throw new InvalidOperationException("请先停止采集并等待当前操作结束。");
         var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
         var target = Target ?? throw new InvalidOperationException("请选择目标。");
-        ConnectionSettingsStore.Save(loaded.Root, new(target.Name, activeTransport, ConnectionPage.ProbeSerial.Text.Trim()));
+        if (activeTransport == "local" && ConnectionPage.Probes.SelectedItem is not UsbProbe)
+            throw new InvalidOperationException("请先刷新并选择要连接的实体 J-Link。");
+        var chosen = new ConnectionSettings(target.Name, activeTransport, ConnectionPage.ProbeSerial.Text.Trim());
+        ConnectionSettingsStore.Save(loaded.Root, chosen);
+        if (await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name, activeTransport) != chosen)
+            throw new InvalidOperationException("连接写入后回读不一致，请重试。");
         connectionFailure = "";
         InvalidateViewer();
         ConnectionPage.SetupStatus.Text = "共享连接已保存；变量列表和采样率未改动。";

@@ -7,6 +7,16 @@ using EmbeddedHelper.Core;
 
 Console.OutputEncoding = new UTF8Encoding(false);
 if (args is ["--version"] or ["--self-test"]) { Console.WriteLine(Product.Version); return 0; }
+if (args is ["--list-probes"])
+{
+    try
+    {
+        var dll = JsonSerializer.Deserialize<string>(Console.ReadLine() ?? "") ?? throw new InvalidDataException("缺少 J-Link 组件路径。");
+        Console.WriteLine(JsonSerializer.Serialize(UsbProbeDiscovery.Read(dll)));
+        return 0;
+    }
+    catch (Exception ex) { Console.Error.WriteLine(ex.Message); return 1; }
+}
 if (args is not ["--observe"]) { Console.Error.WriteLine("请由 Embedded Helper 启动采集。"); return 2; }
 try
 {

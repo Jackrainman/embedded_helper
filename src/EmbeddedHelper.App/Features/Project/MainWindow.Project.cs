@@ -20,6 +20,22 @@ public partial class MainWindow
         ProjectPage.ProjectDiagnostics.Text = string.Join("\n", project.Diagnostics.Prepend("读取完成；未运行工程钩子、构建或设备命令。"));
     }
 
+    internal async Task RestoreLastProjectAsync()
+    {
+        var path = string.IsNullOrWhiteSpace(settings.LastProject) ? settings.Recent?.FirstOrDefault() : settings.LastProject;
+        if (string.IsNullOrWhiteSpace(path)) return;
+        ProjectPage.ProjectPath.Text = path;
+        Report("正在恢复上次工程…");
+        try
+        {
+            await LoadProjectAsync(path);
+            Report("已恢复上次工程；尚未连接设备。");
+        }
+        catch (Exception ex)
+        {
+            Report("上次工程无法恢复，请重新选择工程：" + ex.Message);
+        }
+    }
     private void BrowseProject(object? sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog { Title = "选择 EIDE 工程目录" };
@@ -34,7 +50,7 @@ public partial class MainWindow
         loadingProject = true; SyncObservationState();
         try
         {
-            var loaded = await Task.Run(() => ProjectReader.Read(path));
+            var loaded = await Task.Run(() => ProjectReader.Read(path)).WaitAsync(TimeSpan.FromSeconds(5));
             project = loaded;
             connectionFailure = "";
             activeTransport = "local";
@@ -50,6 +66,9 @@ public partial class MainWindow
             {
                 ProjectPage.TargetBox.SelectedItem = loaded.Targets.FirstOrDefault(t => t.Name == watch?.Target);
             }
+            if (string.Equals(settings.LastProject, loaded.Root, StringComparison.OrdinalIgnoreCase) &&
+                loaded.Targets.FirstOrDefault(t => t.Name == settings.LastTarget) is { } rememberedTarget)
+                ProjectPage.TargetBox.SelectedItem = rememberedTarget;
             ApplyWatchToSetup(watch);
             await LoadConnectionAsync();
             remoteView.Host = ""; remoteView.Port = "19011"; remoteView.Web = "";
@@ -69,7 +88,7 @@ public partial class MainWindow
                 }
                 catch (Exception ex) { ProjectPage.ProjectDiagnostics.AppendText("\n远程配置读取失败，可继续使用本地连接及解析 ELF：" + ex.Message); }
             }
-            settings = settings with { Recent = new[] { loaded.Root }.Concat(settings.Recent ?? []).Distinct(StringComparer.OrdinalIgnoreCase).Take(8).ToArray() };
+            settings = settings with { LastProject = loaded.Root, LastTarget = Target?.Name ?? "", Recent = new[] { loaded.Root }.Concat(settings.Recent ?? []).Distinct(StringComparer.OrdinalIgnoreCase).Take(8).ToArray() };
             ProjectPage.RecentProjects.ItemsSource = settings.Recent;
             PersistSettings();
             remoteView.Invalidate();
@@ -88,6 +107,15 @@ public partial class MainWindow
         ProjectPage.ElfPath.Text = target.ElfPath;
         Variables.Clear();
         remoteView.Invalidate();
-        if (!loadingProject) { await LoadConnectionAsync(); await RefreshProjectConnectionAsync(); }
+        if (!loadingProject)
+        {
+            await LoadConnectionAsync(); await RefreshProjectConnectionAsync();
+            if (project != null && Target == target)
+            {
+                settings = settings with { LastProject = project.Root, LastTarget = target.Name };
+                try { PersistSettings(); }
+                catch (Exception ex) { Report("目标已选择，但记忆保存失败：" + ex.Message); }
+            }
+        }
     }
 }

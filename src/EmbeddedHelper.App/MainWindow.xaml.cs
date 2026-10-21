@@ -16,12 +16,15 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ConnectionPage.SaveRequested += SaveConnection;
+        ConnectionPage.RefreshRequested += async (_, _) => await RefreshProbeListAsync();
         SettingsPage.DiscoverToolsRequested += DiscoverLocalTools;
-        SettingsPage.UseJLinkRequested += (_, _) => UseLocalTool(LocalToolKind.JLink);
-        SettingsPage.UseReadElfRequested += (_, _) => UseLocalTool(LocalToolKind.ReadElf);
+        SettingsPage.JLinkCandidates.SelectionChanged += (_, _) => ToolSelectionChanged(LocalToolKind.JLink);
+        SettingsPage.ReadElfCandidates.SelectionChanged += (_, _) => ToolSelectionChanged(LocalToolKind.ReadElf);
         SettingsPage.BrowseReadElfRequested += BrowseReadElf;
         SettingsPage.DllPath.TextChanged += (_, _) => RefreshLocalToolStatus();
         SettingsPage.ReadElfPath.TextChanged += (_, _) => RefreshLocalToolStatus();
+        SettingsPage.DllPath.LostKeyboardFocus += (_, _) => { if (SettingsPage.DllPath.Text != settings.Dll) SaveToolPath(LocalToolKind.JLink, SettingsPage.DllPath.Text); };
+        SettingsPage.ReadElfPath.LostKeyboardFocus += (_, _) => { if (SettingsPage.ReadElfPath.Text != settings.ReadElf) SaveToolPath(LocalToolKind.ReadElf, SettingsPage.ReadElfPath.Text); };
         ObservationPage.DataContext = observationView;
         ObservationPage.SaveVariablesRequested += SaveObservationSettings;
         ObservationPage.ConnectionRequested += ConfigureConnection;
@@ -66,7 +69,7 @@ public partial class MainWindow : Window
         shutdownRequested = true; SyncObservationState();
         // Let the cancelled Closing event return before calling Close again, even when cleanup completes synchronously.
         await Dispatcher.Yield(DispatcherPriority.Background);
-        await Guard(async () => { await viewerPreparation; while (indexing || loadingProject || configurationBusy || preparing) await Task.Delay(25); await CloseSerialAsync(); await StopObservationAsync(); try { PersistSettings(); } catch (Exception ex) { Report("输入无效，保留上次设置：" + ex.Message); } refresh.Stop(); closing = true; Close(); });
+        await Guard(async () => { await viewerPreparation; while (indexing || loadingProject || configurationBusy || preparing || discoveringProbes) await Task.Delay(25); await CloseSerialAsync(); await StopObservationAsync(); try { PersistSettings(); } catch (Exception ex) { Report("输入无效，保留上次设置：" + ex.Message); } refresh.Stop(); closing = true; Close(); });
         if (!closing) { shutdownRequested = false; SyncObservationState(); }
     }
 }

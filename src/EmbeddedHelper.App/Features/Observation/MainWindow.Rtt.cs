@@ -45,6 +45,8 @@ public partial class MainWindow
             var ready = await ObservationPreparation.PrepareAsync(loaded, target, "", SettingsPage.DllPath.Text,
                 _ => throw new InvalidOperationException("RTT 不应解析 ELF。"), rttOnly: true, transport: activeTransport);
             if (shutdownRequested) return;
+            await VerifySelectedProbeAsync(ready.Request);
+            if (shutdownRequested) return;
             rttSession = true;
             ResetObservationDisplay(); RttPage.RttText.Clear();
             await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request);

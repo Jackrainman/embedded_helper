@@ -66,7 +66,7 @@
     },
     {
       "id": "R-33",
-      "status": "todo",
+      "status": "in_progress",
       "refs": [
         "CON-03",
         "NFR-01"
@@ -121,7 +121,7 @@
     },
     {
       "id": "R-38",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P1",
       "title": "恢复上次打开工程",
       "batch": 2,
@@ -136,7 +136,7 @@
     },
     {
       "id": "R-39",
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P1",
       "title": "实体 J-Link 选择与工程记忆",
       "batch": 2,

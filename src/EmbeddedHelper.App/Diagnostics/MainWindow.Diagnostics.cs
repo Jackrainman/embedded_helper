@@ -66,6 +66,9 @@ public partial class MainWindow
             await SmokeProjectStatusAsync(directory);
             await SmokePresentationAsync(directory);
             await SmokeSerialAsync(directory);
+            SmokeLocalToolSettings(directory);
+            await SmokeProjectRestoreAsync(directory);
+            SmokeProbeSelection(directory);
             Report("离线 GUI 自检：工程、ELF、设置与错误反馈通过；硬件未验收。");
             ProjectSections.SelectedIndex = 0;
             for (int i = 0; i < Pages.Items.Count; i++)

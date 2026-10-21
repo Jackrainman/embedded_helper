@@ -18,9 +18,7 @@ public partial class MainWindow
     private void OpenLogs(object? sender, RoutedEventArgs e) => OpenDirectory(System.IO.Path.Combine(App.Data.Root, "logs"));
     private void OpenDirectory(string path) { try { Directory.CreateDirectory(path); Process.Start(new ProcessStartInfo(path) { UseShellExecute = true }); } catch (Exception ex) { Report(ex.Message); } }
     private void BrowseDll(object? sender, RoutedEventArgs e)
-    { var dialog = new OpenFileDialog { Filter = "SEGGER 64 位库|JLink_x64.dll|DLL|*.dll" }; if (dialog.ShowDialog(this) == true) SettingsPage.DllPath.Text = dialog.FileName; }
-    private void SaveSettings(object? sender, RoutedEventArgs e)
-    { try { ValidateLocalTools(); PersistSettings(); Report("设置已保存。升级时保留程序目录下的 data。"); } catch (Exception ex) { Report("设置保存失败：" + ex.Message); } }
+    { var dialog = new OpenFileDialog { Filter = "SEGGER 64 位库|JLink_x64.dll|DLL|*.dll" }; if (dialog.ShowDialog(this) == true) SaveToolPath(LocalToolKind.JLink, dialog.FileName); }
     private async void ImportTool(object? sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog { Filter = "Debug_LAN 发布包|DebugLAN-*.zip|ZIP|*.zip" };
@@ -71,8 +69,8 @@ public partial class MainWindow
     }
     private void PersistSettings()
     {
-        settings = settings with { Dll = SettingsPage.DllPath.Text, ReadElf = SettingsPage.ReadElfPath.Text, Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, SerialEncoding = SerialPage.EncodingBox.SelectedItem as string ?? settings.SerialEncoding };
-        settingsStore.Save(settings);
+        var next = settings with { Width = ActualWidth > 0 ? ActualWidth : Width, Height = ActualHeight > 0 ? ActualHeight : Height, SerialEncoding = SerialPage.EncodingBox.SelectedItem as string ?? settings.SerialEncoding };
+        settings = settingsStore.SaveAndRead(next);
     }
     private void SaveSerialPreferences(SerialSettings serialSettings)
     {
@@ -99,7 +97,7 @@ public partial class MainWindow
         SerialPage.SendHistoryBox.ItemsSource = settings.SendHistory ?? [];
         try { ToolCatalog.Load(App.Data.Root); } catch (Exception ex) { Report("工具目录记录无法读取：" + ex.Message); }
         SettingsPage.ToolVersionBox.ItemsSource = ToolRelease.Available; SettingsPage.ToolVersionBox.SelectedIndex = 0;
-        SettingsPage.ReadElfPath.Text = string.IsNullOrEmpty(settings.ReadElf) ? ToolDiscovery.Suggest("", ToolDiscovery.Find(LocalToolKind.ReadElf, "", ToolDiscovery.Current())) : settings.ReadElf;
+        SettingsPage.ReadElfPath.Text = settings.ReadElf;
         Width = Math.Clamp(settings.Width, MinWidth, Math.Max(MinWidth, SystemParameters.WorkArea.Width));
         Height = Math.Clamp(settings.Height, MinHeight, Math.Max(MinHeight, SystemParameters.WorkArea.Height));
         ProjectPage.RecentProjects.ItemsSource = settings.Recent ?? [];

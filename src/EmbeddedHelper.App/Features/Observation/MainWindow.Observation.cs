@@ -22,7 +22,7 @@ public partial class MainWindow
     private long samples;
     private long? observationOriginTicks;
     private readonly Stopwatch sampling = new();
-    private bool ObservationBusy => indexing || loadingProject || acquisition.IsBusy || preparing || shutdownRequested;
+    private bool ObservationBusy => indexing || loadingProject || acquisition.IsBusy || preparing || discoveringProbes || shutdownRequested;
     private void SetElfFeedback(ElfParseFeedback feedback)
     {
         observationView.ElfStatus = feedback.Message; observationView.ElfDetails = feedback.Details;
@@ -118,7 +118,12 @@ public partial class MainWindow
         if (ready == null || shutdownRequested) return;
         rttSession = false;
         connectionFailure = "";
-        try { await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request); }
+        try
+        {
+            preparing = true; SyncObservationState();
+            await VerifySelectedProbeAsync(ready.Request);
+            if (!shutdownRequested) await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request);
+        }
         catch (Exception ex)
         {
             connectionFailure = ex.Message;
@@ -126,6 +131,7 @@ public partial class MainWindow
             SyncObservationState();
             throw;
         }
+        finally { preparing = false; SyncObservationState(); }
         if (!acquisition.HasSession || shutdownRequested) return;
         ResetObservationDisplay();
         foreach (var row in Variables) { row.History.Clear(); row.HistorySeconds.Clear(); row.LatestValue = null; row.LastObservedAt = null; row.Value = row.Variable.Supported ? "等待新会话数据" : row.Variable.Status; }
@@ -147,6 +153,7 @@ public partial class MainWindow
     private void EnableConnectionFields(bool enabled)
     {
         ConnectionPage.IsEnabled = enabled;
+        SettingsPage.LocalToolsPanel.IsEnabled = enabled && !discoveringTools;
         foreach (var field in new UIElement[] { SettingsPage.DllPath, SettingsPage.ReadElfPath, ProjectPage.ElfPath, RemotePage.RemoteHost, RemotePage.RemotePort }) field.IsEnabled = enabled;
     }
     private static string Decode(Decoder decoder, byte[] data)
