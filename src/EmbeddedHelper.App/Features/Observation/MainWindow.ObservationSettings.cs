@@ -53,7 +53,11 @@ public partial class MainWindow
         ProjectSections.SelectedIndex = configurationDestination switch { ObservationConfigurationArea.Project => 0, ObservationConfigurationArea.Remote => 1, _ => 0 };
     }
     private void ApplyWatchToSetup(WatchSettings? watch)
-    { ObservationPage.SampleRate.Text = (watch?.Rate ?? 200).ToString(CultureInfo.InvariantCulture); }
+    {
+        var previous = suppressWatchAutosave; suppressWatchAutosave = true;
+        try { ObservationPage.SampleRate.Text = (watch?.Rate ?? 200).ToString(CultureInfo.InvariantCulture); }
+        finally { suppressWatchAutosave = previous; }
+    }
     private async Task LoadConnectionAsync()
     {
         var loaded = project; var target = Target;
@@ -64,7 +68,7 @@ public partial class MainWindow
             var saved = await ConnectionSettingsStore.LoadAsync(loaded.Root, target.Name, "local", validate: false);
             if (project != loaded || Target != target) return;
             ConnectionPage.ProbeSerial.Text = saved?.ProbeSerial ?? "";
-            ConnectionPage.SetupStatus.Text = saved == null ? "当前目标尚未保存连接。" : "已读取共享连接；旧 watch.json 连接字段可兼容使用。修改后请保存。";
+            ConnectionPage.SetupStatus.Text = saved == null ? "当前目标尚未保存连接。" : "已读取共享连接；旧 watch.json 连接字段可兼容使用。修改后自动保存。";
         }
         catch (Exception ex) { ConnectionPage.SetupStatus.Text = ex.Message; Report(ex.Message); }
     }
@@ -100,7 +104,7 @@ public partial class MainWindow
         observationView.ConfigureText = destination switch { ObservationConfigurationArea.Project => "去工程概览", ObservationConfigurationArea.Remote => "去远程配置", ObservationConfigurationArea.Settings => "去设置与诊断", ObservationConfigurationArea.Connection => "去连接配置", _ => "设置观察变量" };
         observationView.Issue = message;
         observationView.Summary = "MCU Viewer 尚未就绪";
-        observationView.VariablesEmpty = "尚无已配置变量\n请搜索添加并保存。";
+        observationView.VariablesEmpty = "尚无已配置变量\n请搜索添加变量。";
         observationView.PlotEmpty = "配置就绪并开始采集后显示曲线";
         observationView.Status = "未采集 · ELF 与固件匹配未核验";
         if (report) Report(message);
@@ -108,7 +112,7 @@ public partial class MainWindow
     private void RefreshViewerRows() => observationView.VisibleRows = Variables.Where(v => v.Selected).ToArray();
     private Task PrepareViewerAsync()
     {
-        if (acquisition.HasSession || shutdownRequested) return Task.CompletedTask;
+        if (acquisition.HasSession || shutdownRequested || watchDirty) return Task.CompletedTask;
         if (!viewerPreparation.IsCompleted) return viewerPreparation;
         viewerPreparation = PrepareViewerCoreAsync();
         return viewerPreparation;
@@ -156,20 +160,26 @@ public partial class MainWindow
     private async void SaveObservationSettings(object? sender, RoutedEventArgs e) => await Guard(SaveVariablesAsync);
     private async Task SaveVariablesAsync()
     {
-        if (!observationView.CanEdit) throw new InvalidOperationException("请先停止采集并等待当前操作完成。");
-        var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
-        var target = Target ?? throw new InvalidOperationException("请选择工程目标。");
-        var rate = int.Parse(ObservationPage.SampleRate.Text, CultureInfo.InvariantCulture);
-        var variables = Variables.Where(v => v.Selected).Select(v => v.Variable).ToArray();
-        new ReadPlan(1, rate, variables).Validate();
-        if (variables.Length == 0) throw new InvalidOperationException("请至少添加一个变量；RTT 请到 RTT 监视。");
-        var legacy = await WatchSettingsStore.LoadAsync(loaded.Root);
-        if (project != loaded || Target != target || !observationView.CanEdit) throw new InvalidOperationException("工程或会话已变化，请重试保存。");
-        if (legacy?.Target != target.Name) legacy = null;
-        var watch = new WatchSettings(target.Name, variables.Select(v => v.Identity).ToArray(), rate)
-        { Transport = legacy?.Transport ?? "local", ProbeSerial = legacy?.ProbeSerial ?? "", EnableRtt = false };
-        WatchSettingsStore.Save(loaded.Root, watch);
-        InvalidateViewer();
-        await PrepareViewerAsync();
+        try
+        {
+            if (!observationView.CanEdit) throw new InvalidOperationException("请先停止采集并等待当前操作完成。");
+            var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
+            var target = Target ?? throw new InvalidOperationException("请选择工程目标。");
+            if (!int.TryParse(ObservationPage.SampleRate.Text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var rate) || rate is < 1 or > 1000)
+                throw new InvalidOperationException("采样频率须为 1～1000 的整数，请修正后离开输入框。");
+            if (watchEdit == null || watchEdit.Root != loaded.Root) watchEdit = new WatchSettingsEdit(loaded.Root);
+            var saved = watchEdit.Save(target.Name, Variables.Where(v => v.Selected).Select(v => v.Variable.Identity).ToArray(), rate);
+            watchDirty = false; observationView.SettingsError = false;
+            observationView.SettingsStatus = $"已自动保存 · {saved.Identities.Length} 个变量 · {saved.Rate} Hz";
+            InvalidateViewer();
+            await PrepareViewerAsync();
+        }
+        catch (Exception ex)
+        {
+            watchDirty = true; observationView.SettingsError = true; observationView.Ready = false;
+            observationView.SettingsStatus = "未保存：" + ex.Message;
+            SyncObservationState();
+            throw;
+        }
     }
 }

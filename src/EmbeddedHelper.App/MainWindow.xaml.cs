@@ -27,6 +27,11 @@ public partial class MainWindow : Window
         SettingsPage.ReadElfPath.LostKeyboardFocus += (_, _) => { if (SettingsPage.ReadElfPath.Text != settings.ReadElf) SaveToolPath(LocalToolKind.ReadElf, SettingsPage.ReadElfPath.Text); };
         ObservationPage.DataContext = observationView;
         ObservationPage.SaveVariablesRequested += SaveObservationSettings;
+        ObservationPage.ReloadVariablesRequested += ReloadWatchSettings;
+        observationView.SelectionEdited += (_, _) => QueueWatchSave();
+        ObservationPage.SampleRate.TextChanged += (_, _) => { if (!suppressWatchAutosave && project != null && Target != null && ObservationPage.SampleRate.IsKeyboardFocused && observationView.CanEdit) { watchDirty = true; observationView.SettingsStatus = "频率编辑中；按 Enter 或离开输入框后自动保存。"; SyncObservationState(); } };
+        ObservationPage.SampleRate.LostKeyboardFocus += (_, _) => CommitFrequency();
+        ObservationPage.SampleRate.PreviewKeyDown += (_, e) => { if (e.Key == System.Windows.Input.Key.Enter) { CommitFrequency(); e.Handled = true; } };
         ObservationPage.ExportRecordingRequested += ExportRecording;
         ObservationPage.ConnectionRequested += ConfigureConnection;
         RemotePage.DataContext = remoteView;
@@ -68,6 +73,7 @@ public partial class MainWindow : Window
         if (closing) return;
         e.Cancel = true;
         if (toolBusy || observationView.Exporting) { Report("正在保存数据或准备工具，请等待完成后关闭。"); return; }
+        if (watchDirty) { Report("变量设置尚未保存；请修正后重试，或重新读取已保存设置后关闭。"); return; }
         if (shutdownRequested) return;
         shutdownRequested = true; SyncObservationState();
         // Let the cancelled Closing event return before calling Close again, even when cleanup completes synchronously.

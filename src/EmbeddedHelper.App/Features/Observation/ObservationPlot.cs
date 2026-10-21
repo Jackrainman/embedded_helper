@@ -52,6 +52,7 @@ public sealed class ObservationPlot : FrameworkElement
             context.DrawGeometry(null, pen, geometries[i]);
             context.Pop();
             var label = i < Labels.Length ? Labels[i] : $"曲线 {i + 1}";
+            label = EmbeddedHelper.Core.VariableNameDisplay.Fit(label, ActualWidth - 8, text => new FormattedText(text, CultureInfo.CurrentCulture, FlowDirection.LeftToRight, new Typeface("Segoe UI"), 11, pen.Brush, VisualTreeHelper.GetDpi(this).PixelsPerDip).WidthIncludingTrailingWhitespace);
             DrawText(context, label, new Point(4, Independent ? i * ActualHeight / geometries.Length : i * 17), pen.Brush, ActualWidth - 8);
         }
         context.Pop();

@@ -21,7 +21,8 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
         };
     }
     private void SelectionChanged(object? sender, PropertyChangedEventArgs e)
-    { if (e.PropertyName == nameof(VariableRow.Selected)) VisibleRows = variables.Where(row => row.Selected).ToArray(); }
+    { if (e.PropertyName == nameof(VariableRow.Selected)) { VisibleRows = variables.Where(row => row.Selected).ToArray(); SelectionEdited?.Invoke(this, EventArgs.Empty); } }
+    public event EventHandler? SelectionEdited;
     public ObservableCollection<VariableRow> Variables => variables;
     public void ReplaceRows(VariableRow[] rows) => variables.Replace(rows);
     public void LoadIndex(Variable[] index, string[] selected)
@@ -56,7 +57,11 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     public bool HasSession { get => hasSession; set { if (Set(ref hasSession, value)) StateChanged(); } }
     public bool CanRetry { get => canRetry; set { if (Set(ref canRetry, value)) StateChanged(); } }
     public bool Paused { get => paused; set => Set(ref paused, value); }
-    public bool CanStart => !Busy && ((!HasSession && Ready) || CanRetry);
+    public bool CanStart => !SettingsError && !Busy && ((!HasSession && Ready) || CanRetry);
+    private bool settingsError;
+    public bool SettingsError { get => settingsError; set { Set(ref settingsError, value); Notify(nameof(CanStart)); Notify(nameof(NeedsConfiguration)); } }
+    private string settingsStatus = "变量选择自动保存；频率编辑完成后自动保存。";
+    public string SettingsStatus { get => settingsStatus; set => Set(ref settingsStatus, value); }
     public bool CanStop => HasSession;
     public bool CanEdit => !Busy && !HasSession;
     private bool hasRecording, exporting;
@@ -66,14 +71,15 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     private string exportStatus = "停止采集后可导出本次完整记录。";
     public string ExportStatus { get => exportStatus; set => Set(ref exportStatus, value); }
     public string StartText => CanRetry ? "清理并重试" : "开始采集";
-    public bool NeedsConfiguration => !Ready && !HasSession && !Busy;
+    public bool NeedsConfiguration => !Ready && !HasSession && !Busy && !SettingsError;
     private string summary = "读取本工程已保存的变量与共享连接配置。", issue = "请打开工程，保存共享连接并搜索添加变量。", configureText = "设置观察变量";
-    private string status = "未连接 · ELF 与固件匹配未核验", variablesEmpty = "尚无已配置变量\n请搜索添加变量并保存。", plotEmpty = "开始采集后显示曲线";
+    private string status = "未连接 · ELF 与固件匹配未核验", variablesEmpty = "尚无已配置变量\n请搜索添加变量。", plotEmpty = "开始采集后显示曲线";
     private double[][] series = [];
     private double[][] times = [];
     public double[][] Times { get => times; set => Set(ref times, value); }
     private string[] plotLabels = [];
-    public string[] PlotLabels { get => plotLabels; set => Set(ref plotLabels, value); }
+    public string[] PlotLabels { get => plotLabels; set { Set(ref plotLabels, value); Notify(nameof(PlotNames)); } }
+    public string PlotNames => string.Join("\n", PlotLabels);
     public string Summary { get => summary; set => Set(ref summary, value); }
     public string Issue { get => issue; set => Set(ref issue, value); }
     public string ConfigureText { get => configureText; set => Set(ref configureText, value); }

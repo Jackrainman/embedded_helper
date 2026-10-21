@@ -48,7 +48,7 @@ public partial class VariablePicker : UserControl
         var matches = query.Length == 0 ? [] : rows.Where(r => !r.Selected && (r.Label.Contains(query, StringComparison.OrdinalIgnoreCase) || r.Variable.Identity.Contains(query, StringComparison.OrdinalIgnoreCase))).ToArray();
         Results.ItemsSource = matches.Take(200).ToArray();
         SelectedRows.ItemsSource = rows.Where(r => r.Selected).ToArray();
-        Hint.Text = rows.Length == 0 ? "请先解析 ELF。" : query.Length == 0 ? "输入名称或类型搜索；已添加列表不受搜索影响。修改后请保存。" : $"匹配 {matches.Length} 项{(matches.Length > 200 ? "，仅显示前 200 项，请细化搜索" : "")}；已添加 {rows.Count(r => r.Selected)} 项。修改后请保存。";
+        Hint.Text = rows.Length == 0 ? "请先解析 ELF。" : query.Length == 0 ? "输入名称或类型搜索；已添加列表不受搜索影响。修改后自动保存。" : $"匹配 {matches.Length} 项{(matches.Length > 200 ? "，仅显示前 200 项，请细化搜索" : "")}；已添加 {rows.Count(r => r.Selected)} 项。修改后自动保存。";
     }
     private void Add(object sender, RoutedEventArgs e)
     {

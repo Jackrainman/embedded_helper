@@ -24,10 +24,10 @@ public static class ObservationPreparation
         try
         {
             var watch = rttOnly ? new WatchSettings(target.Name, [], 100) : await WatchSettingsStore.LoadAsync(project.Root)
-                ?? throw new InvalidDataException("请在 MCU Viewer 中解析 ELF、添加变量并保存。");
-            if (watch.Target != target.Name) throw new InvalidDataException("当前目标没有已保存的变量设置，请重新选择并保存。");
+                ?? throw new InvalidDataException("请在 MCU Viewer 中解析 ELF、添加变量。");
+            if (watch.Target != target.Name) throw new InvalidDataException("当前目标没有已保存的变量设置，请重新选择变量。");
             if (!rttOnly && (watch.Rate is < 1 or > 1000 || watch.Identities == null || watch.Identities.Length > 64 || watch.Identities.Any(string.IsNullOrWhiteSpace) || watch.Identities.Distinct().Count() != watch.Identities.Length))
-                throw new InvalidDataException("变量列表或采样率无效，请在 MCU Viewer 中重新保存。");
+                throw new InvalidDataException("变量列表或采样率无效，请在 MCU Viewer 中修正。");
             saved = watch;
             if (watch.Identities.Length > 0)
             {
@@ -54,10 +54,10 @@ public static class ObservationPreparation
             }
             area = ObservationConfigurationArea.Observation;
             var rtt = rttOnly;
-            if (watch.Identities.Length == 0 && !rtt) throw new InvalidDataException("请在 MCU Viewer 中搜索添加变量并保存；RTT 请到 RTT 监视。");
+            if (watch.Identities.Length == 0 && !rtt) throw new InvalidDataException("请在 MCU Viewer 中搜索添加变量；RTT 请到 RTT 监视。");
             area = ObservationConfigurationArea.Observation;
             var byIdentity = indexed.ToDictionary(v => v.Identity);
-            if (watch.Identities.Any(id => !byIdentity.ContainsKey(id))) throw new InvalidDataException("已保存的变量在当前 ELF 中缺失，请回工程检查变量选择后重新保存。");
+            if (watch.Identities.Any(id => !byIdentity.ContainsKey(id))) throw new InvalidDataException("已保存的变量在当前 ELF 中缺失，请检查变量选择，移除缺失项或重新解析 ELF。");
             var variables = watch.Identities.Select(id => byIdentity[id]).ToArray();
             new ReadPlan(1, watch.Rate, variables).Validate();
             area = ObservationConfigurationArea.Project;

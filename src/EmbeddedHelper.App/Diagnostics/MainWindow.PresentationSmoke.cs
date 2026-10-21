@@ -72,7 +72,38 @@ public partial class MainWindow
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         UpdateLayout();
         SaveSmokeScreenshot(directory, "page-1-plot-two-common.png");
+        await SmokeLongNamesAsync(directory);
         observationView.Series = []; RttPage.RttText.Text = "";
         await PrepareViewerAsync();
+    }
+
+    private async Task SmokeLongNamesAsync(string directory)
+    {
+        var names = new[] { "left_drive.controller.feedback.motor.encoder.calibration.position", "right_drive.controller.feedback.motor.encoder.calibration.position" };
+        var rows = names.Select((name, i) => new VariableRow(new EmbeddedHelper.Core.Variable("long-" + i, name, (uint)(0x20000000 + 4 * i), "float32", 4, "")) { Selected = true, Value = "合成数据" }).ToArray();
+        observationView.ReplaceRows(rows); observationView.PlotLabels = names;
+        var originalWidth = Width; var originalHeight = Height;
+        Width = MinWidth; Height = MinHeight;
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle); UpdateLayout();
+        static IEnumerable<VariableNameText> Find(DependencyObject parent)
+        {
+            for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                var child = VisualTreeHelper.GetChild(parent, i);
+                if (child is VariableNameText label) yield return label;
+                foreach (var found in Find(child)) yield return found;
+            }
+        }
+        var labels = Find(ObservationPage.Picker.SelectedRows).ToArray();
+        SaveSmokeScreenshot(directory, "long-variable-names-minimum.png");
+        if (labels.Length != 2 || labels.Any(label => !label.Text.EndsWith(".position") || !label.Text.Contains('…') || !label.ToolTip.ToString()!.Contains(label.FullName)))
+            throw new InvalidDataException("窄窗口长变量名未保留末级字段或完整提示：" + string.Join(";", labels.Select(label => $"{label.Text} / {label.ActualWidth} / {label.ToolTip}")));
+        if (labels[0].FullName == labels[1].FullName || observationView.PlotNames != string.Join("\n", names)) throw new InvalidDataException("同名末级字段丢失完整路径。");
+        SaveSmokeScreenshot(directory, "long-variable-names-minimum.png");
+        foreach (var label in labels) label.FontSize = 18;
+        await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle); UpdateLayout();
+        if (labels.Any(label => !label.Text.EndsWith(".position"))) throw new InvalidDataException("字体放大后未保留末级字段。");
+        SaveSmokeScreenshot(directory, "long-variable-names-large-font.png");
+        Width = originalWidth; Height = originalHeight;
     }
 }

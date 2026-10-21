@@ -12,6 +12,7 @@ public partial class MainWindow
 {
     public async Task SmokeAsync(string directory)
     {
+        suppressWatchAutosave = true;
         try
         {
             Directory.CreateDirectory(directory);
@@ -72,6 +73,7 @@ public partial class MainWindow
             await Guard(ConnectSerialAsync);
             if (serial != null || SerialPage.ConnectSerialButton.Content?.ToString() != "打开串口" || !SerialPage.ConnectSerialButton.IsEnabled || SerialPage.SerialConnectionLabel.Text != "未连接" || SerialPage.SerialConnectionLight.Fill != Brushes.Firebrick) throw new InvalidDataException("打开失败后串口按钮和红灯未恢复。");
             await SmokeObservationSettingsAsync(directory);
+            await SmokeWatchAutosaveAsync(directory);
             await SmokeProjectStatusAsync(directory);
             await SmokePresentationAsync(directory);
             await SmokeRecordingAsync(directory);
@@ -161,6 +163,7 @@ public partial class MainWindow
         foreach (var row in Variables) row.Selected = false;
         foreach (var row in Variables.Where(v => v.Variable.Supported).Take(2)) row.Selected = true;
         WatchSettingsStore.Save(root, new(Target!.Name, [], 100) { ProbeSerial = "123456" });
+        ResetWatchEditing();
         await SaveVariablesAsync();
         var saved = await WatchSettingsStore.LoadAsync(root) ?? throw new InvalidDataException("工程观察设置未保存。");
         if (saved.ProbeSerial != "123456" || saved.Rate != 75 || saved.Identities.Length != 2) throw new InvalidDataException("工程观察设置保存值错误。");

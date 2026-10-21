@@ -13,6 +13,7 @@ public partial class ObservationView : UserControl
     {
         if (!Picker.CanEdit) return;
         var picker = new VariablePicker { Variables = Picker.Variables, CanEdit = Picker.CanEdit };
+        picker.SetBinding(VariablePicker.CanEditProperty, new System.Windows.Data.Binding(nameof(ObservationViewModel.CanEdit)) { Source = DataContext });
         picker.SetSearchMode(true);
         var panel = new DockPanel { Margin = new Thickness(16) };
         var close = new Button { Content = "完成", HorizontalAlignment = HorizontalAlignment.Right, Margin = new Thickness(0, 8, 0, 0), MinWidth = 80 };
@@ -37,6 +38,8 @@ public partial class ObservationView : UserControl
         finally { picker.Variables = null; }
     }
     public event RoutedEventHandler? SaveVariablesRequested;
+    public event RoutedEventHandler? ReloadVariablesRequested;
+    private void ReloadVariables(object sender, RoutedEventArgs e) => ReloadVariablesRequested?.Invoke(sender, e);
     public event RoutedEventHandler? ExportRecordingRequested;
     private void ExportRecording(object sender, RoutedEventArgs e) => ExportRecordingRequested?.Invoke(sender, e);
     private void SaveVariables(object sender, RoutedEventArgs e) => SaveVariablesRequested?.Invoke(sender, e);

@@ -49,7 +49,6 @@
             </ControlTemplate>
           </TextBox.Template>
         </TextBox>
-        <Button Content="保存变量设置" Style="{StaticResource ToolbarButton}" ToolTip="保存变量选择和采样频率" Click="SaveVariables" IsEnabled="{Binding CanEdit}"/>
         <Button Content="保存调试数据" Style="{StaticResource ToolbarButton}" ToolTip="{Binding ExportStatus}" ToolTipService.ShowOnDisabled="True" Click="ExportRecording" IsEnabled="{Binding CanExport}"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal">
@@ -57,6 +56,7 @@
         <Button Content="添加变量" Style="{StaticResource AddAction}" Click="AddVariables" IsEnabled="{Binding CanEdit}"/>
       </StackPanel>
     </WrapPanel>
+    <DockPanel Margin="0,0,0,6"><WrapPanel DockPanel.Dock="Right" Visibility="{Binding SettingsError, Converter={StaticResource VisibleWhenTrue}}"><Button Content="重试保存" Click="SaveVariables" IsEnabled="{Binding CanEdit}"/><Button Content="重新读取" ToolTip="放弃未保存的修改，读取工程文件" Click="ReloadVariables" IsEnabled="{Binding CanEdit}"/></WrapPanel><TextBlock x:Name="WatchSaveStatus" Text="{Binding SettingsStatus}" TextWrapping="Wrap" VerticalAlignment="Center"/></DockPanel>
     <TextBlock Text="{Binding ElfStatus}" TextWrapping="Wrap" Margin="0,0,0,6"/>
     <Expander Header="解析详细信息" Visibility="{Binding HasElfDetails, Converter={StaticResource VisibleWhenTrue}}" Margin="0,0,0,6"><TextBox Text="{Binding ElfDetails, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="100" VerticalScrollBarVisibility="Auto"/></Expander></StackPanel>
     <Grid Grid.Row="1"><Grid.ColumnDefinitions><ColumnDefinition Width="330" MinWidth="260" MaxWidth="600"/><ColumnDefinition Width="8"/><ColumnDefinition Width="*" MinWidth="260"/></Grid.ColumnDefinitions>
@@ -72,7 +72,7 @@
         <WrapPanel DockPanel.Dock="Top"><TextBlock Text="变量曲线 · 最近 2000 点 · 前 16 项" Foreground="{StaticResource ConsoleMuted}" Margin="0,0,12,8"/><CheckBox x:Name="IndependentScale" Content="分道独立缩放" IsChecked="{Binding IndependentScale}" IsEnabled="{Binding CanScaleIndependently}" ToolTip="{Binding ScaleHint}" ToolTipService.ShowOnDisabled="True">
           <CheckBox.Style><Style TargetType="CheckBox" BasedOn="{StaticResource {x:Type CheckBox}}"><Setter Property="Foreground" Value="{StaticResource ConsoleText}"/><Style.Triggers><Trigger Property="IsEnabled" Value="False"><Setter Property="Foreground" Value="{StaticResource ConsoleMuted}"/><Setter Property="Opacity" Value="0.55"/></Trigger></Style.Triggers></Style></CheckBox.Style>
         </CheckBox></WrapPanel>
-        <Grid><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><local:ObservationPlot x:Name="Plot" ClipToBounds="True" Series="{Binding Series}" Times="{Binding Times}" Labels="{Binding PlotLabels}" Independent="{Binding IsChecked, ElementName=IndependentScale}"/></ScrollViewer>
+        <Grid><ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled"><local:ObservationPlot x:Name="Plot" ClipToBounds="True" ToolTip="{Binding PlotNames}" Series="{Binding Series}" Times="{Binding Times}" Labels="{Binding PlotLabels}" Independent="{Binding IsChecked, ElementName=IndependentScale}"/></ScrollViewer>
           <TextBlock x:Name="PlotEmpty" Text="{Binding PlotEmpty}" Visibility="{Binding PlotMissing, Converter={StaticResource VisibleWhenTrue}}" Foreground="{StaticResource ConsoleMuted}" HorizontalAlignment="Center" VerticalAlignment="Center" TextWrapping="Wrap"/>
         </Grid>
       </DockPanel></Border>

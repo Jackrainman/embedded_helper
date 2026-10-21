@@ -55,7 +55,7 @@ public partial class MainWindow
         observationView.CanRetry = acquisition.CanRetry && !rttSession;
         RttPage.StartButton.IsEnabled = !ObservationBusy && !configurationBusy && (!acquisition.HasSession || (rttSession && acquisition.CanRetry));
         RttPage.StopButton.IsEnabled = rttSession && acquisition.HasSession && !acquisition.IsBusy;
-        ProjectPage.TargetBox.IsEnabled = observationView.CanEdit;
+        ProjectPage.TargetBox.IsEnabled = observationView.CanEdit && !watchDirty;
         ProjectPage.ParseElfButton.IsEnabled = observationView.CanEdit;
         ProjectPage.BrowseElfButton.IsEnabled = observationView.CanEdit;
         EnableConnectionFields(observationView.CanEdit);

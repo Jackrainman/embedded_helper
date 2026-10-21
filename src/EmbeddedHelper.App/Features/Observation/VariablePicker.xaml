@@ -9,12 +9,12 @@
   <TextBox x:Name="SearchBox" TextChanged="SearchChanged" ToolTip="搜索名称、成员完整路径或类型" IsEnabled="{Binding CanEdit, RelativeSource={RelativeSource AncestorType={x:Type local:VariablePicker}}}"/>
   <TextBlock Grid.Row="1" x:Name="Hint" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap" Margin="0,2,0,6"/>
   <GroupBox x:Name="SearchResults" Grid.Row="2" Header="搜索结果"><DataGrid x:Name="Results" IsReadOnly="True"><DataGrid.Columns>
-   <DataGridTextColumn Header="变量" Binding="{Binding Variable.Name}" ElementStyle="{StaticResource VariableName}" Width="*"/>
+   <DataGridTemplateColumn Header="变量" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><local:VariableNameText FullName="{Binding Variable.Name}" ToolTip="{Binding Detail}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
    <DataGridTemplateColumn Width="48"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="添加" Click="Add" Style="{StaticResource AddButton}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
   </DataGrid.Columns></DataGrid></GroupBox>
   <GridSplitter x:Name="Divider" Grid.Row="3" Height="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"/>
   <GroupBox x:Name="AddedVariables" Grid.Row="4" Header="已添加变量 · 最多64项"><DataGrid x:Name="SelectedRows" IsReadOnly="True"><DataGrid.Columns>
-   <DataGridTextColumn Header="变量" Binding="{Binding Variable.Name}" ElementStyle="{StaticResource VariableName}" Width="*"/>
+   <DataGridTemplateColumn Header="变量" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><local:VariableNameText FullName="{Binding Variable.Name}" ToolTip="{Binding Detail}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
    <DataGridTextColumn Header="当前值" Binding="{Binding Value}" Width="80"/>
    <DataGridTemplateColumn Width="48"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="移除" Margin="0" Padding="4,2" MinHeight="24" Height="28" IsEnabled="{Binding CanEdit, RelativeSource={RelativeSource AncestorType={x:Type local:VariablePicker}}}" Click="Remove"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
   </DataGrid.Columns></DataGrid></GroupBox>

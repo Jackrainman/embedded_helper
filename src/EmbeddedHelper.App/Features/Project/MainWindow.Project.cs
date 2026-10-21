@@ -47,6 +47,7 @@ public partial class MainWindow
     private async Task LoadProjectAsync(string path)
     {
         if (acquisition.HasSession || ObservationBusy || configurationBusy) throw new InvalidOperationException("请先停止采集并等待设置读取完成，再切换工程。");
+        if (watchDirty) throw new InvalidOperationException("变量设置尚未保存；请重试保存或重新读取后再切换工程。");
         loadingProject = true; SyncObservationState();
         try
         {
@@ -70,6 +71,7 @@ public partial class MainWindow
                 loaded.Targets.FirstOrDefault(t => t.Name == settings.LastTarget) is { } rememberedTarget)
                 ProjectPage.TargetBox.SelectedItem = rememberedTarget;
             ApplyWatchToSetup(watch);
+            ResetWatchEditing();
             await LoadConnectionAsync();
             remoteView.Host = ""; remoteView.Port = "19011"; remoteView.Web = "";
             var integration = VsCodeIntegration.ReadState(loaded.Root);
@@ -110,6 +112,8 @@ public partial class MainWindow
         remoteView.Invalidate();
         if (!loadingProject)
         {
+            try { ResetWatchEditing(); ApplyWatchToSetup(watchEdit?.Value?.Target == target.Name ? watchEdit.Value : null); }
+            catch (Exception ex) { watchEdit = null; observationView.SettingsError = true; observationView.SettingsStatus = "变量设置读取失败：" + ex.Message; Report(observationView.SettingsStatus); }
             await LoadConnectionAsync(); await RefreshProjectConnectionAsync();
             if (project != null && Target == target)
             {
