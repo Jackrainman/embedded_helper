@@ -22,6 +22,7 @@ public partial class MainWindow
             var buildElf = System.IO.Path.ChangeExtension(Target!.ElfPath, ".elf");
             var buildAxf = System.IO.Path.ChangeExtension(buildElf, ".axf");
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(buildAxf)!);
+            File.Delete(buildElf); // The portable smoke repeats against this same isolated fixture directory.
             File.Copy(System.IO.Path.Combine(directory, "scalars.elf"), buildAxf, true);
             await ParseElfAsync();
             if (ProjectPage.ElfPath.Text != buildAxf || Variables.Count(v => v.Variable.Supported) != 7)
