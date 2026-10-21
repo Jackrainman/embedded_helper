@@ -15,7 +15,7 @@ public static partial class ReadElfIndex
         var suggestion = ToolDiscovery.Suggest("", result);
         return suggestion.Length == 0 ? null : suggestion;
     }
-    public static Variable[] Read(string tool, string elf)
+    public static Variable[] Read(string tool, string elf, bool nativeIdentities = false)
     {
         var start = new ProcessStartInfo(Path.GetFullPath(tool)) { UseShellExecute = false, CreateNoWindow = true, RedirectStandardOutput = true, RedirectStandardError = true };
         start.ArgumentList.Add("--debug-dump=info"); start.ArgumentList.Add("--wide"); start.ArgumentList.Add(Path.GetFullPath(elf));
@@ -27,7 +27,7 @@ public static partial class ReadElfIndex
         {
             Task.WhenAll(process.WaitForExitAsync(), output, errors).WaitAsync(TimeSpan.FromSeconds(30)).GetAwaiter().GetResult();
             if (process.ExitCode != 0) throw new InvalidDataException("ARM readelf 解析失败：" + errors.Result);
-            return Parse(output.Result);
+            return Parse(output.Result, nativeIdentities);
         }
         catch { if (!process.HasExited) { process.Kill(true); process.WaitForExit(); } throw; }
     }
@@ -38,11 +38,12 @@ public static partial class ReadElfIndex
         { if (text.Length + count > limit) throw new InvalidDataException("readelf 输出超过上限。"); text.Append(buffer, 0, count); }
         return text.ToString();
     }
-    public static Variable[] Parse(string text)
+    public static Variable[] Parse(string text, bool nativeIdentities = false)
     {
         var entries = new Dictionary<ulong, Entry>();
         Entry? current = null;
         var scopes = new Dictionary<int, string>();
+        var functions = new Dictionary<int, string>();
         var parents = new Dictionary<int, Entry>();
         string cu = "";
         foreach (var line in text.Split('\n'))
@@ -52,10 +53,13 @@ public static partial class ReadElfIndex
             {
                 var depth = int.Parse(header.Groups[1].Value, CultureInfo.InvariantCulture);
                 foreach (var level in scopes.Keys.Where(k => k >= depth).ToArray()) scopes.Remove(level);
+                foreach (var level in functions.Keys.Where(k => k >= depth).ToArray()) functions.Remove(level);
                 var offset = ulong.Parse(header.Groups[2].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 var tag = header.Groups[3].Value;
                 if (depth == 0) cu = "";
-                current = new Entry(offset, tag, string.Join("/", scopes.OrderBy(p => p.Key).Select(p => p.Value)), new());
+                var scope = nativeIdentities ? string.Concat(functions.OrderBy(p => p.Key).Select(p => "/" + p.Value))
+                    : string.Join("/", scopes.OrderBy(p => p.Key).Select(p => p.Value));
+                current = new Entry(offset, tag, scope, new());
                 foreach (var level in parents.Keys.Where(k => k >= depth).ToArray()) parents.Remove(level);
                 if (parents.TryGetValue(depth - 1, out var parent)) parent.Children.Add(current);
                 parents[depth] = current;
@@ -75,6 +79,7 @@ public static partial class ReadElfIndex
             {
                 var level = scopes.FirstOrDefault(p => p.Value.EndsWith("@" + current.Offset.ToString("x", CultureInfo.InvariantCulture))).Key;
                 scopes[level] = Name(value);
+                if (current.Tag == "subprogram") functions[level] = Name(value);
             }
         }
         var result = new List<Variable>();

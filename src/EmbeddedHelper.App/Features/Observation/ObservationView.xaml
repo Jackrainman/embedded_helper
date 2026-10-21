@@ -52,7 +52,7 @@
         <Button Content="保存调试数据" Style="{StaticResource ToolbarButton}" ToolTip="{Binding ExportStatus}" ToolTipService.ShowOnDisabled="True" Click="ExportRecording" IsEnabled="{Binding CanExport}"/>
       </StackPanel>
       <StackPanel Orientation="Horizontal">
-        <Button Content="更新 ELF" Style="{StaticResource ToolbarButton}" Click="ParseElf" IsEnabled="{Binding CanEdit}"/>
+        <Button Content="更新 ELF/AXF" Style="{StaticResource ToolbarButton}" Click="ParseElf" IsEnabled="{Binding CanEdit}"/>
         <Button Content="添加变量" Style="{StaticResource AddAction}" Click="AddVariables" IsEnabled="{Binding CanEdit}"/>
       </StackPanel>
     </WrapPanel>

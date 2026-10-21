@@ -1,5 +1,6 @@
 using EmbeddedHelper.App;
 using EmbeddedHelper.Core;
+using LibObjectFile.Elf;
 using Xunit;
 
 namespace EmbeddedHelper.Tests;
@@ -57,5 +58,51 @@ public sealed class ElfFeedbackTests : TestWorkspace
         var tools = ElfParseFeedback.Failure(new InvalidDataException("该 ELF 的 DWARF 格式需要 ARM readelf。"));
         Assert.Contains("设置与诊断", tools.Message); Assert.DoesNotContain("解析成功", tools.Message);
         Assert.Contains("-g -gdwarf-4", ElfParseFeedback.Failure(new InvalidDataException("ELF 缺少可用调试信息。")).Message);
+    }
+    [Fact]
+    public async Task AxfUsesTheSameReaderAndDoesNotModifyInput()
+    {
+        var source = Path.Combine(fixtures, "structures.elf");
+        var axf = Path.Combine(root, "固件 AXF.AXF"); File.Copy(source, axf);
+        var before = File.ReadAllBytes(axf);
+        Assert.Equal(await ElfIndexService.ReadAsync(source, ""), await ElfIndexService.ReadAsync(axf, ""));
+        Assert.Equal(before, File.ReadAllBytes(axf));
+        var badDebug = ElfParseFeedback.Failure(new InvalidDataException("ELF 调试信息长度无效。"));
+        Assert.Contains("损坏", badDebug.Message);
+        Assert.DoesNotContain("请启用", badDebug.Message);
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void DwarfCompatibilityFailureFallsBackAndRetainsBothErrors(bool trailingDie)
+    {
+        var bytes = File.ReadAllBytes(Path.Combine(fixtures, "structures.elf"));
+        using (var stream = new MemoryStream(bytes))
+        {
+            var elf = ElfFile.Read(stream);
+            var section = elf.Sections.Single(s => s.Name.ToString() == (trailingDie ? ".debug_info" : ".debug_line"));
+            // DWARF3 opcode 9 uses one operand; reproduce the armasm header variation without changing variable DIEs.
+            var index = checked((int)section.Position + (trailingDie ? (int)section.Size - 1 : 23));
+            Assert.Equal(trailingDie ? 0 : 1, bytes[index]); bytes[index] = trailingDie ? (byte)0x80 : (byte)0;
+        }
+        var path = Path.Combine(root, "line-compat.axf"); File.WriteAllBytes(path, bytes);
+        var missing = Assert.Throws<InvalidDataException>(() => ElfIndex.Read(path, Path.Combine(root, "missing-readelf.exe")));
+        Assert.Contains("内置 DWARF 解析失败", missing.Message);
+        Assert.NotNull(missing.InnerException);
+        var failed = Assert.Throws<InvalidDataException>(() => ElfIndex.Read(path, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.System), "where.exe")));
+        Assert.Contains("均失败", failed.Message);
+        Assert.Equal(2, Assert.IsType<AggregateException>(failed.InnerException).InnerExceptions.Count);
+        Assert.Equal(bytes, File.ReadAllBytes(path));
+    }
+    [Fact]
+    public void InvalidContainerAndMissingDebugDoNotRequestFallback()
+    {
+        var bytes = File.ReadAllBytes(Path.Combine(fixtures, "structures.elf"));
+        var path = Path.Combine(root, "invalid.axf");
+        bytes[18] = 62; File.WriteAllBytes(path, bytes);
+        var error = Assert.Throws<InvalidDataException>(() => ElfIndex.Read(path, "missing-readelf.exe"));
+        Assert.DoesNotContain("readelf", error.Message);
+        Assert.Contains("ARM", error.Message);
+        Assert.Throws<FileNotFoundException>(() => ElfIndex.Read(path + ".missing", "missing-readelf.exe"));
     }
 }

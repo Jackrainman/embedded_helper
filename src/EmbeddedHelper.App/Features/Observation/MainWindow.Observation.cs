@@ -64,8 +64,8 @@ public partial class MainWindow
     private async void BrowseElf(object? sender, RoutedEventArgs e)
     {
         if (acquisition.HasSession || ObservationBusy) { Report("请先停止采集或等待当前解析结束再更换 ELF。"); return; }
-        var dialog = new OpenFileDialog { Filter = "固件 ELF|*.elf;*.axf|所有文件|*.*" };
-        if (dialog.ShowDialog(this) == true) { ProjectPage.ElfPath.Text = dialog.FileName; await Guard(ParseElfAsync); }
+        var dialog = new OpenFileDialog { Filter = "固件符号文件（ELF/AXF）|*.elf;*.axf|所有文件|*.*" };
+        if (dialog.ShowDialog(this) == true) { automaticElfPath = null; ProjectPage.ElfPath.Text = dialog.FileName; await Guard(ParseElfAsync); }
     }
     private async void ParseElf(object? sender, RoutedEventArgs e) => await Guard(ParseElfAsync);
     private async Task ParseElfAsync()
@@ -74,7 +74,7 @@ public partial class MainWindow
         indexing = true; SyncObservationState();
         try
         {
-            var path = ProjectPage.ElfPath.Text;
+            var path = RefreshElfPath();
             var indexed = await ReadElfWithFeedbackAsync(path, SettingsPage.ReadElfPath.Text);
             var selected = Variables.Where(v => v.Selected).Select(v => v.Variable.Identity).ToHashSet();
             if (selected.Count == 0 && project != null)

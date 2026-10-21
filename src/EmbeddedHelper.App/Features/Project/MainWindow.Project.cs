@@ -12,7 +12,15 @@ public partial class MainWindow
 {
     private ProjectInfo? project;
     private bool loadingProject;
+    private string? automaticElfPath;
     private BuildTarget? Target => ProjectPage.TargetBox.SelectedItem as BuildTarget;
+    private string RefreshElfPath()
+    {
+        if (Target is { } target && automaticElfPath != null &&
+            string.Equals(ProjectPage.ElfPath.Text, automaticElfPath, StringComparison.OrdinalIgnoreCase))
+            ProjectPage.ElfPath.Text = automaticElfPath = ProjectReader.ResolveElfPath(target.ElfPath);
+        return ProjectPage.ElfPath.Text;
+    }
     private void RefreshProjectDiagnostics(string? selectedElf = null)
     {
         if (project == null) return;
@@ -103,12 +111,13 @@ public partial class MainWindow
     }
     private async void TargetChanged(object? sender, SelectionChangedEventArgs e)
     {
+        automaticElfPath = null;
         connectionFailure = "";
         SetElfFeedback(new("尚未解析当前目标 ELF"));
         InvalidateViewer(); remoteView.Invalidate();
         Variables.Clear();
         if (Target is not { } target) { ProjectPage.ElfPath.Text = ""; return; }
-        ProjectPage.ElfPath.Text = target.ElfPath;
+        ProjectPage.ElfPath.Text = automaticElfPath = ProjectReader.ResolveElfPath(target.ElfPath);
         Variables.Clear();
         remoteView.Invalidate();
         if (!loadingProject)

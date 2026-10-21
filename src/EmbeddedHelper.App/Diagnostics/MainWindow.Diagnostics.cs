@@ -19,11 +19,22 @@ public partial class MainWindow
             UpdateProjectHeader();
             if (GlobalTransport.IsEnabled || !ProjectStateLabel.Text.Contains("未打开项目")) throw new InvalidDataException("未打开项目状态错误。");
             await LoadProjectAsync(System.IO.Path.Combine(directory, "project"));
+            var buildElf = System.IO.Path.ChangeExtension(Target!.ElfPath, ".elf");
+            var buildAxf = System.IO.Path.ChangeExtension(buildElf, ".axf");
+            Directory.CreateDirectory(System.IO.Path.GetDirectoryName(buildAxf)!);
+            File.Copy(System.IO.Path.Combine(directory, "scalars.elf"), buildAxf, true);
+            await ParseElfAsync();
+            if (ProjectPage.ElfPath.Text != buildAxf || Variables.Count(v => v.Variable.Supported) != 7)
+                throw new InvalidDataException("构建后新增 AXF 未被重新定位并解析。");
+            SaveSmokeScreenshot(directory, "axf-auto-discovery.png");
+            File.Copy(System.IO.Path.Combine(directory, "scalars.elf"), buildElf, true);
+            await ParseElfAsync();
+            if (ProjectPage.ElfPath.Text != buildElf) throw new InvalidDataException("ELF/AXF 同时存在时没有优先 ELF。");
             ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf");
             await ParseElfAsync();
             if (!ProjectPage.ElfStatus.Text.Contains("解析成功：7") || observationView.HasElfDetails)
                 throw new InvalidDataException("ELF 成功反馈未就地显示。");
-            if (ProjectPage.ProjectDiagnostics.Text.Contains($"目标 {Target!.Name} 的 ELF 不存在")) throw new InvalidDataException("成功解析后仍保留旧ELF缺失诊断。");
+            if (ProjectPage.ProjectDiagnostics.Text.Contains($"目标 {Target!.Name} 的 ELF/AXF 不存在")) throw new InvalidDataException("成功解析后仍保留旧ELF缺失诊断。");
             if (Variables.Count(v => v.Variable.Supported) != 7) throw new InvalidDataException("标量类型自检失败。");
             remoteView.Host = "test.example.invalid"; PreviewConfig(null, null!);
             if (plan == null) throw new InvalidDataException("远程配置预览失败。");

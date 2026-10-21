@@ -13,6 +13,8 @@ public sealed class ElfTests : TestWorkspace
     {
         var native = ElfIndex.Read(Path.Combine(fixtures, "structures.elf"), "must-not-fallback-to-readelf.exe");
         var adapted = ReadElfIndex.Parse(File.ReadAllText(Path.Combine(fixtures, "structures.dwarf.txt")));
+        var compatible = ReadElfIndex.Parse(File.ReadAllText(Path.Combine(fixtures, "structures.dwarf.txt")), nativeIdentities: true);
+        Assert.Equal(native, compatible);
         var dwarf5 = ReadElfIndex.Parse(File.ReadAllText(Path.Combine(fixtures, "structures5.dwarf.txt")));
         foreach (var variables in new[] { native, adapted, dwarf5 })
         {

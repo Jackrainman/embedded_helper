@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using LibObjectFile;
 using LibObjectFile.Dwarf;
 using LibObjectFile.Elf;
 
@@ -14,27 +15,19 @@ public static class ElfIndex
 {
     public static Variable[] Read(string path, string? readElfTool = null)
     {
-        try { return ReadNative(path); }
-        catch (NotSupportedException ex)
-        {
-            var tool = string.IsNullOrWhiteSpace(readElfTool) ? ReadElfIndex.FindTool() : readElfTool;
-            if (tool == null || !File.Exists(tool)) throw new InvalidDataException("该 ELF 的 DWARF 格式需要 ARM readelf。请在设置中选择 arm-none-eabi-readelf.exe，或构建为 -gdwarf-4。原始原因：" + ex.Message, ex);
-            return ReadElfIndex.Read(tool, path);
-        }
-    }
-
-    private static Variable[] ReadNative(string path)
-    {
         using var stream = File.OpenRead(path);
         if (stream.Length > 256 * 1024 * 1024) throw new InvalidDataException("ELF 超过 256 MiB 解析上限。");
-        var header = new byte[6];
+        if (stream.Length < 52) throw new InvalidDataException("ELF/AXF 文件头不完整。");
+        var header = new byte[20];
         stream.ReadExactly(header);
-        if (!header.AsSpan(0, 4).SequenceEqual(new byte[] { 0x7f, 69, 76, 70 }) || header[4] != 1 || header[5] != 1)
+        if (!header.AsSpan(0, 4).SequenceEqual(new byte[] { 0x7f, 69, 76, 70 }) || header[4] != 1 || header[5] != 1 || BinaryPrimitives.ReadUInt16LittleEndian(header.AsSpan(18)) != 40)
             throw new InvalidDataException("当前支持 ELF32 小端 ARM 文件。");
         stream.Position = 0;
         var elf = ElfFile.Read(stream);
         var debug = elf.Sections.OfType<ElfStreamSection>().FirstOrDefault(s => s.Name.ToString() == ".debug_info")?.Stream;
         if (debug == null || debug.Length == 0) throw new InvalidDataException("ELF 缺少可用调试信息。");
+        DwarfFile dwarf;
+        var nativeIdentities = true;
         var originalPosition = debug.Position;
         try
         {
@@ -42,16 +35,39 @@ public static class ElfIndex
             using var reader = new BinaryReader(debug, System.Text.Encoding.UTF8, leaveOpen: true);
             while (debug.Position < debug.Length)
             {
+                if (debug.Length - debug.Position < 4) throw new InvalidDataException("ELF 调试信息长度无效。");
                 ulong length = reader.ReadUInt32();
-                if (length == uint.MaxValue) length = reader.ReadUInt64();
+                if (length == uint.MaxValue)
+                {
+                    if (debug.Length - debug.Position < 8) throw new InvalidDataException("ELF 调试信息长度无效。");
+                    length = reader.ReadUInt64();
+                }
                 if (length < 2 || length > (ulong)(debug.Length - debug.Position)) throw new InvalidDataException("ELF 调试信息长度无效。");
                 var end = debug.Position + (long)length;
-                if (reader.ReadUInt16() >= 5) throw new NotSupportedException("DWARF5 需要 ARM readelf。");
+                if (reader.ReadUInt16() >= 5)
+                {
+                    nativeIdentities = false;
+                    throw new NotSupportedException("DWARF5 需要 ARM readelf。");
+                }
                 debug.Position = end;
+            }
+            debug.Position = originalPosition;
+            dwarf = DwarfFile.ReadFromElf(elf);
+        }
+        catch (Exception ex) when (ex is NotSupportedException or EndOfStreamException or ObjectFileException)
+        {
+            // Only DWARF decoding failures may use another reader; file/container errors stay outside this block.
+            var tool = string.IsNullOrWhiteSpace(readElfTool) ? ReadElfIndex.FindTool() : readElfTool;
+            if (tool == null || !File.Exists(tool))
+                throw new InvalidDataException("内置 DWARF 解析失败，需要 ARM readelf。请在设置与诊断中选择 arm-none-eabi-readelf.exe。原始原因：" + ex.Message, ex);
+            try { return ReadElfIndex.Read(tool, path, nativeIdentities); }
+            catch (Exception fallback) when (fallback is IOException or InvalidDataException or InvalidOperationException or TimeoutException or System.ComponentModel.Win32Exception)
+            {
+                throw new InvalidDataException("内置解析与 ARM readelf 均失败。内置原因：" + ex.Message + "；readelf 原因：" + fallback.Message,
+                    new AggregateException(ex, fallback));
             }
         }
         finally { debug.Position = originalPosition; }
-        var dwarf = DwarfFile.ReadFromElf(elf);
         if (dwarf.InfoSection.Units.Count == 0) throw new InvalidDataException("ELF 缺少可用调试信息。");
         var result = new List<Variable>();
         foreach (var unit in dwarf.InfoSection.Units)

@@ -22,7 +22,7 @@ public static class VsCodeIntegration
     {
         if (gdbPort is < 1 or > 65533) throw new ArgumentException("本机GDB端口须为1～65533，并为相邻两个端口留出空间。");
         var remote = RemoteConfiguration.Plan(project, target, host, port, webAddress);
-        var relativeElf = Path.GetRelativePath(project.Root, target.ElfPath).Replace('\\', '/');
+        var relativeElf = Path.GetRelativePath(project.Root, ProjectReader.ResolveElfPath(target.ElfPath)).Replace('\\', '/');
         if (Path.IsPathRooted(relativeElf) || relativeElf.StartsWith("../")) throw new InvalidDataException("共享调试配置要求ELF位于工程内。");
         var suffix = target.Name;
         var flashLabel = "LAN_Debug: flash (" + suffix + ")";
