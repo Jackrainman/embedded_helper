@@ -29,11 +29,18 @@ public partial class MainWindow
             var toolPackage = System.IO.Path.Combine(directory, "debug-lan.zip");
             if (File.Exists(toolPackage))
             {
-                await PrepareToolAsync(toolPackage);
                 remoteView.EideUpload = true; remoteView.GdbPort = "2450"; remoteView.Web = "http://test.example.invalid:8000";
-                PreviewIntegration(null, null!);
-                if (plan == null || plan.Changes.Length == 0) throw new InvalidDataException("一键接入预览失败。");
-                await ApplyConfigAsync();
+                var badPackage = System.IO.Path.Combine(directory, "invalid-tool.zip");
+                File.WriteAllText(badPackage, "not a trusted tool package");
+                await Guard(() => ImportLanAsync(badPackage));
+                if (!remoteView.ToolStatus.Contains("接入未完成") || VsCodeIntegration.ReadState(project!.Root) != null)
+                    throw new InvalidDataException("错误 ZIP 没有明确拒绝，或提前写入了工程任务。");
+                Pages.SelectedIndex = 0; ProjectSections.SelectedIndex = 1;
+                SaveSmokeScreenshot(directory, "lan-import-invalid-zip.png");
+                await ImportLanAsync(toolPackage);
+                if (!remoteView.ToolStatus.Contains("工程已接入")) throw new InvalidDataException("一键接入未完成。");
+                ProjectToolCache.Resolve(project!.Root, remoteView.SelectedRelease!);
+                SaveSmokeScreenshot(directory, "lan-import-success.png");
                 await LoadProjectAsync(project!.Root);
                 if (remoteView.EideUpload != true || remoteView.GdbPort != "2450" || remoteView.Web != "http://test.example.invalid:8000") throw new InvalidDataException("远程配置读回失败。");
                 ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf"); await ParseElfAsync();

@@ -104,7 +104,7 @@ public sealed class ToolCache
     {
         var directory = Path.Combine(Root, ToolRelease.Find(release.Version).Version); ConfigTransaction.CheckPath(dataRoot, directory);
         var marker = Path.Combine(directory, "installed.json");
-        if (!File.Exists(marker)) throw new FileNotFoundException($"尚未安装 Debug_LAN {release.Version}，请在设置中下载或导入对应ZIP。");
+        if (!File.Exists(marker)) throw new FileNotFoundException($"尚未准备 LAN_Debug {release.Version}，请在工程页点击导入，或选择对应的官方 ZIP。");
         var installed = JsonSerializer.Deserialize<InstalledTool>(File.ReadAllText(marker), Product.Json) ?? throw new InvalidDataException("安装记录无效。");
         if (installed.PackageSha256 != release.Sha256 || installed.Version != release.Version || installed.Commit != release.Commit || !installed.Files.ContainsKey("debug-lan.exe")) throw new InvalidDataException("安装来源与工程锁不一致。");
         foreach (var file in installed.Files)

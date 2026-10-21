@@ -11,7 +11,7 @@ public sealed record EideUploadChange(FileChange Change, ManagedYamlField[] Fiel
 public static class EideUpload
 {
     public const string Command = "\"%EMBEDDED_HELPER_ENTRY%\" --cli --project \"${ProjectRoot}\" flash --program \"${programFile}\"";
-    public static EideUploadChange Plan(string root, string target, bool enabled, ManagedYamlField[] previous)
+    public static EideUploadChange Plan(string root, string target, bool enabled, ManagedYamlField[] previous, string? command = null)
     {
         var path = Path.Combine(root, ".eide", "eide.yml"); ConfigTransaction.CheckPath(root, path);
         var before = File.ReadAllText(path); var text = before;
@@ -34,7 +34,7 @@ public static class EideUpload
             {
                 (new[] { "targets", target, "uploader" }, "Custom"),
                 (new[] { "targets", target, "uploadConfigMap", "Custom", "bin" }, ""),
-                (new[] { "targets", target, "uploadConfigMap", "Custom", "commandLine" }, Command),
+                (new[] { "targets", target, "uploadConfigMap", "Custom", "commandLine" }, command ?? Command),
                 (new[] { "targets", target, "uploadConfigMap", "Custom", "eraseChipCommand" }, "")
             })
             {

@@ -21,13 +21,13 @@ public partial class MainWindow
     { var dialog = new OpenFileDialog { Filter = "SEGGER 64 位库|JLink_x64.dll|DLL|*.dll" }; if (dialog.ShowDialog(this) == true) SaveToolPath(LocalToolKind.JLink, dialog.FileName); }
     private async void ImportTool(object? sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Filter = "Debug_LAN 发布包|DebugLAN-*.zip|ZIP|*.zip" };
+        var dialog = new OpenFileDialog { Filter = "LAN_Debug 发布包|DebugLAN-*.zip|ZIP|*.zip" };
         if (dialog.ShowDialog(this) == true) await Guard(() => PrepareToolAsync(dialog.FileName));
     }
     private async void DownloadTool(object? sender, RoutedEventArgs e) => await Guard(() => PrepareToolAsync(null));
     private async void RefreshTools(object? sender, RoutedEventArgs e) => await Guard(async () =>
     {
-        if (toolBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
+        if (toolBusy || configurationBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
         toolBusy = true;
         try
         {
@@ -36,6 +36,9 @@ public partial class MainWindow
             var available = await ToolCatalog.RefreshAsync(App.Data.Root);
             SettingsPage.ToolVersionBox.ItemsSource = available;
             SettingsPage.ToolVersionBox.SelectedItem = available.FirstOrDefault(v => v.Version == version) ?? available.First();
+            var selected = remoteView.SelectedRelease;
+            RemotePage.ToolVersionBox.ItemsSource = available;
+            remoteView.SelectedRelease = available.FirstOrDefault(v => v == selected) ?? available.First();
             SettingsPage.ToolStatus.Text = $"已核验 {available.Length} 个兼容工具版本。选择后下载或导入，再预览更新工程锁。";
         }
         catch (Exception ex) { SettingsPage.ToolStatus.Text = "更新检查失败，已安装工具仍可离线使用：" + ex.Message; throw; }
@@ -43,29 +46,18 @@ public partial class MainWindow
     });
     private async Task PrepareToolAsync(string? zip)
     {
-        if (toolBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
+        if (toolBusy || configurationBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
         var release = SettingsPage.ToolVersionBox.SelectedItem as ToolRelease ?? throw new InvalidOperationException("请选择工具版本。");
         toolBusy = true;
         SettingsPage.ToolStatus.Text = "正在校验并准备 " + release.Version + "；仅运行无硬件版本检查。";
         try
         {
             var executable = await ToolPreparationService.PrepareAsync(App.Data.Root, release, zip);
-            SettingsPage.ToolStatus.Text = "已准备 " + release.Version + "\n" + executable + "\n工程版本尚未改变；到远程配置页预览接入或回退。";
+            SettingsPage.ToolStatus.Text = "本机已准备 " + release.Version + "\n" + executable + "\n工程版本尚未改变；在工程页一键导入或回退。";
+            await RefreshIntegrationStatusAsync();
         }
         catch (Exception ex) { SettingsPage.ToolStatus.Text = "工具准备失败：" + ex.Message; throw; }
         finally { toolBusy = false; }
-    }
-    private void BindCli(object? sender, RoutedEventArgs e)
-    {
-        try
-        {
-            var entry = RuntimePaths.Current.ExternalEntry(Environment.GetEnvironmentVariable(RuntimePaths.LauncherVariable));
-            if (!File.Exists(entry)) throw new FileNotFoundException("未找到稳定入口，请从完整便携包启动。", entry);
-            Environment.SetEnvironmentVariable(RuntimePaths.EntryVariable, entry, EnvironmentVariableTarget.User);
-            Environment.SetEnvironmentVariable(RuntimePaths.EntryVariable, entry);
-            Report("已绑定稳定入口；请预览并应用旧工程接入以迁移命令，再完全退出并重新打开 VS Code。旧入口变量保持原值；搬迁后重新绑定。");
-        }
-        catch (Exception ex) { Report("入口绑定失败：" + ex.Message); }
     }
     private void PersistSettings()
     {
@@ -97,6 +89,7 @@ public partial class MainWindow
         SerialPage.SendHistoryBox.ItemsSource = settings.SendHistory ?? [];
         try { ToolCatalog.Load(App.Data.Root); } catch (Exception ex) { Report("工具目录记录无法读取：" + ex.Message); }
         SettingsPage.ToolVersionBox.ItemsSource = ToolRelease.Available; SettingsPage.ToolVersionBox.SelectedIndex = 0;
+        RemotePage.ToolVersionBox.ItemsSource = ToolRelease.Available; remoteView.SelectedRelease = ToolRelease.Available[0];
         SettingsPage.ReadElfPath.Text = settings.ReadElf;
         Width = Math.Clamp(settings.Width, MinWidth, Math.Max(MinWidth, SystemParameters.WorkArea.Width));
         Height = Math.Clamp(settings.Height, MinHeight, Math.Max(MinHeight, SystemParameters.WorkArea.Height));

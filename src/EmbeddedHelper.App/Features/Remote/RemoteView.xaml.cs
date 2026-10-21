@@ -7,6 +7,10 @@ namespace EmbeddedHelper.App;
 public partial class RemoteView : UserControl
 {
     public RemoteView() => InitializeComponent();
+    public event RoutedEventHandler? ImportLanRequested;
+    private void ImportLan(object? sender, RoutedEventArgs e) => ImportLanRequested?.Invoke(sender, e);
+    public event RoutedEventHandler? ImportLanZipRequested;
+    private void ImportLanZip(object? sender, RoutedEventArgs e) => ImportLanZipRequested?.Invoke(sender, e);
     public event RoutedEventHandler? OpenWebRequested;
     private void OpenWeb(object? sender, RoutedEventArgs e) => OpenWebRequested?.Invoke(sender, e);
     public event RoutedEventHandler? PreviewIntegrationRequested;

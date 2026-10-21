@@ -25,20 +25,23 @@ public static class VsCodeIntegration
         var relativeElf = Path.GetRelativePath(project.Root, target.ElfPath).Replace('\\', '/');
         if (Path.IsPathRooted(relativeElf) || relativeElf.StartsWith("../")) throw new InvalidDataException("共享调试配置要求ELF位于工程内。");
         var suffix = target.Name;
-        var flashLabel = "Embedded Helper: LAN flash (" + suffix + ")";
-        var gdbLabel = "Embedded Helper: LAN GDB (" + suffix + ")";
-        var debugName = "Embedded Helper: LAN debug (" + suffix + ")";
+        var flashLabel = "LAN_Debug: flash (" + suffix + ")";
+        var gdbLabel = "LAN_Debug: GDB (" + suffix + ")";
+        var debugName = "LAN_Debug: debug (" + suffix + ")";
+        var entry = ProjectToolCache.RelativeEntry(tool);
+        var config = Path.GetRelativePath(project.Root, project.RemotePath).Replace('\\', '/');
+        ConfigTransaction.CheckPath(project.Root, project.RemotePath);
         JsonObject Task(string label, params string[] arguments) => new()
         {
             ["label"] = label,
             ["type"] = "process",
-            ["command"] = "${env:EMBEDDED_HELPER_ENTRY}",
-            ["args"] = new JsonArray(new[] { "--cli" }.Concat(arguments).Select(a => (JsonNode?)JsonValue.Create(a)).ToArray()),
+            ["command"] = "${workspaceFolder}/" + entry,
+            ["args"] = new JsonArray(new[] { "--config", "${workspaceFolder}/" + config }.Concat(arguments).Select(a => (JsonNode?)JsonValue.Create(a)).ToArray()),
             ["options"] = new JsonObject { ["cwd"] = "${workspaceFolder}" },
             ["problemMatcher"] = new JsonArray()
         };
-        var flash = Task(flashLabel, "--project", "${workspaceFolder}", "flash", "--program", "${workspaceFolder}/" + relativeElf);
-        var gdb = Task(gdbLabel, "--project", "${workspaceFolder}", "gdb-server", "--gdb-port", gdbPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        var flash = Task(flashLabel, "--program", "${workspaceFolder}/" + relativeElf);
+        var gdb = Task(gdbLabel, "--gdb-server", "--gdb-port", gdbPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
         gdb["isBackground"] = true; gdb["runOptions"] = new JsonObject { ["instanceLimit"] = 1 };
         gdb["problemMatcher"] = new JsonObject
         {
@@ -69,15 +72,16 @@ public static class VsCodeIntegration
             if (local.Length == 1 && local[0].TryGetProperty("svdFile", out var svd)) launch["svdFile"] = svd.GetString();
         }
         ManagedEntry[] desired = [new(".vscode/tasks.json", "tasks", "label", flashLabel, flash), new(".vscode/tasks.json", "tasks", "label", gdbLabel, gdb), new(".vscode/launch.json", "configurations", "name", debugName, launch)];
-        return MakePlan(project.Root, target.Name, desired, remote.Changes.Append(ToolCache.SelectVersion(project.Root, tool)).ToArray(), eideUpload, gdbPort);
+        var command = "\"${ProjectRoot}/" + entry + "\" --config \"${ProjectRoot}/" + config + "\" --program \"${programFile}\"";
+        return MakePlan(project.Root, target.Name, desired, remote.Changes.Append(ToolCache.SelectVersion(project.Root, tool)).ToArray(), eideUpload, gdbPort, command);
     }
     public static ConfigPlan Remove(string root) => MakePlan(root, "", [], []);
-    private static ConfigPlan MakePlan(string root, string target, ManagedEntry[] desired, FileChange[] additional, bool eideUpload = false, int gdbPort = 2331)
+    private static ConfigPlan MakePlan(string root, string target, ManagedEntry[] desired, FileChange[] additional, bool eideUpload = false, int gdbPort = 2331, string? command = null)
     {
         var state = ReadState(root);
         if (desired.Length == 0 && state == null) throw new InvalidDataException("没有共享接入归属记录，无法确认可移除条目；原配置保持不变。");
         var changes = new List<FileChange>(additional);
-        var eide = EideUpload.Plan(root, target, eideUpload, state?.EideFields ?? []);
+        var eide = EideUpload.Plan(root, target, eideUpload, state?.EideFields ?? [], command);
         changes.Add(eide.Change);
         var old = state?.Entries ?? [];
         foreach (var file in old.Select(e => e.File).Concat(desired.Select(e => e.File)).Distinct())

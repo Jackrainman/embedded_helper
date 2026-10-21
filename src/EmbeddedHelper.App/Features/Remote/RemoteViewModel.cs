@@ -8,6 +8,10 @@ public sealed class RemoteViewModel : INotifyPropertyChanged
 {
     private string host = "", port = "19011", web = "", gdbPort = "2331", preview = "";
     private bool eideUpload, busy;
+    private ToolRelease? selectedRelease;
+    public ToolRelease? SelectedRelease { get => selectedRelease; set { if (Set(ref selectedRelease, value)) Invalidate(); } }
+    private string toolStatus = "请打开工程，选择要接入的工具版本。";
+    public string ToolStatus { get => toolStatus; set => Set(ref toolStatus, value); }
     public string Host { get => host; set { if (Set(ref host, value)) Invalidate(); } }
     public string Port { get => port; set { if (Set(ref port, value)) Invalidate(); } }
     public string Web { get => web; set { if (Set(ref web, value)) Invalidate(); } }

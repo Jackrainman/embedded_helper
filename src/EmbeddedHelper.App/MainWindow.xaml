@@ -20,7 +20,7 @@
       <TabItem Header="MCU Viewer"><local:ObservationView x:Name="ObservationPage" StartObservationRequested="StartObservation" StopObservationRequested="StopObservation" ParseElfRequested="ParseElf" ConfigureRequested="ConfigureObservation"/></TabItem>
       <TabItem Header="RTT 监视"><local:RttView x:Name="RttPage" StartRequested="StartRtt" StopRequested="StopObservation" ConfigureRequested="ConfigureConnection" ClearRequested="ClearRtt"/></TabItem>
       <TabItem Header="串口助手"><local:SerialView x:Name="SerialPage" RefreshPortsRequested="RefreshPorts" ToggleSerialRequested="ToggleSerial" SerialEncodingChangedRequested="SerialEncodingChanged" ClearSerialRequested="ClearSerial" SelectSendHistoryRequested="SelectSendHistory" SendSerialRequested="SendSerial" StartPeriodicRequested="StartPeriodic" StopPeriodicRequested="StopPeriodic" OpenRecordsRequested="OpenRecords"/></TabItem>
-      <TabItem Header="设置与诊断"><local:SettingsView x:Name="SettingsPage" BrowseDllRequested="BrowseDll" EnvironmentCheckRequested="EnvironmentCheck" OpenLogsRequested="OpenLogs" RefreshToolsRequested="RefreshTools" DownloadToolRequested="DownloadTool" ImportToolRequested="ImportTool" BindCliRequested="BindCli"/></TabItem>
+      <TabItem Header="设置与诊断"><local:SettingsView x:Name="SettingsPage" BrowseDllRequested="BrowseDll" EnvironmentCheckRequested="EnvironmentCheck" OpenLogsRequested="OpenLogs" RefreshToolsRequested="RefreshTools" DownloadToolRequested="DownloadTool" ImportToolRequested="ImportTool"/></TabItem>
     </TabControl>
   </DockPanel>
 </Window>

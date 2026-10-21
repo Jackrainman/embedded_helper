@@ -60,8 +60,9 @@ public sealed class RuntimeTests : TestWorkspace
         File.WriteAllText(yamlPath, EideUpload.Set(File.ReadAllText(yamlPath), command.Keys, command.After));
         PortableData.SaveFile(Path.Combine(path, ".embedded_helper/integration.json"), state with { EideFields = fields });
         ConfigTransaction.Apply(Plan(), Path.Combine(root, "journal"));
-        Assert.Contains("EMBEDDED_HELPER_ENTRY", File.ReadAllText(taskPath));
-        Assert.Contains("--cli", File.ReadAllText(yamlPath));
+        Assert.Contains("${workspaceFolder}/LAN_Debug/tools/debug-lan/", File.ReadAllText(taskPath));
+        Assert.Contains("${ProjectRoot}/LAN_Debug/tools/debug-lan/", File.ReadAllText(yamlPath));
+        Assert.DoesNotContain("EMBEDDED_HELPER_", File.ReadAllText(taskPath));
         Assert.Empty(Plan().Changes);
         ConfigTransaction.Apply(VsCodeIntegration.Remove(path), Path.Combine(root, "journal"));
         Assert.Equal(original, File.ReadAllText(yamlPath));

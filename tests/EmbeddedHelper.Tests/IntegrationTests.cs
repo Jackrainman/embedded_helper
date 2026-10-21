@@ -41,7 +41,7 @@ public sealed class IntegrationTests : TestWorkspace
         Assert.False(File.Exists(Path.Combine(path, ".vscode/tasks.json")));
         ConfigTransaction.Apply(plan, Path.Combine(root, "journal"));
         var tasks = Path.Combine(path, ".vscode/tasks.json");
-        File.WriteAllText(tasks, File.ReadAllText(tasks).Replace("${env:EMBEDDED_HELPER_ENTRY}", "user-owned.exe"));
+        File.WriteAllText(tasks, File.ReadAllText(tasks).Replace("${workspaceFolder}/" + ProjectToolCache.RelativeEntry(ToolRelease.Known[0]), "user-owned.exe"));
         Assert.Throws<InvalidDataException>(() => VsCodeIntegration.Remove(path));
         Assert.Contains("user-owned.exe", File.ReadAllText(tasks));
     }

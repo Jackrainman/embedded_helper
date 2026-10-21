@@ -73,9 +73,9 @@ public static class ProjectReader
             return new BuildTarget(targetName, cpu, iface, speed, elf);
         }).ToArray();
         if (targets.Length == 0) throw new InvalidDataException("工程没有构建目标。");
-        var candidates = new[] { Path.Combine(root, "Debug_LAN", "remote-jlink.json"), Path.Combine(root, "remote-jlink.json") }.Where(File.Exists).ToArray();
+        var candidates = new[] { Path.Combine(root, "LAN_Debug", "remote-jlink.json"), Path.Combine(root, "Debug_LAN", "remote-jlink.json"), Path.Combine(root, "remote-jlink.json") }.Where(File.Exists).ToArray();
         if (candidates.Length > 1) diagnostics.Add("存在多份远程配置，请先解决歧义；不能自动写入。");
-        return new ProjectInfo(root, name, family, mcu, targets, candidates.FirstOrDefault() ?? Path.Combine(root, "Debug_LAN", "remote-jlink.json"), diagnostics.ToArray());
+        return new ProjectInfo(root, name, family, mcu, targets, candidates.FirstOrDefault() ?? Path.Combine(root, "LAN_Debug", "remote-jlink.json"), diagnostics.ToArray());
     }
 
     private static YamlMappingNode Map(YamlMappingNode node, string key) => node.Children.TryGetValue(new YamlScalarNode(key), out var value) && value is YamlMappingNode mapping ? mapping : throw new InvalidDataException($"缺少配置：{key}");

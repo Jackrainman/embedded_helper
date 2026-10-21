@@ -76,7 +76,7 @@ public partial class MainWindow
             remoteView.GdbPort = (integration?.GdbPort ?? 2331).ToString(CultureInfo.InvariantCulture);
             remoteView.EideUpload = integration?.EideFields?.Length > 0;
             if (File.Exists(System.IO.Path.Combine(loaded.Root, ".embedded_helper", "tools.lock.json")))
-                SettingsPage.ToolVersionBox.SelectedItem = ToolCache.ReadLock(loaded.Root);
+                remoteView.SelectedRelease = ToolCache.ReadLock(loaded.Root);
             if (File.Exists(loaded.RemotePath))
             {
                 try
@@ -92,6 +92,7 @@ public partial class MainWindow
             ProjectPage.RecentProjects.ItemsSource = settings.Recent;
             PersistSettings();
             remoteView.Invalidate();
+            await RefreshIntegrationStatusAsync();
             Report("已打开 " + loaded.Name + "。请选择 ELF 解析变量，或维护远程配置。");
             if (configuration.HasPending(loaded.Root)) Report("该工程有未完成写入，请到远程配置页恢复；外部修改不会被覆盖。");
         }

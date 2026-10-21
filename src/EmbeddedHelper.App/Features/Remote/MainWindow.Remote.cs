@@ -12,6 +12,9 @@ public partial class MainWindow
     private ConfigPlan? plan => remoteView.Plan;
     private bool configurationBusy;
     private readonly ConfigurationService configuration = new(App.Data.Root);
+    private ConfigPlan? toolPlan;
+    private ToolRelease? planRelease;
+    private string? planZip;
 
     private void PreviewConfig(object? sender, RoutedEventArgs e)
     {
@@ -25,16 +28,25 @@ public partial class MainWindow
     private async Task ApplyConfigAsync()
     {
         if (acquisition.HasSession || ObservationBusy || configurationBusy) throw new InvalidOperationException("请先停止采集并等待当前操作完成。");
+        if (toolBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
         var ready = plan ?? throw new InvalidOperationException("请先预览修改。");
         if (ready.Root != project?.Root) throw new InvalidOperationException("工程已变化，请重新预览。");
-        configurationBusy = true; remoteView.Busy = true; SyncObservationState();
+        configurationBusy = true; ++integrationStatusRevision; remoteView.Busy = true; SyncObservationState();
         try
         {
+            if (ready == toolPlan && planRelease is { } release)
+            {
+                remoteView.ToolStatus = "正在准备 LAN_Debug " + release.Version + "…";
+                await EnsureProjectToolAsync(ready.Root, release, planZip);
+                remoteView.ToolStatus = "工具已准备，正在写入工程配置…";
+            }
             await configuration.ApplyAsync(ready);
             remoteView.Invalidate(); InvalidateViewer();
             remoteView.Preview = "已应用预览中的配置。保留本地条目；未执行构建、烧录或调试。";
             Report(remoteView.Preview);
+            await RefreshIntegrationStatusAsync(afterApply: true);
         }
+        catch (Exception ex) { remoteView.ToolStatus = "接入未完成：" + ex.Message + "；可修正后重试。"; throw; }
         finally { configurationBusy = false; remoteView.Busy = false; SyncObservationState(); await RefreshProjectConnectionAsync(); }
     }
     private void PreviewIntegration(object? sender, RoutedEventArgs e)
@@ -42,9 +54,9 @@ public partial class MainWindow
         try
         {
             var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
-            var release = SettingsPage.ToolVersionBox.SelectedItem as ToolRelease ?? throw new InvalidOperationException("请在设置页选择工具版本。");
-            new ToolCache(App.Data.Root).Resolve(release);
-            ShowPlan(VsCodeIntegration.Plan(loaded, Target ?? throw new InvalidOperationException("请选择目标。"), remoteView.Host, int.Parse(remoteView.Port, CultureInfo.InvariantCulture), int.Parse(remoteView.GdbPort, CultureInfo.InvariantCulture), release, remoteView.EideUpload, remoteView.Web));
+            var release = remoteView.SelectedRelease ?? throw new InvalidOperationException("请选择 LAN_Debug 版本。");
+            var candidate = VsCodeIntegration.Plan(loaded, Target ?? throw new InvalidOperationException("请选择目标。"), remoteView.Host, int.Parse(remoteView.Port, CultureInfo.InvariantCulture), int.Parse(remoteView.GdbPort, CultureInfo.InvariantCulture), release, remoteView.EideUpload, remoteView.Web);
+            ShowPlan(candidate); toolPlan = candidate; planRelease = release; planZip = null;
         }
         catch (Exception ex) { remoteView.Invalidate(); Report(ex.Message); }
     }

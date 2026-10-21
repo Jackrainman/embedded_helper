@@ -23,6 +23,4 @@ public partial class SettingsView : UserControl
     private void DownloadTool(object? sender, RoutedEventArgs e) => DownloadToolRequested?.Invoke(sender, e);
     public event RoutedEventHandler? ImportToolRequested;
     private void ImportTool(object? sender, RoutedEventArgs e) => ImportToolRequested?.Invoke(sender, e);
-    public event RoutedEventHandler? BindCliRequested;
-    private void BindCli(object? sender, RoutedEventArgs e) => BindCliRequested?.Invoke(sender, e);
 }

@@ -30,8 +30,10 @@ public partial class MainWindow : Window
         ObservationPage.ExportRecordingRequested += ExportRecording;
         ObservationPage.ConnectionRequested += ConfigureConnection;
         RemotePage.DataContext = remoteView;
+        RemotePage.ImportLanRequested += async (_, _) => await Guard(() => ImportLanAsync(null));
+        RemotePage.ImportLanZipRequested += ImportLanZip;
+        RemotePage.ToolVersionBox.SelectionChanged += async (_, _) => await RefreshIntegrationStatusAsync();
         SerialPage.DataContext = serialView;
-        SettingsPage.ToolVersionBox.SelectionChanged += (_, _) => remoteView.Invalidate();
         VersionLabel.Text = "v" + Product.Version;
         Title = "Embedded Helper " + Product.Version;
         acquisition.Changed += SyncObservationState;

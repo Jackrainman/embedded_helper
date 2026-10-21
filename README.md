@@ -73,9 +73,9 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 已发布的开发内测版本：[0.2.0-alpha.8](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.2.0-alpha.8)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.2.0-alpha.8/EmbeddedHelper.exe)，约98MiB。该版本补齐串口软件流程、采集计划更新、工具版本管理和G4 VS Code接入；发送编码、历史及显示窗口可用，实物链路仍按C-05验收。
 
-当前开发版本为0.3.0-alpha.1，包含MCU Viewer与RTT监视职责拆分、共享连接、固定地址结构体成员、独立变量搜索弹窗、全高绘图区及统一按钮样式。该版本正在准备同包远程200Hz实测与开发内测发布；构建成功不代表完整P0验收通过，硬件验收由C-05/C-07跟踪。
+当前开发版本以 VERSION 为准，包含 MCU Viewer 坐标轴、完整记录 Excel 导出及 LAN_Debug 工程接入。最终同包远程实测与发布仍由 C-07 跟踪；构建成功不代表硬件验收通过。
 
-远程接入：先在设置页下载/导入 Debug_LAN，并点击绑定本机VS Code入口；完全退出并重新打开VS Code使用户环境变量生效。新接入使用EMBEDDED_HELPER_ENTRY指向外层EXE，通过--cli进入当前组件。旧工程须在远程配置页预览并应用以迁移命令；旧EMBEDDED_HELPER_HOME不被覆盖，尚未迁移的工程仍依赖旧组件目录，全部迁移前不要删除该目录。更换或回退工具版本后再次预览应用；项目只保存精确版本锁及稳定入口引用。移除使用工程内归属记录，不依赖本机旧备份；远程JSON和工具锁保留供旧入口/后续复用。
+远程接入：打开工程，在远程配置页填写服务器地址和端口，点击“一键导入 LAN_Debug”，自动准备已核验工具并写入工程任务；离线可直接选择官方 ZIP。生成任务使用工程内 LAN_Debug/tools 的相对路径，无需绑定本机环境变量或重启 VS Code。新配置使用 LAN_Debug/remote-jlink.json；已有 Debug_LAN 或工程根配置继续兼容。重新导入迁移由助手管理的旧入口，保留用户本地任务；冲突时提示并保留原文件。移除只恢复受管配置，保留远程 JSON、工具锁和缓存供复用。工具二进制自动忽略于 Git，另一台电脑打开工程后需再次一键准备。
 
 单EXE首次启动自动将内部运行组件准备到旁边data/runtime，设置仍在data/settings；搬迁时携带data保留配置，更新只替换主EXE。内部SDK工作进程和CLI保持隔离，用户无需管理DLL。运行时可能另用Windows临时缓存。
 
