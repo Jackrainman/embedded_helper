@@ -30,3 +30,5 @@ skill 保存可复用审查方法；本 workflow 负责执行时机、打包和�
 - 本地钩子自动升级，打包只读检查，CI 对新增提交再次检查；任何失败必须阻断。已存在的历史提交不追溯改写。
 
 提交前 agent 自动选择 VERSION_BUMP_LEVEL=patch/minor/major（默认 patch），或先运行 bump_version.py --level；新功能和不兼容变更必须选择对应等级。commit-msg 不修改版本，只阻断等级不足的提交。
+
+pre-commit 不能读取尚未交给 commit-msg 的最终消息，因此不会自动从 feat/feat! 推断等级。若默认 patch 已暂存而 commit-msg 拒绝，先检查 `git diff --cached -- VERSION`；将 VERSION 调整到错误提示的最低版本或更高并 `git add VERSION` 后重试。失败不回滚已暂存版本；此时只改环境变量不会覆盖它。预先升版同样需要暂存，不能绕过未暂存 VERSION 冲突检查。

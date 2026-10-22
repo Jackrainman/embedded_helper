@@ -51,7 +51,11 @@ def next_version(value, level):
 def validate_change(before, after, message):
     required = next_version(before, level_for(message))
     if parse(after)[0] < parse(required)[0]:
-        raise ValueError(f'产品变化必须升版：{before} -> 至少 {required}，实际 {after}')
+        level = level_for(message)
+        raise ValueError(f'产品变化必须升版：{before} -> 至少 {required}，实际 {after}。'
+                         f'首次提交前设置 VERSION_BUMP_LEVEL={level}，或运行 python scripts/bump_version.py --level {level}。'
+                         f'失败不会撤销已暂存的 VERSION；请检查 git diff --cached -- VERSION，'
+                         f'将 VERSION 明确调整为 {required} 或更高版本，执行 git add VERSION 后重试；仅改变环境变量不会覆盖已升版值。')
 
 
 def prepare(root, message):

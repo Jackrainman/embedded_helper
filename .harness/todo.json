@@ -21,35 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-05",
-      "title": "第3批 · 明确自动升版等级的使用与失败提示（Audit #5）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "Harness/version",
-      "refs": [
-        "REL-10",
-        "NFR-05"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-29"
-      ],
-      "doneWhen": "触发：未预先选择等级时 prepare 默认 patch，随后 feat/feat! 校验可能失败；已有预升版路径可通过。完成：提示正确的等级设置/预升版及失败后状态处理，统一文档承诺；保留拒绝低版本和未暂存VERSION冲突，不能绕过钩子。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        5
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "scripts/version_guard.py:117",
-        "scripts/version_guard.py:101",
-        ".agents/workflows/change-test-deliver.md:3",
-        "tests/test_version_guard.py:1"
-      ]
-    },
-    {
       "id": "AUD-16",
       "title": "第3批 · 核对成品清单的实际运行时版本（Audit #16）",
       "status": "todo",

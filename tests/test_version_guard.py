@@ -14,6 +14,15 @@ spec.loader.exec_module(guard)
 
 
 class VersionGuardTests(unittest.TestCase):
+    def test_insufficient_bump_explains_retry_without_claiming_rollback(self):
+        for message, level in [('feat: new', 'minor'), ('feat!: schema', 'major')]:
+            with self.assertRaises(ValueError) as caught:
+                guard.validate_change('1.2.3-alpha.1', '1.2.4-alpha.1', message)
+            self.assertIn('VERSION_BUMP_LEVEL=' + level, str(caught.exception))
+            self.assertIn('--level ' + level, str(caught.exception))
+            self.assertIn('git add VERSION', str(caught.exception))
+            self.assertIn('已暂存', str(caught.exception))
+
     def test_classification_and_prerelease(self):
         for message, expected in [('fix: layout', '0.3.1-alpha.1'),
                                   ('feat(viewer): export', '0.4.0-alpha.1'),

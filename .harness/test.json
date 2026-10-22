@@ -1081,7 +1081,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-15-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "2d2341cf602c12bcfaaf6be9fca064d245a2b02b"
       }
     },
     {
@@ -1099,7 +1100,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：5项版本门测试通过（含真实临时Git钩子），不足等级提示显式环境/预升版及已暂存状态恢复；版本门未放宽；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "在独立 Git 仓库测试默认环境 feat/feat! 失败、显式等级通过、提前升版通过。",
@@ -1116,7 +1117,20 @@
         "scripts/version_guard.py:101",
         ".agents/workflows/change-test-deliver.md:3",
         "tests/test_version_guard.py:1"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-05",
+        "recordedAt": "2026-10-22T10:14:10.206123+00:00",
+        "result": "passed",
+        "details": "5项版本门测试通过（含真实临时Git钩子），不足等级提示显式环境/预升版及已暂存状态恢复；版本门未放宽",
+        "commands": [
+          "python -X utf8 -m unittest discover -s tests -p test_version_guard.py"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-05-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-30",
