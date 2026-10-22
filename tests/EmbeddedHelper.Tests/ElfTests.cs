@@ -35,7 +35,7 @@ public sealed class ElfTests : TestWorkspace
         Assert.Throws<InvalidDataException>(() => ReadElfIndex.Parse(dump.Replace("/right", "/left"), native));
     }
     [Fact]
-    public void RealSameNamedCompilationUnitsAgreeAcrossReaders()
+    public async Task RealSameNamedCompilationUnitsAgreeAcrossReaders()
     {
         var native = ElfIndex.Read(Path.Combine(fixtures, "dual-cu.elf"), "must-not-fallback");
         var dump = File.ReadAllText(Path.Combine(fixtures, "dual-cu.dwarf.txt"));
@@ -44,6 +44,12 @@ public sealed class ElfTests : TestWorkspace
         Assert.Equal(native, ReadElfIndex.Parse(dump));
         Assert.Equal(native, ReadElfIndex.Parse(dump, true));
         Assert.All(native, v => Assert.Contains("|dir=", v.Identity));
+        WatchSettingsStore.Save(root, new("Debug", native.Select(v => v.Identity).ToArray(), 200));
+        var reopened = (await WatchSettingsStore.LoadAsync(root))!;
+        Assert.Equal(native.Select(v => v.Address), reopened.Identities.Select(id => native.Single(v => v.Identity == id).Address));
+        WatchSettingsStore.Save(root, reopened with { Identities = ["source.c::counter"] });
+        var legacy = (await WatchSettingsStore.LoadAsync(root))!;
+        Assert.DoesNotContain(native, v => legacy.Identities.Contains(v.Identity)); // Missing legacy selection must not guess either address.
     }
     [Fact]
     public void RealStructFixturesAgreeAcrossNativeAndReadElfReaders()

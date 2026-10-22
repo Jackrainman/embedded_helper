@@ -14,6 +14,42 @@ spec.loader.exec_module(guard)
 
 
 class VersionGuardTests(unittest.TestCase):
+    def test_real_commit_message_rejection_and_recovery(self):
+        for message, minimum in [('feat: capability', '0.4.0-alpha.1'), ('feat!: incompatible', '1.0.0-alpha.1')]:
+            with self.subTest(message=message), tempfile.TemporaryDirectory(dir=ROOT / 'tmp') as temp:
+                root = Path(temp)
+                def git(*args):
+                    return guard.git(root, *args)
+                git('init', '-q')
+                git('config', 'user.name', 'Offline Hook Test')
+                git('config', 'user.email', 'test@example.invalid')
+                git('config', 'commit.gpgsign', 'false')
+                (root / 'VERSION').write_text('0.3.0-alpha.1\n')
+                (root / 'src').mkdir()
+                (root / 'src/code.cs').write_text('before')
+                git('add', '.')
+                git('commit', '-qm', 'initial')
+                (root / 'scripts').mkdir()
+                shutil.copy2(ROOT / 'scripts/version_guard.py', root / 'scripts/version_guard.py')
+                (root / '.hooks').mkdir()
+                for name, command in [('pre-commit', '--prepare'), ('commit-msg', '--commit-msg "$1"')]:
+                    hook = root / '.hooks' / name
+                    hook.write_text('#!/bin/sh\nexec python scripts/version_guard.py ' + command + '\n', newline='\n')
+                    hook.chmod(0o755)
+                git('config', 'core.hooksPath', '.hooks')
+                (root / 'src/code.cs').write_text('after')
+                git('add', '.')
+                with patch.dict(os.environ, {'VERSION_BUMP_LEVEL': 'patch', 'PYTHONIOENCODING': 'utf-8'}):
+                    refused = subprocess.run(['git', 'commit', '-qm', message], cwd=root, capture_output=True)
+                    self.assertNotEqual(refused.returncode, 0)
+                    self.assertIn(b'git add VERSION', refused.stdout + refused.stderr)
+                    self.assertEqual(git('show', ':VERSION'), '0.3.1-alpha.1')
+                    (root / 'VERSION').write_text(minimum + '\n')
+                    git('add', 'VERSION')
+                    git('commit', '-qm', message)
+                self.assertEqual(git('show', 'HEAD:VERSION'), minimum)
+                self.assertEqual(git('status', '--porcelain'), '')
+
     def test_insufficient_bump_explains_retry_without_claiming_rollback(self):
         for message, level in [('feat: new', 'minor'), ('feat!: schema', 'major')]:
             with self.assertRaises(ValueError) as caught:

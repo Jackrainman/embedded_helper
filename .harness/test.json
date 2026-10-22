@@ -307,15 +307,35 @@
         "可操作的网页RTT浏览器"
       ],
       "status": "blocked",
-      "reason": "远端已关闭，浏览器连接状态尚待恢复确认。",
-      "resumeWhen": "远端恢复且网页可操作，确认设备操作范围后执行。",
+      "reason": "C-05代码及离线回放完成，权威服务端提交25dcbe9未部署；本轮禁止连接设备、远程部署及实机操作。历史候选/实机证据保留，不代表新代码通过。",
+      "resumeWhen": "取得具体部署及目标操作授权，确认服务端25dcbe9或后续兼容版本的已部署身份、板卡/固件/探针与DLL版本，再按步骤进行切换和持续采集验收。",
       "steps": [
         "核对最终包和LAN_Debug客户端版本，确认包含取消调试回收修复。",
         "验证全局/嵌套变量、200Hz设置、实际值、坐标轴、实际接收率、暂停恢复。",
         "停止释放并重连，在客户端采集与网页RTT之间双向手动切换。"
       ],
       "expected": "数据与状态正确，释放后可重连或切换；既有短测、旧包及本地USB结果不能替代。",
-      "lastResult": null
+      "lastResult": null,
+      "offlineResult": {
+        "task": "C-05",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "repository": "../LAN_Debug",
+        "commits": [
+          "ae35bb7",
+          "25dcbe9"
+        ],
+        "commands": [
+          "node server/tests/test_rtt_poll.js",
+          "cd server; node tests/test_client_config.js",
+          "cd server; LAN_DEBUG_TEST_BASH=D:/08_WorkSoftwares/02_Install/Git/bin/bash.exe python -X utf8 -m unittest discover -s tests"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/C-05-timeout-green.log",
+          "test-results/audit-20261022/C-05-server-suite.log"
+        ],
+        "details": "真实页面函数离线回放覆盖重入、游标、切换、失败、10秒取消与旧finally隔离；服务端17项通过。最初默认WSL Bash路径不兼容失败，使用既有Git Bash后通过。未部署。"
+      }
     },
     {
       "id": "AT-11",
@@ -334,8 +354,8 @@
         "匹配固件与 ELF"
       ],
       "status": "blocked",
-      "reason": "远端不可用；网页重复日志的已有修复仍需核对合入和部署。",
-      "resumeWhen": "远端恢复且C-05开发任务收口，具备长稳测试窗口。",
+      "reason": "C-05代码及离线回放完成，权威服务端提交25dcbe9未部署；本轮禁止连接设备、远程部署及实机操作。历史候选/实机证据保留，不代表新代码通过。",
+      "resumeWhen": "取得具体部署及目标操作授权，确认服务端25dcbe9或后续兼容版本的已部署身份、板卡/固件/探针与DLL版本，再按步骤进行切换和持续采集验收。",
       "steps": [
         "复用AT-02/AT-10的适用证据，使用同一最终包。",
         "分别运行变量与RTT至少30分钟，记录内存、响应、缺口和重复日志。",
@@ -347,7 +367,27 @@
       "auditRefs": [
         4,
         9
-      ]
+      ],
+      "offlineResult": {
+        "task": "C-05",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "repository": "../LAN_Debug",
+        "commits": [
+          "ae35bb7",
+          "25dcbe9"
+        ],
+        "commands": [
+          "node server/tests/test_rtt_poll.js",
+          "cd server; node tests/test_client_config.js",
+          "cd server; LAN_DEBUG_TEST_BASH=D:/08_WorkSoftwares/02_Install/Git/bin/bash.exe python -X utf8 -m unittest discover -s tests"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/C-05-timeout-green.log",
+          "test-results/audit-20261022/C-05-server-suite.log"
+        ],
+        "details": "真实页面函数离线回放覆盖重入、游标、切换、失败、10秒取消与旧finally隔离；服务端17项通过。最初默认WSL Bash路径不兼容失败，使用既有Git Bash后通过。未部署。"
+      }
     },
     {
       "id": "AT-12",
@@ -412,9 +452,9 @@
         "支持本地 HTML 的桌面浏览器",
         "当前双账本生成的 test-results/harness/index.html"
       ],
-      "status": "pending",
-      "reason": "浏览器工具策略禁止 file: 协议，本轮未进行真实页面交互；用户可在本机双击验收。",
-      "resumeWhen": "",
+      "status": "blocked",
+      "reason": "2026-10-22 已刷新现有 HTML 看板。Browser Use 拒绝 file: 协议：仅允许 http/https，并明确禁止用替代浏览器或间接方式绕过；没有把静态生成/测试标作真实浏览器操作通过。",
+      "resumeWhen": "用户在本地浏览器手动打开 test-results/harness/index.html 执行既有步骤并回传证据，或提供经策略允许的访问方式。",
       "steps": [
         "重新生成看板并记录页面底部账本摘要和本次 Harness 源码提交。",
         "双击 HTML，核对总数、状态筛选、来源筛选、中文搜索及无结果反馈；清空筛选恢复全部。",
@@ -630,7 +670,7 @@
         "可重现的 ARM 编译器及 readelf"
       ],
       "status": "pending",
-      "reason": "已完成源码离线部分：127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移；候选同包复验及未覆盖条件仍待验证。",
+      "reason": "双CU真实ELF已由内置和本机ARM readelf两种身份模式实际解析一致；新增watch保存重读及旧身份安全缺失回归。 最终源码/候选绑定待完成。",
       "resumeWhen": "最终候选同包复验",
       "steps": [
         "制作可追溯的双 CU ELF，核对调试节实际具有同名 name、不同 comp_dir。",
@@ -651,18 +691,31 @@
       ],
       "offlineResult": {
         "task": "AUD-07",
-        "recordedAt": "2026-10-22T09:53:18.463336+00:00",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
         "result": "passed",
-        "details": "127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移",
-        "commands": [
-          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
-        ],
+        "details": "双CU真实ELF已由内置和本机ARM readelf两种身份模式实际解析一致；新增watch保存重读及旧身份安全缺失回归。",
         "evidence": [
-          "test-results/audit-20261022/AUD-07-green.log"
+          "test-results/audit-20261022/AT-19-live-readelf.log",
+          "test-results/audit-20261022/final-boundaries.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "d88660fbcf93baf0bb84afb3dd0c7a28be354482"
-      }
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      },
+      "offlineHistory": [
+        {
+          "task": "AUD-07",
+          "recordedAt": "2026-10-22T09:53:18.463336+00:00",
+          "result": "passed",
+          "details": "127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移",
+          "commands": [
+            "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+          ],
+          "evidence": [
+            "test-results/audit-20261022/AUD-07-green.log"
+          ],
+          "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+          "commit": "d88660fbcf93baf0bb84afb3dd0c7a28be354482"
+        }
+      ]
     },
     {
       "id": "AT-20",
@@ -1507,7 +1560,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD23-04-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "9ed1ff5cca147c0c36a63fb0225bcc241f216baf"
       }
     },
     {
@@ -1526,7 +1580,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "实际WPF消费路径8种合成输入已测量：16/3000变量，16选中，200/1000Hz；本地和受控慢读取，Tick/分配/GC/元数据/UI让步及丢弃有实测。无硬件吞吐承诺。 最终源码/候选绑定待完成。",
       "resumeWhen": "",
       "steps": [
         "在离线合成输入下测试典型与数千变量、200Hz及支持上限1000Hz请求；记录实际消费率。",
@@ -1541,7 +1595,18 @@
       "sourceEvidence": [
         "src/EmbeddedHelper.App/Features/Observation/MainWindow.Observation.cs:183",
         "src/EmbeddedHelper.App/Features/Observation/MainWindow.Observation.cs:219"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-11",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "实际WPF消费路径8种合成输入已测量：16/3000变量，16选中，200/1000Hz；本地和受控慢读取，Tick/分配/GC/元数据/UI让步及丢弃有实测。无硬件吞吐承诺。",
+        "evidence": [
+          "test-results/audit-20261022/AT-38.log",
+          "test-results/audit-20261022/AT-38-measurements.json"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     },
     {
       "id": "AT-39",
@@ -1558,7 +1623,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "受控真实子进程覆盖错误会话、1MiB超长输出、未确认计划、静默看门狗；故障时子进程仍活着，Dispose强制回收后逐PID核验退出。 最终源码/候选绑定待完成。",
       "resumeWhen": "",
       "steps": [
         "使用受控假子进程覆盖错误SessionId、超过1MiB输出行、计划代次未确认与静默超时。",
@@ -1575,7 +1640,17 @@
         "src/EmbeddedHelper.Core/Observation/Observation.cs:109",
         "src/EmbeddedHelper.Core/Observation/Observation.cs:148",
         "tests/EmbeddedHelper.Tests/ObservationTests.cs:57"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-18",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "受控真实子进程覆盖错误会话、1MiB超长输出、未确认计划、静默看门狗；故障时子进程仍活着，Dispose强制回收后逐PID核验退出。",
+        "evidence": [
+          "test-results/audit-20261022/AT-39-42.log"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     },
     {
       "id": "AT-40",
@@ -1592,7 +1667,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "缓存入口/依赖和installed来源字段篡改、缺文件/错VERSION/非法UTF8/解压超限、目录来源/容量/数量/冲突等离线拒绝分支通过；非法manifest字段的完整矩阵仍待补。 最终源码/候选绑定待完成。",
       "resumeWhen": "",
       "steps": [
         "分别篡改本机缓存入口/依赖、installed.json版本/提交/摘要，验证Resolve拒绝且不覆盖现场。",
@@ -1610,7 +1685,17 @@
         "src/EmbeddedHelper.Core/Tools/ToolCache.cs:127",
         "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:10",
         "tests/EmbeddedHelper.Tests/ProjectToolTests.cs:26"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-18",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "缓存入口/依赖和installed来源字段篡改、缺文件/错VERSION/非法UTF8/解压超限、目录来源/容量/数量/冲突等离线拒绝分支通过；非法manifest字段的完整矩阵仍待补。",
+        "evidence": [
+          "test-results/audit-20261022/AT-40-41-44.log"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     },
     {
       "id": "AT-41",
@@ -1627,7 +1712,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "JSONC根重复键拒绝、嵌套同名保留、末尾注释插入，及无远程配置的新路径创建/应用/重读/幂等通过。 最终源码/候选绑定待完成。",
       "resumeWhen": "",
       "steps": [
         "覆盖根重复键拒绝、嵌套同名键不替换及末尾注释无逗号的插入；比较未修改内容并重解析。",
@@ -1644,7 +1729,17 @@
         "src/EmbeddedHelper.Core/Configuration/JsonEdit.cs:20",
         "src/EmbeddedHelper.Core/Configuration/RemoteConfiguration.cs:19",
         "tests/EmbeddedHelper.Tests/ProjectToolTests.cs:52"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-18",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "JSONC根重复键拒绝、嵌套同名保留、末尾注释插入，及无远程配置的新路径创建/应用/重读/幂等通过。",
+        "evidence": [
+          "test-results/audit-20261022/AT-40-41-44.log"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     },
     {
       "id": "AT-42",
@@ -1661,7 +1756,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "受控进程8秒超时强制回收、stderr非零、合法空列表各重复两次；未调用真实枚举SDK。 最终源码/候选绑定待完成。",
       "resumeWhen": "",
       "steps": [
         "用不访问SDK的受控子进程模拟不退出、stderr失败和合法空列表。",
@@ -1676,7 +1771,17 @@
       "sourceEvidence": [
         "src/EmbeddedHelper.Core/Observation/ProbeDiscoveryProcess.cs:29",
         "src/EmbeddedHelper.Core/Observation/ProbeDiscoveryProcess.cs:39"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-18",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "受控进程8秒超时强制回收、stderr非零、合法空列表各重复两次；未调用真实枚举SDK。",
+        "evidence": [
+          "test-results/audit-20261022/AT-39-42.log"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     },
     {
       "id": "AT-43",
@@ -1692,9 +1797,9 @@
         "可追溯的合法x64原生DLL样本",
         "离线静态PE检查入口"
       ],
-      "status": "blocked",
-      "reason": "现有正向发现测试注入Accept，尚未为本回归固定合法原生DLL样本及摘要；不是断言本机没有安装J-Link。",
-      "resumeWhen": "选定可合法使用的样本或制作原生导出夹具后，只读静态检查，不加载SDK。",
+      "status": "pending",
+      "reason": "只读静态Inspect真实本机MCUViewer附带JLink_x64.dll，版本8.16，x64导出接口通过；SHA256 BEC44D4151BA062F44C3A2E2BAE7F5A8038B7D942571FD8190FE1930F7E939EB；未加载DLL。 最终源码/候选绑定待完成。",
+      "resumeWhen": "",
       "steps": [
         "选定可追溯官方x64 DLL或具备所需导出表的原生测试夹具，记录摘要。",
         "仅调用静态Inspect并核对版本、位数、导出表结论，同时保留托管/错误架构反例。"
@@ -1708,7 +1813,17 @@
       "sourceEvidence": [
         "tests/EmbeddedHelper.Tests/ToolDiscoveryTests.cs:64",
         "src/EmbeddedHelper.Core/ToolDiscovery.cs:109"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-18",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "只读静态Inspect真实本机MCUViewer附带JLink_x64.dll，版本8.16，x64导出接口通过；SHA256 BEC44D4151BA062F44C3A2E2BAE7F5A8038B7D942571FD8190FE1930F7E939EB；未加载DLL。",
+        "evidence": [
+          "test-results/audit-20261022/AT-43.log"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     },
     {
       "id": "AT-44",
@@ -1724,7 +1839,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "结束标记后数据、重复及倒退序号均拒绝；原记录字节、已有xlsx和临时文件清理通过。 最终源码/候选绑定待完成。",
       "resumeWhen": "",
       "steps": [
         "在隔离记录中插入结束标记后的数据、重复和倒退序号。",
@@ -1740,7 +1855,17 @@
         "src/EmbeddedHelper.Core/Observation/ObservationRecording.cs:63",
         "src/EmbeddedHelper.Core/Observation/ObservationRecording.cs:101",
         "tests/EmbeddedHelper.Tests/ObservationRecordingTests.cs:70"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-18",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "结束标记后数据、重复及倒退序号均拒绝；原记录字节、已有xlsx和临时文件清理通过。",
+        "evidence": [
+          "test-results/audit-20261022/AT-40-41-44.log"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     },
     {
       "id": "AT-45",
@@ -1757,7 +1882,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "隔离源码副本仅插入等待点、离线HTTP替身：普通下载异常清理通过；强杀留65536字节下载ZIP或空.install目录，安装锁拒绝并发，强杀后重试成功，残留不自动清理。没有将插桩构建冒充成品字节测试。 最终源码/候选绑定待完成。",
       "resumeWhen": "",
       "steps": [
         "在隔离data和自有进程测试普通下载/安装异常的finally清理，再在明确阶段强制结束自有进程。",
@@ -1775,7 +1900,18 @@
         "src/EmbeddedHelper.Core/Tools/ToolCache.cs:115",
         "src/EmbeddedHelper.App/Services/ToolPreparationService.cs:39",
         "src/EmbeddedHelper.Core/Tools/ProjectToolCache.cs:26"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-22",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "隔离源码副本仅插入等待点、离线HTTP替身：普通下载异常清理通过；强杀留65536字节下载ZIP或空.install目录，安装锁拒绝并发，强杀后重试成功，残留不自动清理。没有将插桩构建冒充成品字节测试。",
+        "evidence": [
+          "test-results/audit-20261022/AT-45-46.log",
+          "test-results/audit-20261022/fault-trials/results.json"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     },
     {
       "id": "AT-46",
@@ -1792,7 +1928,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "隔离源码/运行副本：显式设置诊断异常时finally恢复；备份后强杀留下完整备份和空window.json目录；确认自有进程退出后移除空目录并将备份改回原名，摘要一致。正常启动未注入，未操作用户安装。 最终源码/候选绑定待完成。",
       "resumeWhen": "",
       "steps": [
         "只在完整隔离运行副本准备独有设置，定位移动设置到备份及恢复的阶段。",
@@ -1807,7 +1943,18 @@
       "sourceEvidence": [
         "src/EmbeddedHelper.App/Diagnostics/MainWindow.LocalToolsSmoke.cs:36",
         "src/EmbeddedHelper.App/Diagnostics/MainWindow.LocalToolsSmoke.cs:44"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-23",
+        "recordedAt": "2026-10-22T10:55:14.326664+00:00",
+        "result": "passed",
+        "details": "隔离源码/运行副本：显式设置诊断异常时finally恢复；备份后强杀留下完整备份和空window.json目录；确认自有进程退出后移除空目录并将备份改回原名，摘要一致。正常启动未注入，未操作用户安装。",
+        "evidence": [
+          "test-results/audit-20261022/fault-trials/results.json",
+          "test-results/audit-20261022/fault-trials/settings-crash-backup.json"
+        ],
+        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+      }
     }
   ]
 }

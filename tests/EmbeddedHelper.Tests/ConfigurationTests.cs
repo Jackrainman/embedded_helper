@@ -56,7 +56,7 @@ public sealed class ConfigurationTests : TestWorkspace
         Assert.Equal(text, File.ReadAllText(file));
     }
     [Fact]
-    public void AncestorJunctionWorksButInternalLinksAndWriteTimeChangesAreRejected()
+    public async Task AncestorJunctionWorksButInternalLinksAndWriteTimeChangesAreRejected()
     {
         if (!OperatingSystem.IsWindows()) return;
         var physical = Path.Combine(root, "physical"); Directory.CreateDirectory(Path.Combine(physical, "project"));
@@ -75,6 +75,9 @@ public sealed class ConfigurationTests : TestWorkspace
         var journals = Path.Combine(root, "journals");
         ConfigTransaction.Apply(new(project, [new(file, null, "saved")]), journals);
         Assert.Equal("saved", File.ReadAllText(Path.Combine(physical, "project/a.json")));
+        var package = ScriptPackage(); var data = Path.Combine(root, "data");
+        await new ToolCache(data).InstallAsync(package.Zip, package.Release);
+        Assert.NotEmpty(ProjectToolCache.Plan(project, data, package.Release));
         var outside = Path.Combine(root, "outside"); Directory.CreateDirectory(outside);
         var link = Path.Combine(project, "escape"); Junction(link, outside);
         Assert.Throws<IOException>(() => ConfigTransaction.CheckPath(project, Path.Combine(link, "evil.json")));

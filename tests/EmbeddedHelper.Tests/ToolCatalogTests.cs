@@ -43,9 +43,16 @@ public sealed class ToolCatalogTests : TestWorkspace
     }
     private static string Manifest(string version) => JsonSerializer.Serialize(new
     {
-        manifestSchema = 2, toolId = ToolRelease.ToolId, sourceRepository = ToolRelease.Repository,
-        version, upstreamCommit = new string('a', 40), entrypoint = "jlink_flash.py", pythonMinimum = "3.10",
-        packageName = ToolRelease.ToolId + "-" + version + ".zip", packageBytes = 10, packageSha256 = new string('b', 64)
+        manifestSchema = 2,
+        toolId = ToolRelease.ToolId,
+        sourceRepository = ToolRelease.Repository,
+        version,
+        upstreamCommit = new string('a', 40),
+        entrypoint = "jlink_flash.py",
+        pythonMinimum = "3.10",
+        packageName = ToolRelease.ToolId + "-" + version + ".zip",
+        packageBytes = 10,
+        packageSha256 = new string('b', 64)
     });
     [Fact]
     public void ParsingManifestDoesNotAcceptIt()

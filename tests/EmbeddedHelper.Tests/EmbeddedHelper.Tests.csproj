@@ -6,6 +6,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.1" />
     <ProjectReference Include="../../src/EmbeddedHelper.Core/EmbeddedHelper.Core.csproj" />
     <ProjectReference Include="../../src/EmbeddedHelper.Worker/EmbeddedHelper.Worker.csproj" ReferenceOutputAssembly="false" />
+    <ProjectReference Include="../OfflineWorker/OfflineWorker.csproj" ReferenceOutputAssembly="false" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="../../src/EmbeddedHelper.App/Features/Observation/ObservationViewModel.cs" Link="App/ObservationViewModel.cs" />
@@ -21,5 +22,9 @@
     <PropertyGroup><WorkerOutputDirectory>@(WorkerTarget->'%(RootDir)%(Directory)')</WorkerOutputDirectory></PropertyGroup>
     <ItemGroup><WorkerFiles Include="$(WorkerOutputDirectory)*;$(WorkerOutputDirectory)runtimes/**/*" /></ItemGroup>
     <Copy SourceFiles="@(WorkerFiles)" DestinationFiles="@(WorkerFiles->'$(OutDir)worker/%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="PrepareOfflineWorkerForTests" AfterTargets="Build">
+    <ItemGroup><OfflineWorkerFiles Include="../OfflineWorker/bin/$(Configuration)/$(TargetFramework)/*" /></ItemGroup>
+    <Copy SourceFiles="@(OfflineWorkerFiles)" DestinationFolder="$(OutDir)offline-worker" SkipUnchangedFiles="true" />
   </Target>
 </Project>

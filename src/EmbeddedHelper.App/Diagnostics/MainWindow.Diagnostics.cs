@@ -89,6 +89,7 @@ public partial class MainWindow
             await SmokeProjectStatusAsync(directory);
             await SmokePresentationAsync(directory);
             await SmokeRttLifecycleAsync();
+            if (Environment.GetEnvironmentVariable("EMBEDDED_HELPER_SMOKE_PERF") == "1") await SmokeObservationBenchmarkAsync(directory);
             var logFile = System.IO.Path.Combine(App.Data.Root, "logs/application.log");
             var logBackup = logFile + ".smoke-backup";
             File.Move(logFile, logBackup);
@@ -99,6 +100,13 @@ public partial class MainWindow
                 if (!StatusLabel.Text.Contains("原始业务错误")) throw new InvalidDataException("日志失败遮蔽业务错误。");
             }
             finally { Directory.Delete(logFile); File.Move(logBackup, logFile); }
+            using (var heldLog = new FileStream(logFile, FileMode.Open, FileAccess.Read, FileShare.None))
+            {
+                await Guard(() => Task.FromException(new InvalidOperationException("日志占用时的原始错误")));
+                if (!StatusLabel.Text.Contains("日志占用时的原始错误")) throw new InvalidDataException("日志占用遮蔽原始错误。");
+            }
+            App.Data.Log("离线诊断：日志写入已恢复");
+            if (!File.ReadAllText(logFile).Contains("日志写入已恢复")) throw new InvalidDataException("日志恢复后不能写入。");
             var uiThread = Environment.CurrentManagedThreadId;
             var discoveryThread = uiThread;
             SerialPage.SerialPortBox.Text = "COM42";

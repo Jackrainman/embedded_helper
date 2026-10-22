@@ -1,26 +1,6 @@
 {
   "schemaVersion": 2,
-  "tasks": [
-    {
-      "id": "C-05",
-      "title": "收口网页 RTT 重复日志的已有修复",
-      "status": "todo",
-      "priority": "P1",
-      "component": "LAN_Debug/server",
-      "refs": [
-        "AC-04",
-        "AC-13"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-10",
-        "AT-11"
-      ],
-      "doneWhen": "定位已有隔离修复并完成评审合入；在获得具体部署授权及环境后部署，留下版本证据。实机验收单独由AT-10/AT-11记录。",
-      "reason": "",
-      "resumeWhen": ""
-    }
-  ],
+  "tasks": [],
   "auditImport": {
     "document": "../AUDIT.md",
     "sha256": "e5c78ffa8325a480661da7adc986683ba4b5836f6b097e7a64259adc67308904",

@@ -116,7 +116,7 @@ def run_smoke(app_directory, configuration='Release', timeout=60, keep_workspace
         qa = workspace / 'qa'
         if qa.is_dir():
             for path in qa.iterdir():
-                if path.is_file() and (path.suffix == '.png' or path.name == 'smoke.json'):
+                if path.is_file() and (path.suffix == '.png' or path.name in {'smoke.json', 'observation-benchmark.json'}):
                     shutil.copy2(path, evidence / path.name)
         metadata['finishedAt'] = datetime.now(timezone.utc).isoformat()
         metadata['workspaceRetained'] = True
