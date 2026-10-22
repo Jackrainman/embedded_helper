@@ -124,10 +124,17 @@
       "steps": [
         "逐页检查工程、共享连接、RTT、远程配置、设置的空状态、有效状态与错误状态。",
         "检查用途、当前结果、下一步是否明确，错误是否就地显示，反馈是否不只靠颜色。",
-        "核对配置保存和重新读取；确有缺失时建立具体开发任务。"
+        "核对配置保存和重新读取；确有缺失时建立具体开发任务。",
+        "审计修复后补核对：事务保留现状结案的明确选择；损坏归属记录的只读降级/写入禁用；端口与ELF错误的具体下一步。按实际所验修复版本记录，当前包不能预记通过。"
       ],
       "expected": "各页状态可理解且与实际数据一致；已有串口文案和LF/CRLF子项不重复列为缺陷。",
-      "lastResult": null
+      "lastResult": null,
+      "auditRefs": [
+        2,
+        6,
+        15,
+        21
+      ]
     },
     {
       "id": "AT-04",
@@ -148,10 +155,14 @@
       "steps": [
         "在最小窗口和测试缩放环境检查五个页面，确认按钮、错误提示、滚动可用。",
         "核对旧记录中中断的窗口/标签是否仍存在；仅关闭确认属于该次测试且无未保存内容的对象，不能照旧ID盲目关闭。",
-        "关闭本次创建的窗口，保留用户原有窗口并记录。"
+        "关闭本次创建的窗口，保留用户原有窗口并记录。",
+        "Audit #25修复后核对1/2/3个变量的分道缩放及禁用悬停说明，行为仍以两个及以下可用为准。"
       ],
       "expected": "内容无遮挡、操作可达；旧清理事项有核对结果，本次测试不遗留窗口。",
-      "lastResult": null
+      "lastResult": null,
+      "auditRefs": [
+        25
+      ]
     },
     {
       "id": "AT-05",
@@ -328,10 +339,15 @@
       "steps": [
         "复用AT-02/AT-10的适用证据，使用同一最终包。",
         "分别运行变量与RTT至少30分钟，记录内存、响应、缺口和重复日志。",
-        "按授权范围验证断连恢复、停止释放后外部调试与恢复采集。"
+        "按授权范围验证断连恢复、停止释放后外部调试与恢复采集。",
+        "Audit #9修复后，在明确授权的占用/启动失败场景确认已有RTT历史保留及重试恢复；异常读取健康状态复用AUD-04的独立实机证据。"
       ],
       "expected": "各30分钟链路稳定，异常恢复和资源释放可核对；网页重复日志修复须完成交付验证。",
-      "lastResult": null
+      "lastResult": null,
+      "auditRefs": [
+        4,
+        9
+      ]
     },
     {
       "id": "AT-12",
@@ -407,6 +423,1076 @@
       ],
       "expected": "筛选组合及关联跳转正确，文字/证据路径可读；无隐式修改、网络依赖或设备操作。结果绑定页面展示的候选包，并在实际环境和证据中额外记录账本摘要及 Harness 源码提交。",
       "lastResult": null
+    },
+    {
+      "id": "AT-15",
+      "origin": "AUD-08",
+      "title": "修复 RTT 冒烟恒真断言回归",
+      "refs": [
+        "VIS-07",
+        "AC-14"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "正常预期文本通过，再故意改变实际文本确认冒烟非零失败。",
+        "分别核对绘图与 RTT 文本检查，不用自身值派生预期。"
+      ],
+      "expected": "正确文本通过、错误文本失败；证据说明本用例是显示断言，完整解码路径由 AT-17 覆盖。",
+      "lastResult": null,
+      "auditRefs": [
+        8
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Diagnostics/MainWindow.PresentationSmoke.cs:36",
+        "src/EmbeddedHelper.App/Diagnostics/MainWindow.PresentationSmoke.cs:44"
+      ]
+    },
+    {
+      "id": "AT-16",
+      "origin": "AUD-09",
+      "title": "保留 RTT 启动失败前的历史与状态回归",
+      "refs": [
+        "CON-03",
+        "VIS-07"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "预置 RTT 历史，注入启动失败及释放失败，核对文本、标志和按钮状态。",
+        "再成功启动、停止、重试，检查回调不会把 RTT 分派到变量页。"
+      ],
+      "expected": "失败不丢既有历史；成功边界行为明确；释放失败时仍禁止新连接。",
+      "lastResult": null,
+      "auditRefs": [
+        9
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Observation/MainWindow.Rtt.cs:50",
+        "src/EmbeddedHelper.Core/Observation/ObservationCoordinator.cs:46"
+      ]
+    },
+    {
+      "id": "AT-17",
+      "origin": "AUD-03",
+      "title": "防护异常 RTT Base64 事件回归",
+      "refs": [
+        "VIS-07",
+        "NFR-02"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "通过事件消费路径注入非法 Base64、空块、有效块及跨块 UTF-8。",
+        "连续发送坏块后发送合法块，核对历史、后续消费和诊断频率。"
+      ],
+      "expected": "不抛未处理异常或连续模态弹窗，后续合法文本正确；不能只直接赋值 TextBox 验证。",
+      "lastResult": null,
+      "auditRefs": [
+        3
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Observation/MainWindow.Observation.cs:201",
+        "src/EmbeddedHelper.Worker/Program.cs:61"
+      ]
+    },
+    {
+      "id": "AT-18",
+      "origin": "AUD-07",
+      "title": "消除同名编译单元的静态变量身份碰撞回归",
+      "refs": [
+        "VIS-02",
+        "VIS-04",
+        "PRJ-08"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "合成两个相同 DW_AT_name、不同 comp_dir 的 CU，各有同名静态变量。",
+        "在 readelf 两种 identity 模式、旧 watch 身份及歧义场景核对变量数量和地址。"
+      ],
+      "expected": "两个变量均可辨识，歧义显式诊断；旧配置能安全迁移或提示重新选择，不错误绑定。",
+      "lastResult": null,
+      "auditRefs": [
+        7
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Elf/ElfIndex.cs:76",
+        "src/EmbeddedHelper.Core/Elf/ElfIndex.cs:94",
+        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:92",
+        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:98",
+        "src/EmbeddedHelper.Core/Observation/ObservationPreparation.cs:59"
+      ]
+    },
+    {
+      "id": "AT-19",
+      "origin": "AUD-07",
+      "title": "双 CU 真实 ELF 与内置/readelf 一致性",
+      "refs": [
+        "VIS-02",
+        "VIS-04"
+      ],
+      "kind": "sample",
+      "method": "automated",
+      "environment": [
+        "尚待制作的双 CU ELF 碰撞夹具",
+        "可重现的 ARM 编译器及 readelf"
+      ],
+      "status": "blocked",
+      "reason": "现有复核只有合成 DWARF 文本复现，尚无满足碰撞条件的真实 ELF 夹具；本轮未制作。",
+      "resumeWhen": "取得或制作符合条件的真实 ELF、记录工具链和摘要后执行；修复回归须绑定包含 AUD-07 的候选。",
+      "steps": [
+        "制作可追溯的双 CU ELF，核对调试节实际具有同名 name、不同 comp_dir。",
+        "分别走内置与 readelf，比较变量数量、身份、地址及 watch 重开；保留样本摘要。"
+      ],
+      "expected": "真实 ELF 不崩溃、不静默丢变量，两后端结果及兼容策略一致；合成文本不能替代。",
+      "lastResult": null,
+      "auditRefs": [
+        7
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Elf/ElfIndex.cs:76",
+        "src/EmbeddedHelper.Core/Elf/ElfIndex.cs:94",
+        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:92",
+        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:98",
+        "src/EmbeddedHelper.Core/Observation/ObservationPreparation.cs:59"
+      ]
+    },
+    {
+      "id": "AT-20",
+      "origin": "AUD-02",
+      "title": "提供保留外部修改的事务结案入口回归",
+      "refs": [
+        "PRJ-07",
+        "AC-02"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "恢复冲突并验证 Apply 仍拒绝；分别测试恢复 Before、显式保留当前内容结案及取消。",
+        "核对重复结案、错误工程、并发改动、损坏日志和备份保留。"
+      ],
+      "expected": "只有安全恢复或明确结案才解除阻塞；原文件与外部修改不被静默覆盖，日志和诊断可追溯。",
+      "lastResult": null,
+      "auditRefs": [
+        2
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:24",
+        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:38",
+        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:50",
+        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:82",
+        "tests/EmbeddedHelper.Tests/ConfigurationTests.cs:49"
+      ]
+    },
+    {
+      "id": "AT-21",
+      "origin": "AUD-01",
+      "title": "区分工程祖先联接与工程内越界链接回归",
+      "refs": [
+        "PRJ-03",
+        "PRJ-07",
+        "NFR-07"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "在独有隔离目录建立普通工程及经祖先 junction 访问的同一工程，验证事务与工具计划。",
+        "覆盖工程内指向外部的链接、文件链接、边界相似路径和写前变化，确认外部文件摘要未变。"
+      ],
+      "expected": "支持工程祖先联接而不放宽工程内部边界；不能以停止全部链接检查代替修复。",
+      "lastResult": null,
+      "auditRefs": [
+        1
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:83",
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:84",
+        "src/EmbeddedHelper.Core/Tools/ProjectToolCache.cs:29"
+      ]
+    },
+    {
+      "id": "AT-22",
+      "origin": "AUD-06",
+      "title": "处理损坏归属记录的半加载状态回归",
+      "refs": [
+        "PRJ-04",
+        "REM-05"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "覆盖坏 JSON、未知 schema、缺少/错误类型字段及正常无归属记录。",
+        "核对工程切换、ELF只读查看、接入/移除禁用和修复后重新打开，比较原文件摘要。"
+      ],
+      "expected": "失败状态可解释、无半加载误导；只读降级不授予写入权限，原有配置不变。",
+      "lastResult": null,
+      "auditRefs": [
+        6
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Projects/VsCodeIntegration.cs:12",
+        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:63",
+        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:86",
+        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:109"
+      ]
+    },
+    {
+      "id": "AT-23",
+      "origin": "AUD-04",
+      "title": "升级持续全轮读取失败的健康状态回归",
+      "refs": [
+        "CON-03",
+        "CON-05",
+        "VIS-10"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "用受控 SDK/采样替身覆盖单个坏地址、短暂全失败、持续全失败及恢复。",
+        "覆盖 RTT-only 无变量、RTT 空闲、停止/重试和释放失败。"
+      ],
+      "expected": "持续无有效读取有明确健康升级，局部失败及空闲 RTT 不被误杀；事件不断不能被当作数据正常。",
+      "lastResult": null,
+      "auditRefs": [
+        4
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Worker/Program.cs:55",
+        "src/EmbeddedHelper.Worker/Program.cs:128",
+        "src/EmbeddedHelper.Core/Observation/Observation.cs:109"
+      ]
+    },
+    {
+      "id": "AT-24",
+      "origin": "AUD-04",
+      "title": "真实目标异常时的 SDK 行为与恢复",
+      "refs": [
+        "CON-03",
+        "CON-05",
+        "AC-05"
+      ],
+      "kind": "hardware",
+      "method": "manual",
+      "environment": [
+        "已确认状态的目标板/J-Link与匹配ELF",
+        "授权的断连/恢复测试窗口"
+      ],
+      "status": "blocked",
+      "reason": "尚无当前候选下该异常分支的实机记录，设备状态和允许的故障注入方式待确认。",
+      "resumeWhen": "设备与测试窗口就绪并明确本次操作范围后执行；修复复验使用包含 AUD-04 的候选。",
+      "steps": [
+        "先确认板卡、固件、DLL版本及授权允许的断连方式，记录正常采样。",
+        "分别验证 RTT 关闭/开启时异常；记录 SDK 返回不完整、阻塞或退出的实际分支。",
+        "核对故障提示、停止释放、外部工具可用及重连；与 AT-11 复用适用证据。"
+      ],
+      "expected": "用真实 SDK 证实触发分支和恢复边界，不能把静态推断记成拔线实测。",
+      "lastResult": null,
+      "auditRefs": [
+        4
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Worker/Program.cs:55",
+        "src/EmbeddedHelper.Worker/Program.cs:128",
+        "src/EmbeddedHelper.Core/Observation/Observation.cs:109"
+      ]
+    },
+    {
+      "id": "AT-25",
+      "origin": "AUD-26",
+      "title": "校验全部通过后再注册远端版本回归",
+      "refs": [
+        "REL-06",
+        "REL-07"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "用独立进程/离线响应构造格式合法但附件大小、digest或标签提交不符的候选。",
+        "每次刷新失败后检查 Available/Find/Save，再验证合法新版本和同版本冲突。"
+      ],
+      "expected": "被拒绝候选从未进入可信目录或持久化，既有可信版本不受影响；本项不要求改变整次刷新失败策略。",
+      "lastResult": null,
+      "auditRefs": [
+        26
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:42",
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:49",
+        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:51",
+        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:62",
+        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:22"
+      ]
+    },
+    {
+      "id": "AT-26",
+      "origin": "AUD-27",
+      "title": "保留 YAML 换行并补齐插入校验回归",
+      "refs": [
+        "PRJ-06",
+        "REM-02"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "分别用 CRLF/LF、有/无末尾换行的 YAML 删除带行尾注释的字段，比较未修改区域字节。",
+        "对空标量父节点和缺失父节点插入、回读、移除，覆盖注释及复杂语法拒绝。"
+      ],
+      "expected": "换行和未知内容保留，生成结果可重解析且值一致；失败不写原文件。",
+      "lastResult": null,
+      "auditRefs": [
+        27
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:89",
+        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:94",
+        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:112"
+      ]
+    },
+    {
+      "id": "AT-27",
+      "origin": "AUD-10",
+      "title": "将串口设备枚举移出界面线程回归",
+      "refs": [
+        "SER-02",
+        "NFR-02"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "注入慢枚举和权限失败，核对主界面持续响应、重复刷新结果有序。",
+        "覆盖关闭窗口、保留手选COM、友好名称PortName提取与未知名称。"
+      ],
+      "expected": "枚举不阻塞UI，迟到结果不更新已关闭窗口，不自动换端口或建立串口连接。",
+      "lastResult": null,
+      "auditRefs": [
+        10
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Serial/SerialPortDiscovery.cs:20",
+        "src/EmbeddedHelper.App/Features/Serial/MainWindow.Serial.cs:29",
+        "src/EmbeddedHelper.App/MainWindow.xaml.cs:47"
+      ]
+    },
+    {
+      "id": "AT-28",
+      "origin": "AUD-15",
+      "title": "区分无可观察变量与 readelf 工具错误回归",
+      "refs": [
+        "VIS-02",
+        "PRJ-04"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "分别输入未找到固定地址变量、工具缺失、执行失败、调试信息损坏、权限及超限错误。",
+        "核对分类、下一步动作及原始详情一致。"
+      ],
+      "expected": "不同原因给出可行动的准确说明，不能仅删除分支或断言非空。",
+      "lastResult": null,
+      "auditRefs": [
+        15
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Services/ElfParseFeedback.cs:23",
+        "src/EmbeddedHelper.App/Services/ElfParseFeedback.cs:31",
+        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:97"
+      ]
+    },
+    {
+      "id": "AT-29",
+      "origin": "AUD-05",
+      "title": "明确自动升版等级的使用与失败提示回归",
+      "refs": [
+        "REL-10",
+        "NFR-05"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "在独立 Git 仓库测试默认环境 feat/feat! 失败、显式等级通过、提前升版通过。",
+        "核对重试、索引与工作树VERSION冲突和实际提示。"
+      ],
+      "expected": "等级不足明确说明恢复方式，不暗示自动从提交消息回溯改写prepare；原版本门仍有效。",
+      "lastResult": null,
+      "auditRefs": [
+        5
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "scripts/version_guard.py:117",
+        "scripts/version_guard.py:101",
+        ".agents/workflows/change-test-deliver.md:3",
+        "tests/test_version_guard.py:1"
+      ]
+    },
+    {
+      "id": "AT-30",
+      "origin": "AUD-16",
+      "title": "核对成品清单的实际运行时版本回归",
+      "refs": [
+        "REL-09",
+        "REL-11"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "核对固定运行时属性、publish产物和清单三者。",
+        "在隔离输入中制造运行时不一致，确认生成/校验明确失败。"
+      ],
+      "expected": "一致值被记录，漂移被阻断，SDK版本与运行时版本不混淆。",
+      "lastResult": null,
+      "auditRefs": [
+        16
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "scripts/package_client.py:247",
+        "Directory.Build.props:10"
+      ]
+    },
+    {
+      "id": "AT-31",
+      "origin": "AUD-17",
+      "title": "明确缺失便携运行目录的打包诊断回归",
+      "refs": [
+        "REL-11"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "隔离构造零匹配、单匹配及多匹配运行目录。",
+        "核对首次和搬迁阶段失败诊断、退出码与证据状态。"
+      ],
+      "expected": "异常清楚可定位，不把已失败启动归因为目录查找，也不留下假通过。",
+      "lastResult": null,
+      "auditRefs": [
+        17
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "scripts/package_client.py:152",
+        "scripts/package_client.py:184"
+      ]
+    },
+    {
+      "id": "AT-32",
+      "origin": "AUD-21",
+      "title": "提供端口及工程字段的明确输入错误回归",
+      "refs": [
+        "PRJ-04",
+        "REM-03"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "输入空/非数字/越界探针端口和GDB端口，核对错误位置及磁盘未变。",
+        "输入缺folders/path/configurations或类型错误的工程文件，核对具体诊断和未知字段保留。"
+      ],
+      "expected": "用户能定位无效输入，失败不写配置、不泄露未处理异常；有效端口仍可用。",
+      "lastResult": null,
+      "auditRefs": [
+        21
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:23",
+        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:60",
+        "src/EmbeddedHelper.Core/Projects/ProjectReader.cs:36",
+        "src/EmbeddedHelper.Core/Projects/VsCodeIntegration.cs:72"
+      ]
+    },
+    {
+      "id": "AT-33",
+      "origin": "AUD-25",
+      "title": "统一分道缩放阈值的提示语义回归",
+      "refs": [
+        "VIS-04"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "分别选择1、2、3个变量，核对分道可用性、自动切回和禁用时悬停说明。",
+        "确认说明与阈值一致，保留通知及目录发布契约测试。"
+      ],
+      "expected": "2个仍可分道，超过2个禁止，提示准确；本项仅修语义矛盾。",
+      "lastResult": null,
+      "auditRefs": [
+        25
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Observation/ObservationViewModel.cs:50",
+        "tests/EmbeddedHelper.Tests/PlotAxisTests.cs:44",
+        ".docs/01_需求规格说明书.md:127"
+      ]
+    },
+    {
+      "id": "AT-34",
+      "origin": "AUD23-01",
+      "title": "保留控制通道失败的退出原因回归",
+      "refs": [
+        "CON-03",
+        "NFR-02",
+        "NFR-04"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "受控进程/SDK替身注入非法计划、超长控制行及正常EOF。",
+        "核对exitCode、stderr、父进程可见原因、释放后重试。"
+      ],
+      "expected": "协议错误不会伪装正常退出，正常停止不误报，释放顺序保持。",
+      "lastResult": null,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Worker/Program.cs:38",
+        "src/EmbeddedHelper.Worker/Program.cs:65",
+        "src/EmbeddedHelper.Core/Observation/Observation.cs:79"
+      ]
+    },
+    {
+      "id": "AT-35",
+      "origin": "AUD23-02",
+      "title": "避免日志权限失败掩盖原始错误回归",
+      "refs": [
+        "NFR-04",
+        "PRJ-04"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "在隔离日志目标模拟权限拒绝与文件占用，再触发原始业务错误。",
+        "核对日志恢复后的行为和原始原因显示。"
+      ],
+      "expected": "日志故障不引发二次未处理异常或遮蔽原始错误；业务失败仍可见。",
+      "lastResult": null,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/MainWindow.xaml.cs:55",
+        "src/EmbeddedHelper.App/MainWindow.xaml.cs:62",
+        "src/EmbeddedHelper.App/App.xaml.cs:15",
+        "src/EmbeddedHelper.Core/Runtime/PortableData.cs:33"
+      ]
+    },
+    {
+      "id": "AT-36",
+      "origin": "AUD23-03",
+      "title": "补全入口帮助与非法预览参数反馈回归",
+      "refs": [
+        "NFR-05",
+        "PRJ-04"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "离线检查帮助、非法命令、elf夹具解析和错误退出；不调用网络refresh或设备命令。",
+        "对plot-preview覆盖非数字、0、17及1/16合法边界，核对反馈。"
+      ],
+      "expected": "帮助与实现一致，错误输入可行动且退出结果明确；既有CLI成品自检不再笼统称为零测试。",
+      "lastResult": null,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Cli/Program.cs:12",
+        "src/EmbeddedHelper.Cli/Program.cs:54",
+        "src/EmbeddedHelper.App/App.xaml.cs:27"
+      ]
+    },
+    {
+      "id": "AT-37",
+      "origin": "AUD23-04",
+      "title": "使语法与旧证据清理失败可追溯回归",
+      "refs": [
+        "NFR-05",
+        "REL-11"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "隔离Python输入制造语法错误，确认非零和具体定位。",
+        "模拟旧run.json损坏、旧目录占用/删除失败和正常清理，核对run/latest/退出码一致及新证据保留。"
+      ],
+      "expected": "失败来源明确，证据与退出状态一致；清理仍限定本次管理目录。",
+      "lastResult": null,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "scripts/verify.py:258",
+        "scripts/gui_smoke.py:130",
+        "scripts/gui_smoke.py:137",
+        "scripts/gui_smoke.py:146"
+      ]
+    },
+    {
+      "id": "AT-38",
+      "origin": "AUD-11",
+      "title": "大变量集下的刷新开销测量",
+      "refs": [
+        "NFR-02",
+        "NFR-03",
+        "VIS-10"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "在离线合成输入下测试典型与数千变量、200Hz及支持上限1000Hz请求；记录实际消费率。",
+        "测量Tick耗时分布、字典分配/GC、ELF元数据访问及UI响应，分别报告本地路径和可控慢路径。"
+      ],
+      "expected": "形成可重现测量与是否超过现有预算的结论；只有证实退化才另立优化，不直接新增缓存或承诺实际1000Hz吞吐。",
+      "lastResult": null,
+      "auditRefs": [
+        11
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Observation/MainWindow.Observation.cs:183",
+        "src/EmbeddedHelper.App/Features/Observation/MainWindow.Observation.cs:219"
+      ]
+    },
+    {
+      "id": "AT-39",
+      "origin": "AUD-18",
+      "title": "真实进程协议、看门狗与强制回收分支",
+      "refs": [
+        "CON-03",
+        "NFR-02"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "使用受控假子进程覆盖错误SessionId、超过1MiB输出行、计划代次未确认与静默超时。",
+        "验证faulted后停止/重试的Dispose路径，子进程不响应EOF时强制回收；记录进程ID和退出结果。"
+      ],
+      "expected": "指定分支有行为回归且无遗留进程；15秒看门狗只标故障，不误称立即Kill。保留已有真实Worker非零退出及重试测试。",
+      "lastResult": null,
+      "auditRefs": [
+        18
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Observation/Observation.cs:67",
+        "src/EmbeddedHelper.Core/Observation/Observation.cs:109",
+        "src/EmbeddedHelper.Core/Observation/Observation.cs:148",
+        "tests/EmbeddedHelper.Tests/ObservationTests.cs:57"
+      ]
+    },
+    {
+      "id": "AT-40",
+      "origin": "AUD-18",
+      "title": "新脚本包缓存、来源记录与目录校验",
+      "refs": [
+        "REL-03",
+        "REL-07"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "分别篡改本机缓存入口/依赖、installed.json版本/提交/摘要，验证Resolve拒绝且不覆盖现场。",
+        "构造缺文件、错VERSION、非UTF-8、大小上限及非法来源清单，验证Install/FromManifest拒绝。",
+        "覆盖Catalog.Load来源/数量/容量及同版本冲突；注册时机另由AUD-26验收。"
+      ],
+      "expected": "关键拒绝分支被验证，既有工程脚本篡改与事务回滚测试继续保留；旧EXE文件清单不用于新脚本包。",
+      "lastResult": null,
+      "auditRefs": [
+        18
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:105",
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:127",
+        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:10",
+        "tests/EmbeddedHelper.Tests/ProjectToolTests.cs:26"
+      ]
+    },
+    {
+      "id": "AT-41",
+      "origin": "AUD-18",
+      "title": "JSONC边界与全新远程配置创建",
+      "refs": [
+        "PRJ-06",
+        "REM-04"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "覆盖根重复键拒绝、嵌套同名键不替换及末尾注释无逗号的插入；比较未修改内容并重解析。",
+        "复制工程后移除所有远程配置，从不存在路径生成并应用计划，检查必填字段、重读和幂等。"
+      ],
+      "expected": "边界结果正确，失败不改原文件；目前是缺定向回归，不声称已写坏配置。现有新路径识别测试随后创建旧配置，不能代替全新创建。",
+      "lastResult": null,
+      "auditRefs": [
+        18
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Configuration/JsonEdit.cs:14",
+        "src/EmbeddedHelper.Core/Configuration/JsonEdit.cs:20",
+        "src/EmbeddedHelper.Core/Configuration/RemoteConfiguration.cs:19",
+        "tests/EmbeddedHelper.Tests/ProjectToolTests.cs:52"
+      ]
+    },
+    {
+      "id": "AT-42",
+      "origin": "AUD-18",
+      "title": "探针枚举辅助进程超时回收",
+      "refs": [
+        "CON-03",
+        "NFR-02"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "用不访问SDK的受控子进程模拟不退出、stderr失败和合法空列表。",
+        "验证8秒超时后的Kill/等待及进程清理，重复执行确认可重试。"
+      ],
+      "expected": "超时错误明确，本次子进程确实退出，不连接或枚举真实设备。",
+      "lastResult": null,
+      "auditRefs": [
+        18
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Observation/ProbeDiscoveryProcess.cs:29",
+        "src/EmbeddedHelper.Core/Observation/ProbeDiscoveryProcess.cs:39"
+      ]
+    },
+    {
+      "id": "AT-43",
+      "origin": "AUD-18",
+      "title": "合法x64原生DLL导出表静态检查正例",
+      "refs": [
+        "CON-01",
+        "AC-07"
+      ],
+      "kind": "sample",
+      "method": "automated",
+      "environment": [
+        "可追溯的合法x64原生DLL样本",
+        "离线静态PE检查入口"
+      ],
+      "status": "blocked",
+      "reason": "现有正向发现测试注入Accept，尚未为本回归固定合法原生DLL样本及摘要；不是断言本机没有安装J-Link。",
+      "resumeWhen": "选定可合法使用的样本或制作原生导出夹具后，只读静态检查，不加载SDK。",
+      "steps": [
+        "选定可追溯官方x64 DLL或具备所需导出表的原生测试夹具，记录摘要。",
+        "仅调用静态Inspect并核对版本、位数、导出表结论，同时保留托管/错误架构反例。"
+      ],
+      "expected": "真实静态解析正分支通过；注入Accept函数、加载库或连接探针不能替代本项。",
+      "lastResult": null,
+      "auditRefs": [
+        18
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "tests/EmbeddedHelper.Tests/ToolDiscoveryTests.cs:64",
+        "src/EmbeddedHelper.Core/ToolDiscovery.cs:109"
+      ]
+    },
+    {
+      "id": "AT-44",
+      "origin": "AUD-18",
+      "title": "采集导出拒绝结束后数据与非递增序号",
+      "refs": [
+        "VIS-09"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "在隔离记录中插入结束标记后的数据、重复和倒退序号。",
+        "预置目标xlsx，检查失败后原记录和已有导出摘要、临时文件与可行动诊断。"
+      ],
+      "expected": "两个指定分支明确拒绝，原文件不损坏；不重复将已覆盖的空记录/不完整记录称为缺口。",
+      "lastResult": null,
+      "auditRefs": [
+        18
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Observation/ObservationRecording.cs:63",
+        "src/EmbeddedHelper.Core/Observation/ObservationRecording.cs:101",
+        "tests/EmbeddedHelper.Tests/ObservationRecordingTests.cs:70"
+      ]
+    },
+    {
+      "id": "AT-45",
+      "origin": "AUD-22",
+      "title": "工具准备中断与崩溃残留边界",
+      "refs": [
+        "REL-07",
+        "PRJ-07"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "在隔离data和自有进程测试普通下载/安装异常的finally清理，再在明确阶段强制结束自有进程。",
+        "记录.download ZIP和.install目录残留、并发占用及后续重试；工程写入检查当前ConfigTransaction恢复，不再寻找已删除的.prepare目录。"
+      ],
+      "expected": "区分正常异常清理和崩溃残留，量化恢复影响后再决定清理任务；新脚本包上限为ZIP 2MiB、展开8MiB，不沿用128/512MiB旧结论。",
+      "lastResult": null,
+      "auditRefs": [
+        22
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:65",
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:89",
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:115",
+        "src/EmbeddedHelper.App/Services/ToolPreparationService.cs:39",
+        "src/EmbeddedHelper.Core/Tools/ProjectToolCache.cs:26"
+      ]
+    },
+    {
+      "id": "AT-46",
+      "origin": "AUD-23",
+      "title": "显式冒烟设置故障注入的中断恢复",
+      "refs": [
+        "REL-01",
+        "PRJ-10"
+      ],
+      "kind": "software",
+      "method": "automated",
+      "environment": [
+        "Windows 离线隔离副本",
+        "与所验候选源码一致的测试构建；不连接硬件"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "只在完整隔离运行副本准备独有设置，定位移动设置到备份及恢复的阶段。",
+        "测试正常异常恢复和强制结束自有冒烟进程后的备份/目录状态，记录可恢复步骤；不对用户安装运行--smoke。"
+      ],
+      "expected": "确定显式诊断入口的恢复边界；已有finally恢复保留，不把崩溃窗口夸大为正常启动必然丢设置。发现实际不可恢复再立修复。",
+      "lastResult": null,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Diagnostics/MainWindow.LocalToolsSmoke.cs:36",
+        "src/EmbeddedHelper.App/Diagnostics/MainWindow.LocalToolsSmoke.cs:44"
+      ]
     }
   ]
 }

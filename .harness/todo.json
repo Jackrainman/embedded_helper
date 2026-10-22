@@ -19,6 +19,633 @@
       "doneWhen": "定位已有隔离修复并完成评审合入；在获得具体部署授权及环境后部署，留下版本证据。实机验收单独由AT-10/AT-11记录。",
       "reason": "",
       "resumeWhen": ""
+    },
+    {
+      "id": "AUD-08",
+      "title": "第1批 · 修复 RTT 冒烟恒真断言（Audit #8）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "App/Diagnostics",
+      "refs": [
+        "VIS-07",
+        "AC-14"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-15"
+      ],
+      "doneWhen": "触发：RTT 文本与自身比较，内容错误仍不使该断言失败。完成：改为独立预期并证明错误文本能使冒烟失败；保留绘图断言。仅修此断言不宣称 Worker 到显示整条链路通过。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 1,
+      "auditRefs": [
+        8
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Diagnostics/MainWindow.PresentationSmoke.cs:36",
+        "src/EmbeddedHelper.App/Diagnostics/MainWindow.PresentationSmoke.cs:44"
+      ]
+    },
+    {
+      "id": "AUD-09",
+      "title": "第1批 · 保留 RTT 启动失败前的历史与状态（Audit #9）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "App/RTT",
+      "refs": [
+        "CON-03",
+        "VIS-07"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-16"
+      ],
+      "doneWhen": "触发：StartAsync 前置位 rttSession 并清历史，启动异常后仅复位 preparing。完成：核对启动期间 Changed 回调，失败恢复原会话标志及历史，在成功边界处理清屏；保留 Coordinator 已有释放/重试约束，不把标志机械后移。离线失败注入通过，实机占用场景另由 AT-11 补验。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 1,
+      "auditRefs": [
+        9
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Observation/MainWindow.Rtt.cs:50",
+        "src/EmbeddedHelper.Core/Observation/ObservationCoordinator.cs:46"
+      ]
+    },
+    {
+      "id": "AUD-03",
+      "title": "第1批 · 防护异常 RTT Base64 事件（Audit #3）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "App/Observation",
+      "refs": [
+        "VIS-07",
+        "NFR-02"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-17"
+      ],
+      "doneWhen": "触发：协议注入非法 RttBase64 时 Convert.FromBase64String 异常逃出 Tick；同包正常 Worker 目前生成合法 Base64。完成：在输入边界处理格式错误并给出有界诊断，继续消费后续合法事件；覆盖跨块 UTF-8 和连续坏事件。不把协议防御缺口描述为已复现的正常采集故障。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 1,
+      "auditRefs": [
+        3
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Observation/MainWindow.Observation.cs:201",
+        "src/EmbeddedHelper.Worker/Program.cs:61"
+      ]
+    },
+    {
+      "id": "AUD-07",
+      "title": "第2批 · 消除同名编译单元的静态变量身份碰撞（Audit #7）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "Core/ELF",
+      "refs": [
+        "VIS-02",
+        "VIS-04",
+        "PRJ-08"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-18",
+        "AT-19"
+      ],
+      "doneWhen": "触发：两个 CU 的 DW_AT_name 相同、comp_dir 不同且有同名静态变量时身份重复；readelf 去重丢变量，内置结果后续字典可能失败。完成：两后端采用一致且可追溯的 CU 身份，保留全部变量或明确报告歧义，处理既有 watch identity 兼容；不得静默选错地址。合成文本及真实双 CU 夹具均有回归，缺夹具时保留未验状态。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 2,
+      "auditRefs": [
+        7
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Elf/ElfIndex.cs:76",
+        "src/EmbeddedHelper.Core/Elf/ElfIndex.cs:94",
+        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:92",
+        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:98",
+        "src/EmbeddedHelper.Core/Observation/ObservationPreparation.cs:59"
+      ]
+    },
+    {
+      "id": "AUD-02",
+      "title": "第2批 · 提供保留外部修改的事务结案入口（Audit #2）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "Core/Configuration + App/Remote",
+      "refs": [
+        "PRJ-07",
+        "AC-02"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-20",
+        "AT-03"
+      ],
+      "doneWhen": "触发：恢复时保留外部内容会留下 conflict，后续 Apply 被阻止，UI 无保留现状结案入口；恢复 Before 后能解除，不是永久锁死。完成：加入用户明确选择的保留现状结案语义，校验工程身份、并发状态并保留证据；自动恢复不放弃冲突，不删除日志假装修好。异常日志须指明文件且不绕过待处理状态。离线回归通过，界面入口另见 AT-03。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 2,
+      "auditRefs": [
+        2
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:24",
+        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:38",
+        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:50",
+        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:82",
+        "tests/EmbeddedHelper.Tests/ConfigurationTests.cs:49"
+      ]
+    },
+    {
+      "id": "AUD-01",
+      "title": "第2批 · 区分工程祖先联接与工程内越界链接（Audit #1）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "Core/Configuration",
+      "refs": [
+        "PRJ-03",
+        "PRJ-07",
+        "NFR-07"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-21"
+      ],
+      "doneWhen": "触发：CheckPath 一直检查到文件系统根，工程祖先是目录联接时也被拒绝。完成：明确实际工程根及链接边界，允许受支持的联接祖先访问，继续拒绝工程内逃逸、文件链接及路径竞争；Portable 运行目录策略单独保留。Windows 正反例通过。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 2,
+      "auditRefs": [
+        1
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:83",
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:84",
+        "src/EmbeddedHelper.Core/Tools/ProjectToolCache.cs:29"
+      ]
+    },
+    {
+      "id": "AUD-06",
+      "title": "第2批 · 处理损坏归属记录的半加载状态（Audit #6）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "App/Project + Core/Projects",
+      "refs": [
+        "PRJ-04",
+        "REM-05"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-22",
+        "AT-03"
+      ],
+      "doneWhen": "触发：integration.json 无效时，工程与连接已更新但加载后半段中断。完成：区分无记录与记录不可读，显示具体文件原因并保持一致的只读工程状态；不可读期间阻止接入/移除写入，修复文件后可重读。不得把异常返回 null 当作新工程。界面反馈由 AT-03 验收。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 2,
+      "auditRefs": [
+        6
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Projects/VsCodeIntegration.cs:12",
+        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:63",
+        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:86",
+        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:109"
+      ]
+    },
+    {
+      "id": "AUD-04",
+      "title": "第2批 · 升级持续全轮读取失败的健康状态（Audit #4）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "Worker/Observation",
+      "refs": [
+        "CON-03",
+        "CON-05",
+        "VIS-10"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-23",
+        "AT-24"
+      ],
+      "doneWhen": "触发：SDK 持续返回不完整读取且 RTT 未启用时仍持续发 sample，无事件看门狗无法发现采样已失效。完成：明确持续失败时间/阈值及恢复规则，区别单地址失败、全轮失败和 RTT-only，给出可重试故障并按既有生命周期释放；单次失败不得强退。离线注入和真实断连分别验收。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 2,
+      "auditRefs": [
+        4
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Worker/Program.cs:55",
+        "src/EmbeddedHelper.Worker/Program.cs:128",
+        "src/EmbeddedHelper.Core/Observation/Observation.cs:109"
+      ]
+    },
+    {
+      "id": "AUD-26",
+      "title": "第3批 · 校验全部通过后再注册远端版本（Audit #26）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "Core/Tools",
+      "refs": [
+        "REL-06",
+        "REL-07"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-25"
+      ],
+      "doneWhen": "触发：新实现 FromManifest 在附件/标签核验前 Register；后续刷新抛错仍污染进程内 Available，之后 Save 可持久化。完成：解析与接纳分离，完整来源/附件/标签核验后再注册；失败候选不能进入内存可选目录或后续保存。保留同版本冲突和坏包拒绝，不改成静默 continue；更新依赖 FromManifest 注册副作用的测试夹具。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        26
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:42",
+        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:49",
+        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:51",
+        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:62",
+        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:22"
+      ]
+    },
+    {
+      "id": "AUD23-01",
+      "title": "第3批 · 保留控制通道失败的退出原因（Audit #23）",
+      "status": "todo",
+      "priority": "P1",
+      "component": "Worker/Protocol",
+      "refs": [
+        "CON-03",
+        "NFR-02",
+        "NFR-04"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-34"
+      ],
+      "doneWhen": "触发：控制请求解析异常只写stderr并取消，主循环返回0，父进程按正常退出分支忽略原因。完成：区分正常EOF/停止与控制协议错误，错误返回非零并传到父进程可恢复状态，正常停止保持成功退出；离线测试先行，不声称已测真实SDK。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Worker/Program.cs:38",
+        "src/EmbeddedHelper.Worker/Program.cs:65",
+        "src/EmbeddedHelper.Core/Observation/Observation.cs:79"
+      ]
+    },
+    {
+      "id": "AUD-27",
+      "title": "第3批 · 保留 YAML 换行并补齐插入校验（Audit #27）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "Core/EIDE",
+      "refs": [
+        "PRJ-06",
+        "REM-02"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-26"
+      ],
+      "doneWhen": "触发：删除字段保留注释时硬编码 LF；空标量父节点插入未执行相邻分支的回读校验。完成：删除注释保留原换行风格，空父节点插入完成后验证语义；覆盖无末尾换行和未知字段。明确混合换行为已确认问题，未宣称空父节点已产生坏 YAML。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        27
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:89",
+        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:94",
+        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:112"
+      ]
+    },
+    {
+      "id": "AUD-10",
+      "title": "第3批 · 将串口设备枚举移出界面线程（Audit #10）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "App/Serial",
+      "refs": [
+        "SER-02",
+        "NFR-02"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-27"
+      ],
+      "doneWhen": "触发：窗口构造和刷新事件同步遍历注册表设备树，耗时尚未量化。完成：后台只枚举数据，UI线程应用结果；处理重复刷新、选择保留及关闭时迟到结果。用受控慢枚举验证响应，不杜撰当前耗时；不打开COM。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        10
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Serial/SerialPortDiscovery.cs:20",
+        "src/EmbeddedHelper.App/Features/Serial/MainWindow.Serial.cs:29",
+        "src/EmbeddedHelper.App/MainWindow.xaml.cs:47"
+      ]
+    },
+    {
+      "id": "AUD-15",
+      "title": "第3批 · 区分无可观察变量与 readelf 工具错误（Audit #15）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "App/ELF feedback",
+      "refs": [
+        "VIS-02",
+        "PRJ-04"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-28",
+        "AT-03"
+      ],
+      "doneWhen": "触发：readelf 未找到固定地址变量被优先分类为工具缺失/执行失败，summary/action规则重复。完成：统一错误分类且保留详细异常，变量缺失提示检查调试信息而不是错误引导安装工具；覆盖文件权限、缺工具和格式错误，实际反馈复用 AT-03。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        15
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Services/ElfParseFeedback.cs:23",
+        "src/EmbeddedHelper.App/Services/ElfParseFeedback.cs:31",
+        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:97"
+      ]
+    },
+    {
+      "id": "AUD-05",
+      "title": "第3批 · 明确自动升版等级的使用与失败提示（Audit #5）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "Harness/version",
+      "refs": [
+        "REL-10",
+        "NFR-05"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-29"
+      ],
+      "doneWhen": "触发：未预先选择等级时 prepare 默认 patch，随后 feat/feat! 校验可能失败；已有预升版路径可通过。完成：提示正确的等级设置/预升版及失败后状态处理，统一文档承诺；保留拒绝低版本和未暂存VERSION冲突，不能绕过钩子。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        5
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "scripts/version_guard.py:117",
+        "scripts/version_guard.py:101",
+        ".agents/workflows/change-test-deliver.md:3",
+        "tests/test_version_guard.py:1"
+      ]
+    },
+    {
+      "id": "AUD-16",
+      "title": "第3批 · 核对成品清单的实际运行时版本（Audit #16）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "Harness/package",
+      "refs": [
+        "REL-09",
+        "REL-11"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-30"
+      ],
+      "doneWhen": "触发：清单另写 runtime 常量，当前与显式 RuntimeFrameworkVersion 相同，但以后修改运行时可能漂移。完成：从权威运行时属性/实际publish产物取值或强制一致校验，覆盖人为不一致；不能用 global.json 的SDK版本代替运行时，不宣称当前包清单已错。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        16
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "scripts/package_client.py:247",
+        "Directory.Build.props:10"
+      ]
+    },
+    {
+      "id": "AUD-17",
+      "title": "第3批 · 明确缺失便携运行目录的打包诊断（Audit #17）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "Harness/package",
+      "refs": [
+        "REL-11"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-31"
+      ],
+      "doneWhen": "触发：运行目录glob无匹配时 next 抛裸 StopIteration；前置启动非零本来就由check=True阻断。完成：首次/搬迁目录零匹配或歧义时明确报告阶段和预期路径，非零退出且不产出通过证据；保留实际成品启动检查。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        17
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "scripts/package_client.py:152",
+        "scripts/package_client.py:184"
+      ]
+    },
+    {
+      "id": "AUD-21",
+      "title": "第3批 · 提供端口及工程字段的明确输入错误（Audit #21）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "App/Remote + Core/Projects",
+      "refs": [
+        "PRJ-04",
+        "REM-03"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-32",
+        "AT-03"
+      ],
+      "doneWhen": "触发：端口int.Parse和必要字段GetProperty直接抛通用异常，未指出应修改的字段。完成：校验空值、类型及端口范围，返回中文字段/文件定位并阻止无效写入；保留未知字段。仅纳入可见诊断，撤回对 Wait+TryWrite 队列模式的指认。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        21
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:23",
+        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:60",
+        "src/EmbeddedHelper.Core/Projects/ProjectReader.cs:36",
+        "src/EmbeddedHelper.Core/Projects/VsCodeIntegration.cs:72"
+      ]
+    },
+    {
+      "id": "AUD-25",
+      "title": "第3批 · 统一分道缩放阈值的提示语义（Audit #25）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "App/Observation + requirements",
+      "refs": [
+        "VIS-04"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-33",
+        "AT-04"
+      ],
+      "doneWhen": "触发：实际允许两个及以下变量，提示和需求中的字面文案却写少于2个。完成：保持两个及以下的行为，统一需求、提示及真实反馈断言为不超过两个；保留PropertyChanged去重测试和发布门目录模式，不以非空断言弱化覆盖。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        25
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/Features/Observation/ObservationViewModel.cs:50",
+        "tests/EmbeddedHelper.Tests/PlotAxisTests.cs:44",
+        ".docs/01_需求规格说明书.md:127"
+      ]
+    },
+    {
+      "id": "AUD23-02",
+      "title": "第3批 · 避免日志权限失败掩盖原始错误（Audit #23）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "App/Diagnostics",
+      "refs": [
+        "NFR-04",
+        "PRJ-04"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-35"
+      ],
+      "doneWhen": "触发：记录日志只捕获IOException，UnauthorizedAccessException可从错误处理路径再抛出。完成：对日志落盘失败作有限降级，仍呈现原始操作错误；不广泛吞掉产品业务异常，不修改用户目录权限。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.App/MainWindow.xaml.cs:55",
+        "src/EmbeddedHelper.App/MainWindow.xaml.cs:62",
+        "src/EmbeddedHelper.App/App.xaml.cs:15",
+        "src/EmbeddedHelper.Core/Runtime/PortableData.cs:33"
+      ]
+    },
+    {
+      "id": "AUD23-03",
+      "title": "第3批 · 补全入口帮助与非法预览参数反馈（Audit #23）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "CLI + App/diagnostic entry",
+      "refs": [
+        "NFR-05",
+        "PRJ-04"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-36"
+      ],
+      "doneWhen": "触发：CLI帮助遗漏tool list/refresh；非法plot-preview参数落到无明确提示的窗口。完成：帮助涵盖实际可用命令，非法预览输入明确拒绝/诊断；保持设备命令必须显式触发，正常启动及合法预览不变。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "src/EmbeddedHelper.Cli/Program.cs:12",
+        "src/EmbeddedHelper.Cli/Program.cs:54",
+        "src/EmbeddedHelper.App/App.xaml.cs:27"
+      ]
+    },
+    {
+      "id": "AUD23-04",
+      "title": "第3批 · 使语法与旧证据清理失败可追溯（Audit #23）",
+      "status": "todo",
+      "priority": "P2",
+      "component": "Harness/diagnostics",
+      "refs": [
+        "NFR-05",
+        "REL-11"
+      ],
+      "dependsOn": [],
+      "testIds": [
+        "AT-37"
+      ],
+      "doneWhen": "触发：Python语法错误直接逸出；GUI成功证据落盘后旧记录读取/清理失败可抛异常而未写明收尾失败。完成：语法错误给出文件行和非零结果；区分GUI验证与证据维护结果，旧记录损坏/占用时保留新证据和失败原因，不能静默算整体通过或误删其他目录。",
+      "reason": "",
+      "resumeWhen": "",
+      "batch": 3,
+      "auditRefs": [
+        23
+      ],
+      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+      "sourceEvidence": [
+        "scripts/verify.py:258",
+        "scripts/gui_smoke.py:130",
+        "scripts/gui_smoke.py:137",
+        "scripts/gui_smoke.py:146"
+      ]
+    }
+  ],
+  "auditImport": {
+    "document": "../AUDIT.md",
+    "sha256": "e5c78ffa8325a480661da7adc986683ba4b5836f6b097e7a64259adc67308904",
+    "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
+    "reviewedOn": "2026-10-22",
+    "method": "对照当前源码、调用者、现有测试与旧复核；本轮没有执行产品复现、硬件操作或修复。"
+  },
+  "batches": [
+    {
+      "id": 1,
+      "title": "RTT 断言、启动失败状态与解码防护",
+      "execution": "先修无效断言，再分别处理状态和输入；每项独立提交。"
+    },
+    {
+      "id": 2,
+      "title": "变量身份、事务及工程状态、采样健康",
+      "execution": "每项独立提交；变量身份兼容与事务结案分别评审，实机不作为离线开发的替代证据。"
+    },
+    {
+      "id": 3,
+      "title": "工具可信状态、配置保真与诊断维护",
+      "execution": "先工具可信状态与控制协议，再配置保真、界面响应/反馈，最后低优先级脚本诊断；不将第三批合成一次大改。"
     }
   ]
 }
