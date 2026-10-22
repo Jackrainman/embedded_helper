@@ -4,7 +4,7 @@
 
 规则仅在本文件；需求及 AC 在 [需求](.docs/01_需求规格说明书.md)，架构决策在 [概要](.docs/02_概要设计说明书.md)，接口及验证证据在 [详细设计](.docs/03_详细设计说明书.md)。活动任务仅维护 `.harness/todo.json`，完成过程留在 Git；不得新增计划、状态、研究或决策副本。项目技能仅在有稳定可复用流程时增加，不复制个人技能。
 
-本仓库拥有C#客户端和Harness；Python产品原型已归档于Git，恢复只在`tmp/`隔离副本。Debug_LAN后续源码归LAN_Debug/client，Linux服务端归LAN_Debug/server；现有工具下载仍兼容Template Release，不与旧位置并行开发。配置试验只写 `tmp/` 内隔离副本；`tests/fixtures/` 是带来源和摘要的只读输入，不运行其中的工程钩子。不得为观察擅自烧录、复位、停核或部署服务；设备操作遵循具体任务授权。
+本仓库拥有C#客户端和Harness；Python产品原型已归档于Git，恢复只在`tmp/`隔离副本。Debug_LAN后续源码归LAN_Debug/client，Linux服务端归LAN_Debug/server；客户端下载统一使用LAN_Debug Release脚本包，不与旧位置并行开发。配置试验只写 `tmp/` 内隔离副本；`tests/fixtures/` 是带来源和摘要的只读输入，不运行其中的工程钩子。不得为观察擅自烧录、复位、停核或部署服务；设备操作遵循具体任务授权。
 
 产品采用C#、WPF、.NET 10 LTS，SDK与依赖锁定见README。Python 3.12+仅用于标准库Harness，无pip依赖。安装钩子：`python scripts/verify.py --install-hooks`。统一仓库验证：`python scripts/verify.py`，不构建；C#静态检查、构建和测试须显式用`--client`，只检查准备状态用`--client-preflight`。钩子验证暂存快照；缺工具/硬件输出未验证，不得替代实测结论。用户禁止构建的任务不得调用`--client`或其他构建/打包入口。
 

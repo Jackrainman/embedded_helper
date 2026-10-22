@@ -25,14 +25,16 @@ internal static class ToolPreparationService
                     using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
                     while ((count = await source.ReadAsync(buffer, timeout.Token)) > 0)
                     {
-                        total += count; if (total > 128L * 1024 * 1024) throw new IOException("工具下载超过128MiB上限。");
+                        total += count; if (total > 2L * 1024 * 1024) throw new IOException("工具下载超过2MiB上限。");
                         await output.WriteAsync(buffer.AsMemory(0, count), timeout.Token);
                     }
                 }
                 zip = download;
             }
             var file = zip;
-            return await Task.Run(() => new ToolCache(dataDirectory).InstallAsync(file, release));
+            var entry = await Task.Run(() => new ToolCache(dataDirectory).InstallAsync(file, release));
+            ToolCatalog.Save(dataDirectory);
+            return entry;
         }
         finally { if (download != null && File.Exists(download)) File.Delete(download); }
     }

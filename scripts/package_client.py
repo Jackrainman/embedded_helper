@@ -10,6 +10,7 @@ import sys
 import tempfile
 import time
 import zipfile
+import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -48,7 +49,7 @@ def record_unverified_package(output, version, commit, executable, package):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--output', type=Path, default=ROOT / 'dist/candidate')
-    parser.add_argument('--tool-zip', type=Path, help='Optional original Debug_LAN ZIP for real GUI import/integration smoke')
+    parser.add_argument('--tool-zip', type=Path, help='Official LAN_Debug_client ZIP; default downloads the pinned release for mandatory import smoke')
     parser.add_argument('--upgrade-from', type=Path, help='Optional previous portable EXE for real replacement/old-runtime-removal checks')
     parser.add_argument('--skip-smoke', action='store_true', help='Local unverified package only; do not launch GUI/CLI smoke or run release gate')
     args = parser.parse_args()
@@ -119,8 +120,20 @@ def main():
         qa.mkdir(exist_ok=True)
         shutil.copytree(ROOT / 'tests/fixtures/G4 中文 空格', qa / 'project', dirs_exist_ok=True)
         shutil.copy2(ROOT / 'tests/fixtures/scalars.elf', qa / 'scalars.elf')
+        tool_package = qa / 'debug-lan.zip'
+        releases = json.loads(subprocess.check_output([str(publish / 'embedded-helper-cli.exe'), '--data', str(temporary / 'tool-catalog'), 'tool', 'list'], text=True))
+        selected = releases[0]
         if args.tool_zip:
-            shutil.copy2(args.tool_zip, qa / 'debug-lan.zip')
+            shutil.copy2(args.tool_zip, tool_package)
+        else:
+            request = urllib.request.Request(selected['downloadUrl'], headers={'User-Agent': 'EmbeddedHelper-package-check'})
+            with urllib.request.urlopen(request, timeout=60) as response:
+                content = response.read(2 * 1024 * 1024 + 1)
+            if len(content) > 2 * 1024 * 1024:
+                raise RuntimeError('Client script ZIP exceeds 2 MiB')
+            tool_package.write_bytes(content)
+        if hashlib.sha256(tool_package.read_bytes()).hexdigest() != selected['sha256']:
+            raise RuntimeError('Official client script ZIP digest mismatch')
         clean_env = os.environ.copy()
         clean_env['PATH'] = os.path.join(os.environ['SystemRoot'], 'System32')
         clean_env['DOTNET_ROOT'] = str(temporary / 'no-installed-runtime')
@@ -134,6 +147,8 @@ def main():
             smoke = json.loads((qa / 'smoke.json').read_text(encoding='utf-8'))
             if smoke.get('status') != 'passed' or smoke.get('exitCode') != 0 or smoke.get('version') != version:
                 raise RuntimeError('WPF smoke did not pass.')
+        client_script = qa / 'project/LAN_Debug/jlink_flash.py'
+        subprocess.run([sys.executable, '-B', str(client_script), '--check', '--config', str(qa / 'project/remote-jlink.json')], check=True)
         installed = next((extracted / 'data/runtime').glob(version + '-*'))
         external = subprocess.run([str(extracted / 'EmbeddedHelper.exe'), '--cli', '--version'],
                                   check=True, capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=30)

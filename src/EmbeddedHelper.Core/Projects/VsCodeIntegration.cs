@@ -28,19 +28,20 @@ public static class VsCodeIntegration
         var flashLabel = "LAN_Debug: flash (" + suffix + ")";
         var gdbLabel = "LAN_Debug: GDB (" + suffix + ")";
         var debugName = "LAN_Debug: debug (" + suffix + ")";
-        var entry = ProjectToolCache.RelativeEntry(tool);
+        var entry = ProjectToolCache.RelativeEntry;
         var config = Path.GetRelativePath(project.Root, project.RemotePath).Replace('\\', '/');
         ConfigTransaction.CheckPath(project.Root, project.RemotePath);
         JsonObject Task(string label, params string[] arguments) => new()
         {
             ["label"] = label,
             ["type"] = "process",
-            ["command"] = "${workspaceFolder}/" + entry,
-            ["args"] = new JsonArray(new[] { "--config", "${workspaceFolder}/" + config }.Concat(arguments).Select(a => (JsonNode?)JsonValue.Create(a)).ToArray()),
+            ["command"] = "python",
+            ["linux"] = new JsonObject { ["command"] = "python3" },
+            ["args"] = new JsonArray(new[] { "-u", "${workspaceFolder}/" + entry, "--config", "${workspaceFolder}/" + config }.Concat(arguments).Select(a => (JsonNode?)JsonValue.Create(a)).ToArray()),
             ["options"] = new JsonObject { ["cwd"] = "${workspaceFolder}" },
             ["problemMatcher"] = new JsonArray()
         };
-        var flash = Task(flashLabel, "--program", "${workspaceFolder}/" + relativeElf);
+        var flash = Task(flashLabel, "--program", "${workspaceFolder}/" + Path.ChangeExtension(relativeElf, ".hex"));
         var gdb = Task(gdbLabel, "--gdb-server", "--gdb-port", gdbPort.ToString(System.Globalization.CultureInfo.InvariantCulture));
         gdb["isBackground"] = true; gdb["runOptions"] = new JsonObject { ["instanceLimit"] = 1 };
         gdb["problemMatcher"] = new JsonObject
@@ -72,7 +73,7 @@ public static class VsCodeIntegration
             if (local.Length == 1 && local[0].TryGetProperty("svdFile", out var svd)) launch["svdFile"] = svd.GetString();
         }
         ManagedEntry[] desired = [new(".vscode/tasks.json", "tasks", "label", flashLabel, flash), new(".vscode/tasks.json", "tasks", "label", gdbLabel, gdb), new(".vscode/launch.json", "configurations", "name", debugName, launch)];
-        var command = "\"${ProjectRoot}/" + entry + "\" --config \"${ProjectRoot}/" + config + "\" --program \"${programFile}\"";
+        var command = "python \"${ProjectRoot}/" + entry + "\" --config \"${ProjectRoot}/" + config + "\" --program \"${ProjectRoot}/" + Path.ChangeExtension(relativeElf, ".hex") + "\"";
         return MakePlan(project.Root, target.Name, desired, remote.Changes.Append(ToolCache.SelectVersion(project.Root, tool)).ToArray(), eideUpload, gdbPort, command);
     }
     public static ConfigPlan Remove(string root) => MakePlan(root, "", [], []);

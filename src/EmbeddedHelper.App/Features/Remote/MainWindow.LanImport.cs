@@ -10,12 +10,23 @@ public partial class MainWindow
     private int integrationStatusRevision;
     private async void ImportLanZip(object? sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Filter = "LAN_Debug 官方发布包|DebugLAN-*.zip|ZIP|*.zip" };
+        var dialog = new OpenFileDialog { Filter = "LAN_Debug 官方发布包|LAN_Debug_client-*.zip|ZIP|*.zip" };
         if (dialog.ShowDialog(this) == true) await Guard(() => ImportLanAsync(dialog.FileName));
     }
     private async Task ImportLanAsync(string? zip)
     {
         if (configurationBusy || toolBusy || ObservationBusy || acquisition.HasSession) throw new InvalidOperationException("请等待当前操作完成并停止采集。");
+        if (zip != null)
+        {
+            var manifest = Path.Combine(Path.GetDirectoryName(zip)!, "release-manifest.json");
+            if (File.Exists(manifest))
+            {
+                if (new FileInfo(manifest).Length > 65536) throw new InvalidDataException("发布清单过大。");
+                var imported = ToolRelease.FromManifest(await File.ReadAllTextAsync(manifest));
+                RemotePage.ToolVersionBox.ItemsSource = ToolRelease.Available;
+                remoteView.SelectedRelease = imported;
+            }
+        }
         // Detect project conflicts before downloading or preparing any files.
         PreviewIntegration(null, new RoutedEventArgs());
         if (plan == null) { remoteView.ToolStatus = "尚未导入：" + StatusLabel.Text; return; }
@@ -23,7 +34,7 @@ public partial class MainWindow
         try { await ApplyConfigAsync(); }
         finally { planZip = null; }
     }
-    private static async Task EnsureProjectToolAsync(string root, ToolRelease release, string? zip)
+    private static async Task EnsureToolAsync(ToolRelease release, string? zip)
     {
         if (zip != null) await ToolPreparationService.PrepareAsync(App.Data.Root, release, zip);
         else
@@ -31,7 +42,6 @@ public partial class MainWindow
             try { await Task.Run(() => new ToolCache(App.Data.Root).Resolve(release)); }
             catch (FileNotFoundException) { await ToolPreparationService.PrepareAsync(App.Data.Root, release, null); }
         }
-        await Task.Run(() => ProjectToolCache.Prepare(root, App.Data.Root, release));
     }
     private async Task RefreshIntegrationStatusAsync(bool afterApply = false)
     {
@@ -52,7 +62,7 @@ public partial class MainWindow
                 if (state == null || state.Entries.Length == 0) return available + "\n工程尚未接入。";
                 _ = VsCodeIntegration.Remove(loaded.Root); // Read-only ownership check; do not report externally edited tasks as healthy.
                 var pinned = ToolCache.ReadLock(loaded.Root);
-                if (!state.Entries.Any(e => e.Value["command"]?.GetValue<string>() == "${workspaceFolder}/" + ProjectToolCache.RelativeEntry(pinned)))
+                if (!state.Entries.Any(e => e.Value["args"] is System.Text.Json.Nodes.JsonArray arguments && arguments.Any(a => a?.GetValue<string>() == "${workspaceFolder}/" + ProjectToolCache.RelativeEntry)))
                     return available + "\n工程使用旧版入口；点击导入可更新到 LAN_Debug。";
                 ProjectToolCache.Resolve(loaded.Root, pinned);
                 return available + $"\n工程已接入 {pinned.Version} · 目标 {state.Target}" + (pinned != selected ? "；所选版本尚未应用。" : "。");

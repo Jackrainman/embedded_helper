@@ -51,7 +51,6 @@ try
     var mode = args.FirstOrDefault();
     var targetName = mode == "--worker" ? "EmbeddedHelper.Worker.exe" : mode == "--cli" ? "embedded-helper-cli.exe" : "EmbeddedHelper.exe";
     var start = new ProcessStartInfo(Path.Combine(destination, targetName)) { UseShellExecute = false, WorkingDirectory = AppContext.BaseDirectory };
-    start.Environment["EMBEDDED_HELPER_LAUNCHER"] = Environment.ProcessPath!;
     foreach (var argument in mode is "--worker" or "--cli" ? args[1..] : args) start.ArgumentList.Add(argument);
     using var cancellation = new CancellationTokenSource();
     ConsoleCancelEventHandler cancel = (_, e) => { e.Cancel = true; cancellation.Cancel(); };

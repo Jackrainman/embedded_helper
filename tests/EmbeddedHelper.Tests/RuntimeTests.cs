@@ -9,7 +9,7 @@ namespace EmbeddedHelper.Tests;
 public sealed class RuntimeTests : TestWorkspace
 {
     [Fact]
-    public void RuntimeUpgradeKeepsHomeDataAndExternalEntryStable()
+    public void RuntimeUpgradeKeepsHomeDataAndWorkerLocationCorrect()
     {
         var home = Path.Combine(root, "软件 中文 空格");
         var old = Path.Combine(home, "data", "runtime", "old-hash");
@@ -23,15 +23,9 @@ public sealed class RuntimeTests : TestWorkspace
         var after = RuntimePaths.FromComponents(next);
         Assert.Equal(home, before.HomeDirectory);
         Assert.Equal(before.DataDirectory, after.DataDirectory);
-        Assert.Equal(before.ExternalEntry(null), after.ExternalEntry(null));
         Assert.NotEqual(before.WorkerExecutable, after.WorkerExecutable);
-        var renamed = Path.Combine(home, "助手.exe");
-        Assert.Equal(renamed, after.ExternalEntry(renamed));
-        Assert.Throws<InvalidDataException>(() => after.ExternalEntry(Path.Combine(root, "other.exe")));
         Directory.Delete(old, true);
-        Assert.Equal(Path.Combine(home, "EmbeddedHelper.exe"), after.ExternalEntry(null));
         var development = RuntimePaths.FromComponents(root);
-        Assert.Equal(Path.Combine(root, "embedded-helper-cli.exe"), development.ExternalEntry(null));
     }
 
     [Fact]
@@ -60,8 +54,8 @@ public sealed class RuntimeTests : TestWorkspace
         File.WriteAllText(yamlPath, EideUpload.Set(File.ReadAllText(yamlPath), command.Keys, command.After));
         PortableData.SaveFile(Path.Combine(path, ".embedded_helper/integration.json"), state with { EideFields = fields });
         ConfigTransaction.Apply(Plan(), Path.Combine(root, "journal"));
-        Assert.Contains("${workspaceFolder}/LAN_Debug/tools/debug-lan/", File.ReadAllText(taskPath));
-        Assert.Contains("${ProjectRoot}/LAN_Debug/tools/debug-lan/", File.ReadAllText(yamlPath));
+        Assert.Contains("${workspaceFolder}/LAN_Debug/jlink_flash.py", File.ReadAllText(taskPath));
+        Assert.Contains("${ProjectRoot}/LAN_Debug/jlink_flash.py", File.ReadAllText(yamlPath));
         Assert.DoesNotContain("EMBEDDED_HELPER_", File.ReadAllText(taskPath));
         Assert.Empty(Plan().Changes);
         ConfigTransaction.Apply(VsCodeIntegration.Remove(path), Path.Combine(root, "journal"));

@@ -88,7 +88,7 @@ class VersionGuardTests(unittest.TestCase):
             (root / 'src/code.cs').write_text('after')
             git('add', '.')
             # Git captures hook output; English Windows defaults to cp1252.
-            with patch.dict(os.environ, {'PYTHONIOENCODING': 'cp1252'}):
+            with patch.dict(os.environ, {'PYTHONIOENCODING': 'cp1252', 'VERSION_BUMP_LEVEL': 'patch'}):
                 git('commit', '-qm', 'fix: verify actual commit')
             self.assertEqual(git('show', 'HEAD:VERSION'), '0.3.1-alpha.1')
             self.assertEqual(git('status', '--porcelain'), '')

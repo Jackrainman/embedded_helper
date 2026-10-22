@@ -7,7 +7,7 @@
       <StackPanel Grid.Column="1" Margin="8,0,0,0"><TextBlock Text="远程探针端口"/><TextBox x:Name="RemotePort" Text="{Binding Port, UpdateSourceTrigger=PropertyChanged}"/><TextBlock Text="本机 GDB 端口"/><TextBox x:Name="GdbPort" Text="{Binding GdbPort, UpdateSourceTrigger=PropertyChanged}"/><Button Content="前往 RTT 监视" Click="OpenWeb" HorizontalAlignment="Left" Margin="0,0,0,0"/></StackPanel>
     </Grid></GroupBox>
     <GroupBox Header="LAN_Debug 工程接入"><StackPanel>
-      <TextBlock Text="填写服务器地址和端口，一次完成工具准备与工程接入。已有本地任务会保留。" TextWrapping="Wrap"/>
+      <TextBlock Text="从 LAN_Debug Release 获取客户端脚本并接入工程。开发电脑需要 Python 3.10+ 和 SEGGER J-Link；已有本地任务会保留。" TextWrapping="Wrap"/>
       <WrapPanel><ComboBox x:Name="ToolVersionBox" DisplayMemberPath="Version" Width="170" SelectedItem="{Binding SelectedRelease}"/><Button Click="ImportLan" Style="{StaticResource Primary}"><TextBlock Text="一键导入 LAN_Debug"/></Button><Button Content="从 ZIP 导入并接入" Click="ImportLanZip"/></WrapPanel>
       <TextBlock Text="{Binding ToolStatus}" TextWrapping="Wrap"/>
     </StackPanel></GroupBox>

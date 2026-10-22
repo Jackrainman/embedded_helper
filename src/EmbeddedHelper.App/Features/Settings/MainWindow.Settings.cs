@@ -21,7 +21,7 @@ public partial class MainWindow
     { var dialog = new OpenFileDialog { Filter = "SEGGER 64 位库|JLink_x64.dll|DLL|*.dll" }; if (dialog.ShowDialog(this) == true) SaveToolPath(LocalToolKind.JLink, dialog.FileName); }
     private async void ImportTool(object? sender, RoutedEventArgs e)
     {
-        var dialog = new OpenFileDialog { Filter = "LAN_Debug 发布包|DebugLAN-*.zip|ZIP|*.zip" };
+        var dialog = new OpenFileDialog { Filter = "LAN_Debug 发布包|LAN_Debug_client-*.zip|ZIP|*.zip" };
         if (dialog.ShowDialog(this) == true) await Guard(() => PrepareToolAsync(dialog.FileName));
     }
     private async void DownloadTool(object? sender, RoutedEventArgs e) => await Guard(() => PrepareToolAsync(null));
@@ -49,7 +49,7 @@ public partial class MainWindow
         if (toolBusy || configurationBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
         var release = SettingsPage.ToolVersionBox.SelectedItem as ToolRelease ?? throw new InvalidOperationException("请选择工具版本。");
         toolBusy = true;
-        SettingsPage.ToolStatus.Text = "正在校验并准备 " + release.Version + "；仅运行无硬件版本检查。";
+        SettingsPage.ToolStatus.Text = "正在校验并准备 " + release.Version + "；校验脚本包，不运行下载的代码。";
         try
         {
             var executable = await ToolPreparationService.PrepareAsync(App.Data.Root, release, zip);

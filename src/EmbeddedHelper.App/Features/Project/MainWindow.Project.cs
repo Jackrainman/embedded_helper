@@ -87,7 +87,10 @@ public partial class MainWindow
             remoteView.GdbPort = (integration?.GdbPort ?? 2331).ToString(CultureInfo.InvariantCulture);
             remoteView.EideUpload = integration?.EideFields?.Length > 0;
             if (File.Exists(System.IO.Path.Combine(loaded.Root, ".embedded_helper", "tools.lock.json")))
-                remoteView.SelectedRelease = ToolCache.ReadLock(loaded.Root);
+            {
+                try { remoteView.SelectedRelease = ToolCache.ReadLock(loaded.Root); }
+                catch (InvalidDataException ex) { ProjectPage.ProjectDiagnostics.AppendText("\n" + ex.Message); }
+            }
             if (File.Exists(loaded.RemotePath))
             {
                 try

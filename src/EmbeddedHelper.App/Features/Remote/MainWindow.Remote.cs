@@ -37,7 +37,9 @@ public partial class MainWindow
             if (ready == toolPlan && planRelease is { } release)
             {
                 remoteView.ToolStatus = "正在准备 LAN_Debug " + release.Version + "…";
-                await EnsureProjectToolAsync(ready.Root, release, planZip);
+                await EnsureToolAsync(release, planZip);
+                var scripts = await Task.Run(() => ProjectToolCache.Plan(ready.Root, App.Data.Root, release));
+                ready = ready with { Changes = ready.Changes.Concat(scripts).ToArray() };
                 remoteView.ToolStatus = "工具已准备，正在写入工程配置…";
             }
             await configuration.ApplyAsync(ready);

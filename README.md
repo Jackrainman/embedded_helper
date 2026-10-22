@@ -10,7 +10,7 @@
 
 ## 当前范围
 
-Debug_LAN后续源码由相邻LAN_Debug/client维护，Linux服务由LAN_Debug/server维护；现有Template工具Release仍是兼容下载来源，源码归属变化不代表下载地址已经迁移。
+LAN_Debug/client维护客户端脚本，LAN_Debug/server维护Linux服务；客户端脚本包统一从LAN_Debug Release下载。旧Template EXE Release已撤下，不再下载；已有旧任务在显式重新导入时迁移。GUI本身无需Python；执行工程内脚本需要Python 3.10+和SEGGER软件。
 
 Windows本地小助手配合VS Code/EIDE使用。第一版围绕现有模板工程的可选远程接入、本地/远程变量可视化、本地原生RTT及独立串口助手。远程变量与既有网页RTT二选一、手动切换；NRF按本地COM，TCP串口暂不做；串口记录由上位机保证顺序，时间戳可选。
 
@@ -75,7 +75,7 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 当前开发版本以 VERSION 为准，包含 MCU Viewer 坐标轴、完整记录 Excel 导出及 LAN_Debug 工程接入。最终同包远程实测与发布仍由 C-07 跟踪；构建成功不代表硬件验收通过。
 
-远程接入：打开工程，在远程配置页填写服务器地址和端口，点击“一键导入 LAN_Debug”，自动准备已核验工具并写入工程任务；离线可直接选择官方 ZIP。生成任务使用工程内 LAN_Debug/tools 的相对路径，无需绑定本机环境变量或重启 VS Code。新配置使用 LAN_Debug/remote-jlink.json；已有 Debug_LAN 或工程根配置继续兼容。重新导入迁移由助手管理的旧入口，保留用户本地任务；冲突时提示并保留原文件。移除只恢复受管配置，保留远程 JSON、工具锁和缓存供复用。工具二进制自动忽略于 Git，另一台电脑打开工程后需再次一键准备。
+远程接入：打开工程，在远程配置页填写服务器地址和端口，点击“一键导入 LAN_Debug”，自动准备已核验工具并写入工程任务；离线可直接选择官方 ZIP。生成任务通过 Python 使用工程内 LAN_Debug/jlink_flash.py 的相对路径，无需绑定本机环境变量或重启 VS Code。新配置使用 LAN_Debug/remote-jlink.json；已有 Debug_LAN 或工程根配置继续兼容。重新导入迁移由助手管理的旧入口，保留用户本地任务；冲突时提示并保留原文件。移除只恢复受管配置，保留远程 JSON、工具锁和缓存供复用。客户端脚本可随工程提交 Git，另一台电脑只需准备 Python 3.10+ 和 SEGGER。
 
 单EXE首次启动自动将内部运行组件准备到旁边data/runtime，设置仍在data/settings；搬迁时携带data保留配置，更新只替换主EXE。内部SDK工作进程和CLI保持隔离，用户无需管理DLL。运行时可能另用Windows临时缓存。
 

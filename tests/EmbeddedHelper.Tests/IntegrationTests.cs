@@ -41,7 +41,7 @@ public sealed class IntegrationTests : TestWorkspace
         Assert.False(File.Exists(Path.Combine(path, ".vscode/tasks.json")));
         ConfigTransaction.Apply(plan, Path.Combine(root, "journal"));
         var tasks = Path.Combine(path, ".vscode/tasks.json");
-        File.WriteAllText(tasks, File.ReadAllText(tasks).Replace("${workspaceFolder}/" + ProjectToolCache.RelativeEntry(ToolRelease.Known[0]), "user-owned.exe"));
+        File.WriteAllText(tasks, File.ReadAllText(tasks).Replace("${workspaceFolder}/" + ProjectToolCache.RelativeEntry, "user-owned.exe"));
         Assert.Throws<InvalidDataException>(() => VsCodeIntegration.Remove(path));
         Assert.Contains("user-owned.exe", File.ReadAllText(tasks));
     }
@@ -56,19 +56,19 @@ public sealed class IntegrationTests : TestWorkspace
         Assert.Equal(family, project.Family);
         var yaml = Path.Combine(path, ".eide/eide.yml");
         var before = File.ReadAllText(yaml);
-        var eide = EideUpload.Plan(path, project.Targets[0].Name, true, []);
+        var eide = EideUpload.Plan(path, project.Targets[0].Name, true, [], "python script.py --program firmware.hex");
         ConfigTransaction.Apply(new ConfigPlan(path, [eide.Change]), Path.Combine(root, "journal"));
         Assert.Equal("\"Custom\"", EideUpload.Get(File.ReadAllText(yaml), ["targets", project.Targets[0].Name, "uploader"]));
-        Assert.Equal(eide.Change.After, EideUpload.Plan(path, project.Targets[0].Name, true, eide.Fields).Change.After);
+        Assert.Equal(eide.Change.After, EideUpload.Plan(path, project.Targets[0].Name, true, eide.Fields, "python script.py --program firmware.hex").Change.After);
         var removal = EideUpload.Plan(path, project.Targets[0].Name, false, eide.Fields);
         ConfigTransaction.Apply(new ConfigPlan(path, [removal.Change]), Path.Combine(root, "journal"));
         Assert.Equal(before, File.ReadAllText(yaml));
         var launch = Path.Combine(path, ".vscode/launch.json");
         using var localBefore = System.Text.Json.JsonDocument.Parse(File.ReadAllText(launch), ProjectReader.JsonOptions);
         var localEntries = localBefore.RootElement.GetProperty("configurations").EnumerateArray().Select(e => e.GetRawText()).ToArray();
-        var complete = VsCodeIntegration.Plan(project, project.Targets[0], "server.local", 19011, 2450, ToolRelease.Known[1], true, "http://server.local:8000");
+        var complete = VsCodeIntegration.Plan(project, project.Targets[0], "server.local", 19011, 2450, ToolRelease.Known[0], true, "http://server.local:8000");
         ConfigTransaction.Apply(complete, Path.Combine(root, "journal"));
-        Assert.Empty(VsCodeIntegration.Plan(project, project.Targets[0], "server.local", 19011, 2450, ToolRelease.Known[1], true, "http://server.local:8000").Changes);
+        Assert.Empty(VsCodeIntegration.Plan(project, project.Targets[0], "server.local", 19011, 2450, ToolRelease.Known[0], true, "http://server.local:8000").Changes);
         Assert.Equal(2450, VsCodeIntegration.ReadState(path)!.GdbPort);
         ConfigTransaction.Apply(VsCodeIntegration.Remove(path), Path.Combine(root, "journal"));
         Assert.Equal(before, File.ReadAllText(yaml));
@@ -85,7 +85,7 @@ public sealed class IntegrationTests : TestWorkspace
         input = EideUpload.Set(input, [.. prefix, "unknown"], "\"keep me\"");
         input = EideUpload.Set(input, [.. prefix, "commandLine"], "\"original command\"");
         File.WriteAllText(yaml, input);
-        var eide = EideUpload.Plan(path, project.Targets[0].Name, true, []);
+        var eide = EideUpload.Plan(path, project.Targets[0].Name, true, [], "python script.py --program firmware.hex");
         File.WriteAllText(yaml, eide.Change.After);
         Assert.Equal(input, EideUpload.Plan(path, project.Targets[0].Name, false, eide.Fields).Change.After);
         File.WriteAllText(yaml, EideUpload.Set(File.ReadAllText(yaml), [.. prefix, "commandLine"], "\"external command\""));

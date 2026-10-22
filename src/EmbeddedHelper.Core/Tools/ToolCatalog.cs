@@ -6,7 +6,7 @@ namespace EmbeddedHelper.Core;
 public static class ToolCatalog
 {
     private sealed record Catalog(string SourceRepository, ToolRelease[] Releases);
-    private static string CatalogPath(string root) => Path.Combine(root, "tools", "official-catalog.json");
+    private static string CatalogPath(string root) => Path.Combine(root, "tools", "LAN_Debug_client-catalog.json");
     public static void Load(string root)
     {
         var file = CatalogPath(root);
@@ -15,6 +15,11 @@ public static class ToolCatalog
         var catalog = JsonSerializer.Deserialize<Catalog>(File.ReadAllText(file), Product.Json) ?? throw new InvalidDataException("工具目录记录无效。");
         if (catalog.SourceRepository != ToolRelease.Repository || catalog.Releases.Length > 100) throw new InvalidDataException("工具目录来源不匹配。");
         foreach (var release in catalog.Releases) ToolRelease.Register(release);
+    }
+    public static void Save(string root)
+    {
+        var path = CatalogPath(root); ConfigTransaction.CheckPath(root, path);
+        PortableData.SaveFile(path, new Catalog(ToolRelease.Repository, ToolRelease.Available));
     }
     public static async Task<ToolRelease[]> RefreshAsync(string root)
     {
@@ -36,16 +41,15 @@ public static class ToolCatalog
         foreach (var item in releases.RootElement.EnumerateArray())
         {
             var tag = item.GetProperty("tag_name").GetString() ?? "";
-            if (item.GetProperty("draft").GetBoolean() || !tag.StartsWith("debug-lan-v", StringComparison.Ordinal)) continue;
-            var version = tag[11..];
+            if (item.GetProperty("draft").GetBoolean() || !tag.StartsWith(ToolRelease.ToolId + "-v", StringComparison.Ordinal)) continue;
+            var version = tag[(ToolRelease.ToolId.Length + 2)..];
             if (!System.Text.RegularExpressions.Regex.IsMatch(version, @"^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$") || version.Length > 64) continue;
-            var asset = item.GetProperty("assets").EnumerateArray().FirstOrDefault(a => a.GetProperty("name").GetString() == $"DebugLAN-{version}-windows-x64.zip");
+            var asset = item.GetProperty("assets").EnumerateArray().FirstOrDefault(a => a.GetProperty("name").GetString() == $"{ToolRelease.ToolId}-{version}.zip");
             if (asset.ValueKind == JsonValueKind.Undefined || !item.GetProperty("assets").EnumerateArray().Any(a => a.GetProperty("name").GetString() == "release-manifest.json")) continue;
             using var manifest = await Read($"https://github.com/{ToolRelease.Repository}/releases/download/{tag}/release-manifest.json", 65536);
             var m = manifest.RootElement;
-            if (m.GetProperty("manifestSchema").GetInt32() != 1 || m.GetProperty("toolId").GetString() != "debug-lan" || m.GetProperty("version").GetString() != version || m.GetProperty("platform").GetString() != "windows" || m.GetProperty("architecture").GetString() != "x64" || m.GetProperty("cliApiMajor").GetInt32() != 1) continue;
-            var release = new ToolRelease(version, m.GetProperty("packageSha256").GetString()!, m.GetProperty("upstreamCommit").GetString()!);
-            if (m.GetProperty("packageName").GetString() != release.AssetName || m.GetProperty("packageBytes").GetInt64() != asset.GetProperty("size").GetInt64() || asset.GetProperty("size").GetInt64() > 128L * 1024 * 1024) throw new InvalidDataException("上游发布附件与清单不一致。");
+            var release = ToolRelease.FromManifest(m.GetRawText());
+            if (release.Version != version || m.GetProperty("packageBytes").GetInt64() != asset.GetProperty("size").GetInt64()) throw new InvalidDataException("发布附件与客户端清单不一致。");
             if (asset.TryGetProperty("digest", out var digest) && digest.ValueKind == JsonValueKind.String && digest.GetString() != "sha256:" + release.Sha256) throw new InvalidDataException("GitHub附件摘要与清单不一致。");
             using var reference = await Read(api + "/git/ref/tags/" + Uri.EscapeDataString(tag), 65536);
             var referenceObject = reference.RootElement.GetProperty("object");
@@ -58,9 +62,7 @@ public static class ToolCatalog
             if (type != "commit" || commit != release.Commit) throw new InvalidDataException("上游标签提交与包清单不一致。");
             ToolRelease.Register(release); candidates.Add(release);
         }
-        var verified = ToolRelease.Known.Concat(candidates).DistinctBy(r => r.Version).ToArray();
-        var path = CatalogPath(root); ConfigTransaction.CheckPath(root, path);
-        PortableData.SaveFile(path, new Catalog(ToolRelease.Repository, verified));
+        Save(root);
         return ToolRelease.Available;
     }
 }

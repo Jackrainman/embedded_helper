@@ -43,6 +43,13 @@ public sealed class ProjectsTests : TestWorkspace
         using var launchJson = JsonDocument.Parse(launch.After, ProjectReader.JsonOptions);
         var managed = launchJson.RootElement.GetProperty("configurations").EnumerateArray().Single(c => c.GetProperty("name").GetString()!.StartsWith("LAN_Debug:"));
         Assert.EndsWith(Path.GetFileName(axf), managed.GetProperty("executable").GetString());
+        using var tasksJson = JsonDocument.Parse(plan.Changes.Single(c => c.Path.EndsWith("tasks.json")).After, ProjectReader.JsonOptions);
+        var flash = tasksJson.RootElement.GetProperty("tasks").EnumerateArray().Single(t => t.GetProperty("label").GetString()!.StartsWith("LAN_Debug: flash"));
+        Assert.Equal("python", flash.GetProperty("command").GetString());
+        var arguments = flash.GetProperty("args").EnumerateArray().Select(a => a.GetString()!).ToArray();
+        Assert.Contains("${workspaceFolder}/LAN_Debug/jlink_flash.py", arguments);
+        Assert.EndsWith(".hex", arguments[Array.IndexOf(arguments, "--program") + 1]);
+        Assert.DoesNotContain(arguments, a => a.EndsWith(".elf") || a.EndsWith(".axf"));
         File.WriteAllText(elf, "corrupt elf must not cause axf substitution");
         Assert.Equal(elf, ProjectReader.ResolveElfPath(axf));
         Assert.Equal(elf, Assert.Single(ProjectReader.Read(path).Targets).ElfPath);

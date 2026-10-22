@@ -9,22 +9,42 @@ namespace EmbeddedHelper.Tests;
 public sealed class ProjectToolTests : TestWorkspace
 {
     [Fact]
-    public void ProjectToolCopyChecksEveryFileIsIdempotentAndPreservesEditedCache()
+    public async Task ProjectScriptsAreTransactionalIdempotentAndPreserveUserChanges()
     {
-        var release = ToolRelease.Known[0]; var data = Path.Combine(root, "data"); var project = CopyProject();
-        var source = Path.Combine(data, "tools", "debug-lan", release.Version); Directory.CreateDirectory(Path.Combine(source, "runtime"));
-        File.WriteAllText(Path.Combine(source, "debug-lan.exe"), "synthetic bytes; never executed");
-        File.WriteAllText(Path.Combine(source, "runtime", "dependency.dll"), "dependency bytes");
-        var files = Directory.GetFiles(source, "*", SearchOption.AllDirectories).ToDictionary(p => Path.GetRelativePath(source, p), p => Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(p))).ToLowerInvariant());
-        PortableData.SaveFile(Path.Combine(source, "installed.json"), new InstalledTool(release.Version, release.Sha256, release.Commit, files));
-        var entry = ProjectToolCache.Prepare(project, data, release);
-        Assert.Equal(Path.GetFullPath(Path.Combine(project, ProjectToolCache.RelativeEntry(release))), Path.GetFullPath(entry));
-        Assert.Equal(entry, ProjectToolCache.Prepare(project, data, release));
-        Assert.Equal("*\n", File.ReadAllText(Path.Combine(Path.GetDirectoryName(entry)!, ".gitignore")));
+        var (zip, release) = ScriptPackage(); var data = Path.Combine(root, "data"); var project = CopyProject();
+        await new ToolCache(data).InstallAsync(zip, release);
+        var changes = ProjectToolCache.Plan(project, data, release);
+        var plan = new ConfigPlan(project, changes.Append(ToolCache.SelectVersion(project, release)).ToArray());
+        Assert.Throws<IOException>(() => ConfigTransaction.Apply(plan, Path.Combine(root, "journal"), count => { if (count == 2) throw new IOException("failure"); }));
+        Assert.False(File.Exists(Path.Combine(project, "LAN_Debug/jlink_flash.py")));
+        Assert.False(File.Exists(Path.Combine(project, ".embedded_helper/tools.lock.json")));
+        ConfigTransaction.Apply(plan, Path.Combine(root, "journal"));
+        var entry = ProjectToolCache.Resolve(project, release);
+        Assert.Empty(ProjectToolCache.Plan(project, data, release));
+        Assert.False(File.Exists(Path.Combine(project, "LAN_Debug/.gitignore")));
+        Assert.False(File.Exists(Path.Combine(project, "LAN_Debug/remote-jlink.json")));
         File.WriteAllText(entry, "user changed");
-        Assert.Throws<InvalidDataException>(() => ProjectToolCache.Prepare(project, data, release));
+        Assert.Throws<InvalidDataException>(() => ProjectToolCache.Plan(project, data, release));
+        Assert.Throws<InvalidDataException>(() => ProjectToolCache.Resolve(project, release));
         Assert.Equal("user changed", File.ReadAllText(entry));
-        Assert.Throws<FileNotFoundException>(() => ProjectToolCache.Prepare(project, data, ToolRelease.Known[1]));
+        File.Delete(entry);
+        ConfigTransaction.Apply(new ConfigPlan(project, ProjectToolCache.Plan(project, data, release)), Path.Combine(root, "journal"));
+        Assert.Equal(entry, ProjectToolCache.Resolve(project, release));
+    }
+    [Fact]
+    public async Task SwitchingScriptsUpdatesLockAndRollsBackBothOnFailure()
+    {
+        var data = Path.Combine(root, "data"); var project = CopyProject();
+        var old = ScriptPackage(); var next = ScriptPackage();
+        foreach (var package in new[] { old, next }) await new ToolCache(data).InstallAsync(package.Zip, package.Release);
+        ConfigPlan Plan(ToolRelease release) => new(project, ProjectToolCache.Plan(project, data, release).Append(ToolCache.SelectVersion(project, release)).ToArray());
+        ConfigTransaction.Apply(Plan(old.Release), Path.Combine(root, "journal"));
+        Assert.Throws<IOException>(() => ConfigTransaction.Apply(Plan(next.Release), Path.Combine(root, "journal"), count => { if (count == 2) throw new IOException("failure"); }));
+        Assert.Equal(old.Release, ToolCache.ReadLock(project));
+        ProjectToolCache.Resolve(project, old.Release);
+        ConfigTransaction.Apply(Plan(next.Release), Path.Combine(root, "journal"));
+        Assert.Equal(next.Release, ToolCache.ReadLock(project));
+        ProjectToolCache.Resolve(project, next.Release);
     }
     [Fact]
     public void NewProjectsUseLanDebugRelativeTasksAndExistingLegacyConfigurationRemainsCompatible()
@@ -37,10 +57,10 @@ public sealed class ProjectToolTests : TestWorkspace
         var plan = VsCodeIntegration.Plan(project, project.Targets[0], "old.local", 19011, 2331, ToolRelease.Known[0], true);
         ConfigTransaction.Apply(plan, Path.Combine(root, "journal"));
         var tasks = File.ReadAllText(Path.Combine(path, ".vscode", "tasks.json"));
-        Assert.Contains("LAN_Debug/tools/debug-lan/", tasks); Assert.Contains("${workspaceFolder}/Debug_LAN/remote-jlink.json", tasks);
+        Assert.Contains("LAN_Debug/jlink_flash.py", tasks); Assert.Contains("${workspaceFolder}/Debug_LAN/remote-jlink.json", tasks);
         Assert.DoesNotContain("EMBEDDED_HELPER_ENTRY", tasks); Assert.DoesNotContain(path, tasks); Assert.Contains("--gdb-server", tasks);
         var yaml = File.ReadAllText(Path.Combine(path, ".eide", "eide.yml"));
-        Assert.Contains("${ProjectRoot}/LAN_Debug/tools/debug-lan/", yaml); Assert.DoesNotContain("EMBEDDED_HELPER_ENTRY", yaml);
+        Assert.Contains("${ProjectRoot}/LAN_Debug/jlink_flash.py", yaml); Assert.DoesNotContain("EMBEDDED_HELPER_ENTRY", yaml);
         Assert.Contains("\"CustomField\":42", File.ReadAllText(legacy));
         Assert.False(File.Exists(Path.Combine(path, "LAN_Debug", "remote-jlink.json")));
         Assert.Empty(VsCodeIntegration.Plan(project, project.Targets[0], "old.local", 19011, 2331, ToolRelease.Known[0], true).Changes);
@@ -53,7 +73,7 @@ public sealed class ProjectToolTests : TestWorkspace
         foreach (var relative in new[] { ".vscode/tasks.json", ".vscode/launch.json", ".embedded_helper/integration.json" })
         {
             var file = Path.Combine(path, relative);
-            File.WriteAllText(file, File.ReadAllText(file).Replace("LAN_Debug:", "Embedded Helper: LAN").Replace("${workspaceFolder}/" + ProjectToolCache.RelativeEntry(ToolRelease.Known[0]), "${env:EMBEDDED_HELPER_ENTRY}"));
+            File.WriteAllText(file, File.ReadAllText(file).Replace("LAN_Debug:", "Embedded Helper: LAN").Replace("${workspaceFolder}/" + ProjectToolCache.RelativeEntry, "${env:EMBEDDED_HELPER_ENTRY}"));
         }
         var upgrade = VsCodeIntegration.Plan(project, project.Targets[0], "test.local", 19011, 2331, ToolRelease.Known[0]);
         ConfigTransaction.Apply(upgrade, Path.Combine(root, "journal"));

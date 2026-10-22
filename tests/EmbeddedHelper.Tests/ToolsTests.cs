@@ -8,6 +8,20 @@ namespace EmbeddedHelper.Tests;
 [Collection("Offline client")]
 public sealed class ToolsTests : TestWorkspace
 {
+    [Fact]
+    public void LegacyLockCanMigrateWithoutDownloadingOldExeOrLosingOtherTools()
+    {
+        var project = CopyProject(); var lockPath = Path.Combine(project, ".embedded_helper/tools.lock.json");
+        Directory.CreateDirectory(Path.GetDirectoryName(lockPath)!);
+        File.WriteAllText(lockPath, "{\"schemaVersion\":1,\"tools\":{\"debug-lan\":{\"version\":\"0.1.0-alpha.2\"},\"other\":{\"keep\":true}}}");
+        Assert.Contains("旧 EXE", Assert.Throws<InvalidDataException>(() => ToolCache.ReadLock(project)).Message);
+        var change = ToolCache.SelectVersion(project, ToolRelease.Known[0]);
+        ConfigTransaction.Apply(new ConfigPlan(project, [change]), Path.Combine(root, "journal"));
+        Assert.Equal(ToolRelease.Known[0], ToolCache.ReadLock(project));
+        using var doc = JsonDocument.Parse(File.ReadAllText(lockPath));
+        Assert.False(doc.RootElement.GetProperty("tools").TryGetProperty("debug-lan", out _));
+        Assert.True(doc.RootElement.GetProperty("tools").GetProperty("other").GetProperty("keep").GetBoolean());
+    }
     [Theory]
     [InlineData("../escape.exe")]
     [InlineData("/absolute.exe")]
@@ -36,7 +50,7 @@ public sealed class ToolsTests : TestWorkspace
             Assert.Equal(release, ToolCache.ReadLock(project));
         }
         var lockPath = Path.Combine(project, ".embedded_helper", "tools.lock.json");
-        File.WriteAllText(lockPath, File.ReadAllText(lockPath).Replace(ToolRelease.Known[1].Sha256, new string('0', 64)));
+        File.WriteAllText(lockPath, File.ReadAllText(lockPath).Replace(ToolRelease.Known[0].Sha256, new string('0', 64)));
         Assert.Throws<InvalidDataException>(() => ToolCache.ReadLock(project));
     }
 }
