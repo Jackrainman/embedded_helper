@@ -12,7 +12,7 @@ public partial class App : Application
         base.OnStartup(e);
         DispatcherUnhandledException += (_, error) =>
         {
-            try { Data.Log(error.Exception.ToString()); } catch (IOException) { }
+            try { Data.Log(error.Exception.ToString()); } catch (Exception logError) when (logError is IOException or UnauthorizedAccessException) { }
             MessageBox.Show("操作未完成：" + error.Exception.Message, "Embedded Helper", MessageBoxButton.OK, MessageBoxImage.Error);
             error.Handled = true;
         };
@@ -31,7 +31,7 @@ public partial class App : Application
         }
         catch (Exception ex)
         {
-            try { Data.Log(ex.ToString()); } catch (IOException) { }
+            try { Data.Log(ex.ToString()); } catch (Exception logError) when (logError is IOException or UnauthorizedAccessException) { }
             if (e.Args is ["--smoke", var directory])
             {
                 PortableData.SaveFile(Path.Combine(directory, "smoke.json"), new { status = "failed", exitCode = 1, error = ex.ToString() });

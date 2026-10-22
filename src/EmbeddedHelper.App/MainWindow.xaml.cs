@@ -55,14 +55,14 @@ public partial class MainWindow : Window
         DiscoverLocalTools(null, new RoutedEventArgs());
     }
 
-    private void Report(string text) { StatusLabel.Text = text; try { App.Data.Log(text); } catch (IOException) { } }
+    private void Report(string text) { StatusLabel.Text = text; try { App.Data.Log(text); } catch (Exception logError) when (logError is IOException or UnauthorizedAccessException) { } }
     private async Task Guard(Func<Task> action)
     {
         try { await action(); }
         catch (Exception ex)
         {
             Report("操作未完成：" + ex.Message);
-            try { App.Data.Log(ex.ToString()); } catch (IOException) { }
+            try { App.Data.Log(ex.ToString()); } catch (Exception logError) when (logError is IOException or UnauthorizedAccessException) { }
         }
     }
     private void Refresh(object? sender, EventArgs e)

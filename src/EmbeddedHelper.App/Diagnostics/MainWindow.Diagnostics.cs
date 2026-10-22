@@ -89,6 +89,16 @@ public partial class MainWindow
             await SmokeProjectStatusAsync(directory);
             await SmokePresentationAsync(directory);
             await SmokeRttLifecycleAsync();
+            var logFile = System.IO.Path.Combine(App.Data.Root, "logs/application.log");
+            var logBackup = logFile + ".smoke-backup";
+            File.Move(logFile, logBackup);
+            try
+            {
+                Directory.CreateDirectory(logFile); // An isolated directory at a file path produces access denied without changing ACLs.
+                await Guard(() => Task.FromException(new InvalidOperationException("原始业务错误")));
+                if (!StatusLabel.Text.Contains("原始业务错误")) throw new InvalidDataException("日志失败遮蔽业务错误。");
+            }
+            finally { Directory.Delete(logFile); File.Move(logBackup, logFile); }
             var uiThread = Environment.CurrentManagedThreadId;
             var discoveryThread = uiThread;
             SerialPage.SerialPortBox.Text = "COM42";

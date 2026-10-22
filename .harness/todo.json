@@ -21,35 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD23-02",
-      "title": "第3批 · 避免日志权限失败掩盖原始错误（Audit #23）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "App/Diagnostics",
-      "refs": [
-        "NFR-04",
-        "PRJ-04"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-35"
-      ],
-      "doneWhen": "触发：记录日志只捕获IOException，UnauthorizedAccessException可从错误处理路径再抛出。完成：对日志落盘失败作有限降级，仍呈现原始操作错误；不广泛吞掉产品业务异常，不修改用户目录权限。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        23
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.App/MainWindow.xaml.cs:55",
-        "src/EmbeddedHelper.App/MainWindow.xaml.cs:62",
-        "src/EmbeddedHelper.App/App.xaml.cs:15",
-        "src/EmbeddedHelper.Core/Runtime/PortableData.cs:33"
-      ]
-    },
-    {
       "id": "AUD23-03",
       "title": "第3批 · 补全入口帮助与非法预览参数反馈（Audit #23）",
       "status": "todo",

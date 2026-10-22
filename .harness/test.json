@@ -1314,7 +1314,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-25-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "84ff5b5f6a22dec4bfffb80e08d5285b2f8eadc2"
       }
     },
     {
@@ -1380,7 +1381,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：WPF隔离日志目标实际UnauthorizedAccessException已复现；修复后Guard保留原业务错误且恢复正常日志，未改目录ACL；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "在隔离日志目标模拟权限拒绝与文件占用，再触发原始业务错误。",
@@ -1397,7 +1398,21 @@
         "src/EmbeddedHelper.App/MainWindow.xaml.cs:62",
         "src/EmbeddedHelper.App/App.xaml.cs:15",
         "src/EmbeddedHelper.Core/Runtime/PortableData.cs:33"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD23-02",
+        "recordedAt": "2026-10-22T10:21:23.758992+00:00",
+        "result": "passed",
+        "details": "WPF隔离日志目标实际UnauthorizedAccessException已复现；修复后Guard保留原业务错误且恢复正常日志，未改目录ACL",
+        "commands": [
+          "dotnet build EmbeddedHelper.slnx -c Release --no-restore",
+          "python -X utf8 scripts/gui_smoke.py"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD23-02-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-36",
