@@ -41,7 +41,18 @@ public partial class MainWindow
         observationView.Status = "离线模拟绘图 · 16 条曲线 × 2000 点 · 未连接设备";
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         UpdateLayout();
-        if (ObservationPage.Plot.Series.Length != 16 || RttPage.RttText.Text != RttPage.RttText.Text || ObservationPage.PlotEmpty.Visibility != Visibility.Collapsed) throw new InvalidDataException("绘图或文本绑定未生效。");
+        void CheckPresentation()
+        {
+            if (ObservationPage.Plot.Series.Length != 16 || RttPage.RttText.Text != "离线合成 RTT 显示，不代表硬件输出。" || ObservationPage.PlotEmpty.Visibility != Visibility.Collapsed) throw new InvalidDataException("绘图或文本绑定未生效。");
+        }
+        CheckPresentation();
+        RttPage.RttText.Text = "错误文本";
+        var rejected = false;
+        try { CheckPresentation(); }
+        catch (InvalidDataException) { rejected = true; }
+        if (!rejected) throw new InvalidDataException("RTT 冒烟未拒绝错误文本。");
+        RttPage.RttText.Text = "离线合成 RTT 显示，不代表硬件输出。";
+        CheckPresentation();
         var plot = ObservationPage.Plot;
         var bitmap = new RenderTargetBitmap((int)plot.ActualWidth, (int)plot.ActualHeight, 96, 96, PixelFormats.Pbgra32);
         bitmap.Render(plot);

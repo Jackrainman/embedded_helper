@@ -439,7 +439,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "源码离线回归已通过：错误文本使真实WPF冒烟失败，修复后整体冒烟通过；待最终候选同包复验。",
       "resumeWhen": "",
       "steps": [
         "正常预期文本通过，再故意改变实际文本确认冒烟非零失败。",
@@ -454,7 +454,21 @@
       "sourceEvidence": [
         "src/EmbeddedHelper.App/Diagnostics/MainWindow.PresentationSmoke.cs:36",
         "src/EmbeddedHelper.App/Diagnostics/MainWindow.PresentationSmoke.cs:44"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-08",
+        "baseCommit": "6d44f21",
+        "commands": [
+          "dotnet build EmbeddedHelper.slnx -c Release --no-restore",
+          "python -X utf8 scripts/gui_smoke.py"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-08-red.log",
+          "test-results/audit-20261022/AUD-08-green.log"
+        ],
+        "result": "passed",
+        "scope": "显示断言，不代表Worker或硬件链路"
+      }
     },
     {
       "id": "AT-16",

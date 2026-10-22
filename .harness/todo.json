@@ -21,33 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-08",
-      "title": "第1批 · 修复 RTT 冒烟恒真断言（Audit #8）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "App/Diagnostics",
-      "refs": [
-        "VIS-07",
-        "AC-14"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-15"
-      ],
-      "doneWhen": "触发：RTT 文本与自身比较，内容错误仍不使该断言失败。完成：改为独立预期并证明错误文本能使冒烟失败；保留绘图断言。仅修此断言不宣称 Worker 到显示整条链路通过。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 1,
-      "auditRefs": [
-        8
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.App/Diagnostics/MainWindow.PresentationSmoke.cs:36",
-        "src/EmbeddedHelper.App/Diagnostics/MainWindow.PresentationSmoke.cs:44"
-      ]
-    },
-    {
       "id": "AUD-09",
       "title": "第1批 · 保留 RTT 启动失败前的历史与状态（Audit #9）",
       "status": "todo",
