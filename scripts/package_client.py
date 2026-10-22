@@ -126,13 +126,13 @@ def main():
         if args.tool_zip:
             shutil.copy2(args.tool_zip, tool_package)
         else:
-            request = urllib.request.Request(selected['downloadUrl'], headers={'User-Agent': 'EmbeddedHelper-package-check'})
+            request = urllib.request.Request(selected['DownloadUrl'], headers={'User-Agent': 'EmbeddedHelper-package-check'})
             with urllib.request.urlopen(request, timeout=60) as response:
                 content = response.read(2 * 1024 * 1024 + 1)
             if len(content) > 2 * 1024 * 1024:
                 raise RuntimeError('Client script ZIP exceeds 2 MiB')
             tool_package.write_bytes(content)
-        if hashlib.sha256(tool_package.read_bytes()).hexdigest() != selected['sha256']:
+        if hashlib.sha256(tool_package.read_bytes()).hexdigest() != selected['Sha256']:
             raise RuntimeError('Official client script ZIP digest mismatch')
         clean_env = os.environ.copy()
         clean_env['PATH'] = os.path.join(os.environ['SystemRoot'], 'System32')
@@ -230,7 +230,7 @@ def main():
                     if not old_runtime.is_relative_to(temporary.resolve()) or not retired.is_relative_to(temporary.resolve()):
                         raise RuntimeError('Upgrade trial paths escaped the isolated workspace.')
                     old_runtime.rename(retired)
-                current = subprocess.run([upgrade_env['EMBEDDED_HELPER_ENTRY'], '--cli', '--version'],
+                current = subprocess.run([str(entry), '--cli', '--version'],
                                          check=True, capture_output=True, text=True, encoding='utf-8', env=upgrade_env, timeout=60)
                 if current.stdout.strip() != version or hashlib.sha256(saved.read_bytes()).hexdigest() != settings_digest:
                     raise RuntimeError('Replacement did not select current CLI or preserve settings.')
