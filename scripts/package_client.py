@@ -11,8 +11,22 @@ import tempfile
 import time
 import zipfile
 import urllib.request
+import xml.etree.ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
+
+
+def published_runtime(publish, props):
+    expected = ET.parse(props).findtext('.//RuntimeFrameworkVersion')
+    if not expected:
+        raise ValueError(f'缺少权威 RuntimeFrameworkVersion: {props}')
+    for name in ['EmbeddedHelper', 'EmbeddedHelper.Worker', 'embedded-helper-cli']:
+        path = publish / (name + '.runtimeconfig.json')
+        frameworks = json.loads(path.read_text(encoding='utf-8'))['runtimeOptions'].get('includedFrameworks', [])
+        if (not any(f.get('name') == 'Microsoft.NETCore.App' for f in frameworks)
+                or any(f.get('version') != expected for f in frameworks)):
+            raise ValueError(f'发布运行时与 RuntimeFrameworkVersion={expected} 不一致: {path}')
+    return expected
 
 
 def run(command, **kwargs):
@@ -79,6 +93,7 @@ def main():
             if not (publish / required).is_file():
                 raise RuntimeError(f'Missing portable runtime file: {required}')
         shutil.copy2(ROOT / 'packaging/使用说明.txt', publish)
+        runtime = published_runtime(publish, ROOT / 'Directory.Build.props')
         shutil.copy2(ROOT / 'packaging/THIRD-PARTY-NOTICES.txt', publish)
         for generated in publish.glob('*.pdb'):
             generated.unlink()
@@ -244,7 +259,7 @@ def main():
                         packageBytes=package.stat().st_size, expandedBytes=sum(p.stat().st_size for p in delivery.rglob('*') if p.is_file()),
                         runtimeExpandedBytes=sum(p.stat().st_size for p in publish.rglob('*') if p.is_file()),
                         sdk=json.loads((ROOT / 'global.json').read_text())['sdk']['version'],
-                        runtime='10.0.12', startupAndSmokeSeconds=startup, upgradeFrom=upgrade_from)
+                        runtime=runtime, startupAndSmokeSeconds=startup, upgradeFrom=upgrade_from)
         write_json(output / 'release-manifest.json', manifest)
         (output / 'SHA256SUMS').write_text(f'{digest}  {package.name}\n{exe_digest}  EmbeddedHelper.exe\n', encoding='utf-8')
         (output / 'release-notes.md').write_text(

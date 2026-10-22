@@ -21,33 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-16",
-      "title": "第3批 · 核对成品清单的实际运行时版本（Audit #16）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "Harness/package",
-      "refs": [
-        "REL-09",
-        "REL-11"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-30"
-      ],
-      "doneWhen": "触发：清单另写 runtime 常量，当前与显式 RuntimeFrameworkVersion 相同，但以后修改运行时可能漂移。完成：从权威运行时属性/实际publish产物取值或强制一致校验，覆盖人为不一致；不能用 global.json 的SDK版本代替运行时，不宣称当前包清单已错。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        16
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "scripts/package_client.py:247",
-        "Directory.Build.props:10"
-      ]
-    },
-    {
       "id": "AUD-17",
       "title": "第3批 · 明确缺失便携运行目录的打包诊断（Audit #17）",
       "status": "todo",

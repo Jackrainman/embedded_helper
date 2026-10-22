@@ -1129,7 +1129,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-05-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "3728e2fdbd759700d86f5ade3d7c593aa775f691"
       }
     },
     {
@@ -1147,7 +1148,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：运行时权威属性/三个publish runtimeconfig交叉检查用例通过，制造不一致时明确拒绝；最终实际publish验证随后统一运行；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "核对固定运行时属性、publish产物和清单三者。",
@@ -1162,7 +1163,20 @@
       "sourceEvidence": [
         "scripts/package_client.py:247",
         "Directory.Build.props:10"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-16",
+        "recordedAt": "2026-10-22T10:15:18.257461+00:00",
+        "result": "passed",
+        "details": "运行时权威属性/三个publish runtimeconfig交叉检查用例通过，制造不一致时明确拒绝；最终实际publish验证随后统一运行",
+        "commands": [
+          "python -X utf8 -m unittest discover -s tests -p test_package_diagnostics.py"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-16-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-31",
