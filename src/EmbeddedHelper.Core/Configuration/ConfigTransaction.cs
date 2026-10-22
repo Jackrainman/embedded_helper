@@ -34,6 +34,7 @@ public static class ConfigTransaction
         using var doc = ReadJournal(journal);
         if (doc.RootElement.GetProperty("status").GetString() != "conflict") throw new IOException("请先恢复未完成写入，仅冲突记录可保留现状结案。");
         var plan = doc.RootElement.GetProperty("plan").Deserialize<ConfigPlan>(Product.Json) ?? throw new InvalidDataException("事务记录无效：" + journal);
+        CheckRoot(plan);
         if (!Path.GetFullPath(plan.Root).Equals(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("事务工程身份不匹配：" + journal);
         var hashes = new Dictionary<string, string>();
         foreach (var change in plan.Changes)
@@ -73,10 +74,12 @@ public static class ConfigTransaction
         {
             using var doc = ReadJournal(journal);
             var plan = doc.RootElement.GetProperty("plan").Deserialize<ConfigPlan>(Product.Json) ?? throw new InvalidDataException("事务记录无效。");
+            CheckRoot(plan);
             if (!Path.GetFullPath(plan.Root).Equals(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("事务工程身份不匹配。");
             var conflicts = new List<string>();
             foreach (var change in plan.Changes.Reverse())
             {
+                CheckRoot(plan);
                 CheckPath(root, change.Path);
                 var current = File.Exists(change.Path) ? File.ReadAllText(change.Path) : null;
                 if (current == change.Before) continue;
@@ -91,6 +94,7 @@ public static class ConfigTransaction
     public static string Hash(string? text) => text == null ? "missing" : Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(text)));
     public static void Apply(ConfigPlan plan, string journalRoot, Action<int>? afterWrite = null)
     {
+        CheckRoot(plan);
         foreach (var change in plan.Changes) CheckPath(plan.Root, change.Path);
         Directory.CreateDirectory(journalRoot);
         using var guard = new FileStream(Path.Combine(journalRoot, "write.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
@@ -103,6 +107,7 @@ public static class ConfigTransaction
         {
             foreach (var change in plan.Changes)
             {
+                CheckRoot(plan);
                 CheckPath(plan.Root, change.Path);
                 CheckBefore(change);
                 AtomicText(change.Path, change.After);
@@ -111,6 +116,7 @@ public static class ConfigTransaction
             }
             foreach (var change in written)
             {
+                CheckRoot(plan);
                 CheckPath(plan.Root, change.Path);
                 if (File.ReadAllText(change.Path) != change.After) throw new IOException("写入后文件被外部修改。");
             }
@@ -123,6 +129,7 @@ public static class ConfigTransaction
             {
                 try
                 {
+                    CheckRoot(plan);
                     CheckPath(plan.Root, change.Path);
                     if (!File.Exists(change.Path) || File.ReadAllText(change.Path) != change.After) { conflicts.Add(change.Path); continue; }
                     if (change.Before == null) File.Delete(change.Path); else AtomicText(change.Path, change.Before);
@@ -132,6 +139,23 @@ public static class ConfigTransaction
             PortableData.SaveFile(journal, new { status = conflicts.Count == 0 ? "rolled-back" : "conflict", conflicts, plan });
             throw new IOException(conflicts.Count == 0 ? "应用失败，已恢复原文件：" + ex.Message : "应用失败，存在外部修改，请按事务备份处理：" + journal, ex);
         }
+    }
+    internal static string ResolveRoot(string root)
+    {
+        var full = Path.GetFullPath(root);
+        var current = Path.GetPathRoot(full)!;
+        foreach (var part in full[current.Length..].Split(Path.DirectorySeparatorChar, StringSplitOptions.RemoveEmptyEntries))
+        {
+            current = Path.Combine(current, part);
+            if (Directory.Exists(current) && (File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0)
+                current = new DirectoryInfo(current).ResolveLinkTarget(true)?.FullName ?? throw new IOException("无法解析工程根目录联接。");
+        }
+        return Path.TrimEndingDirectorySeparator(Path.GetFullPath(current));
+    }
+    private static void CheckRoot(ConfigPlan plan)
+    {
+        if (!ResolveRoot(plan.Root).Equals(plan.ResolvedRoot, StringComparison.OrdinalIgnoreCase))
+            throw new IOException("工程根目录联接已变化，请重新打开工程并预览；原事务备份已保留。");
     }
     public static void CheckPath(string root, string path)
     {

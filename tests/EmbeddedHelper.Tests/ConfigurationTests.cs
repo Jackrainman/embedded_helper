@@ -86,6 +86,33 @@ public sealed class ConfigurationTests : TestWorkspace
         Directory.Delete(Path.GetDirectoryName(second)!); Directory.Delete(alias);
     }
     [Fact]
+    public void AncestorRetargetAfterPreviewCannotWriteAnotherProject()
+    {
+        var first = Path.Combine(root, "first"); var other = Path.Combine(root, "other");
+        Directory.CreateDirectory(Path.Combine(first, "project")); Directory.CreateDirectory(Path.Combine(other, "project"));
+        var alias = Path.Combine(root, "alias");
+        void Link(string target)
+        {
+            var start = new System.Diagnostics.ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true };
+            start.ArgumentList.Add("-NoProfile"); start.ArgumentList.Add("-Command");
+            start.ArgumentList.Add("New-Item -ItemType Junction -Path '" + alias.Replace("'", "''") + "' -Target '" + target.Replace("'", "''") + "' | Out-Null");
+            using var child = System.Diagnostics.Process.Start(start)!; child.WaitForExit(); Assert.Equal(0, child.ExitCode);
+        }
+        Link(first);
+        try
+        {
+            var project = Path.Combine(alias, "project"); var file = Path.Combine(project, "new.json");
+            var plan = new ConfigPlan(project, [new(file, null, "saved")]);
+            var serialized = JsonSerializer.Serialize(plan, Product.Json);
+            Directory.Delete(alias); Link(other);
+            Assert.Throws<IOException>(() => ConfigTransaction.Apply(plan, Path.Combine(root, "journals")));
+            var restored = JsonSerializer.Deserialize<ConfigPlan>(serialized, Product.Json)!;
+            Assert.Throws<IOException>(() => ConfigTransaction.Apply(restored, Path.Combine(root, "journals")));
+            Assert.False(File.Exists(Path.Combine(other, "project/new.json")));
+        }
+        finally { Directory.Delete(alias); }
+    }
+    [Fact]
     public void RollbackCannotFollowAReplacedDirectoryOutsideTheProject()
     {
         var project = Path.Combine(root, "project"); var inner = Path.Combine(project, "config");
