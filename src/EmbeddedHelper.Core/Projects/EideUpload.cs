@@ -99,7 +99,9 @@ public static class EideUpload
                     var addition = end < 0 ? newline : "";
                     for (var remaining = index + 1; remaining < keys.Length; remaining++)
                         addition += new string(' ', ((int)pair.Key.Start.Column - 1) + 2 * (remaining - index)) + JsonSerializer.Serialize(keys[remaining]) + ":" + (remaining == keys.Length - 1 ? " " + raw : "") + newline;
-                    return text[..position] + addition + text[position..];
+                    var result = text[..position] + addition + text[position..];
+                    if (Get(result, keys) != raw) throw new InvalidDataException("EIDE字段插入校验失败，未写入。");
+                    return result;
                 }
                 mapping = pair.Value as YamlMappingNode ?? throw new InvalidDataException("EIDE字段层级不是映射。"); continue;
             }
@@ -109,7 +111,8 @@ public static class EideUpload
             var lineEnd = text.IndexOf('\n', (int)pair.Key.Start.Index); if (lineEnd < 0) lineEnd = text.Length;
             var endPosition = lineEnd < text.Length ? lineEnd + 1 : lineEnd;
             var suffix = (int)pair.Value.End.Index <= lineEnd ? text[(int)pair.Value.End.Index..lineEnd].Trim() : "";
-            var comment = suffix.StartsWith('#') ? new string(' ', ((int)pair.Key.Start.Column - 1)) + suffix + "\n" : "";
+            var ending = lineEnd == text.Length ? "" : lineEnd > 0 && text[lineEnd - 1] == '\r' ? "\r\n" : "\n";
+            var comment = suffix.StartsWith('#') ? new string(' ', ((int)pair.Key.Start.Column - 1)) + suffix + ending : "";
             return text[..start] + comment + text[endPosition..];
         }
         throw new InvalidDataException("空EIDE字段路径。");

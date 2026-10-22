@@ -21,34 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-27",
-      "title": "第3批 · 保留 YAML 换行并补齐插入校验（Audit #27）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "Core/EIDE",
-      "refs": [
-        "PRJ-06",
-        "REM-02"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-26"
-      ],
-      "doneWhen": "触发：删除字段保留注释时硬编码 LF；空标量父节点插入未执行相邻分支的回读校验。完成：删除注释保留原换行风格，空父节点插入完成后验证语义；覆盖无末尾换行和未知字段。明确混合换行为已确认问题，未宣称空父节点已产生坏 YAML。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        27
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:89",
-        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:94",
-        "src/EmbeddedHelper.Core/Projects/EideUpload.cs:112"
-      ]
-    },
-    {
       "id": "AUD-10",
       "title": "第3批 · 将串口设备枚举移出界面线程（Audit #10）",
       "status": "todo",

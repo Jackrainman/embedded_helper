@@ -958,7 +958,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：147项客户端测试通过；LF/CRLF和无末尾换行删除注释保真，空父节点插入回读校验通过；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "分别用 CRLF/LF、有/无末尾换行的 YAML 删除带行尾注释的字段，比较未修改区域字节。",
@@ -974,7 +974,20 @@
         "src/EmbeddedHelper.Core/Projects/EideUpload.cs:89",
         "src/EmbeddedHelper.Core/Projects/EideUpload.cs:94",
         "src/EmbeddedHelper.Core/Projects/EideUpload.cs:112"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-27",
+        "recordedAt": "2026-10-22T10:09:33.912826+00:00",
+        "result": "passed",
+        "details": "147项客户端测试通过；LF/CRLF和无末尾换行删除注释保真，空父节点插入回读校验通过",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-27-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-27",
@@ -1249,7 +1262,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD23-01-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "ada3c7d782341f9e53fe70ee9f0a3ea79f08b854"
       }
     },
     {
