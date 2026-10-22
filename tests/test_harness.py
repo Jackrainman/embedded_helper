@@ -46,8 +46,10 @@ class HarnessTests(unittest.TestCase):
         self.assertTrue(any('单源' in x for x in verify.validate(self.root)))
         p = self.root / '.harness/todo.json'
         ledger = json.loads(p.read_text(encoding='utf-8'))
-        fixture = dict(ledger['tasks'][0], id='FIX-01', dependsOn=[])
-        ledger['tasks'] = [ledger['tasks'][0], fixture]
+        fixture = dict(id='FIX-01', title='isolated dependency fixture', status='todo', priority='P2',
+                       component='Harness', refs=['AC-13'], dependsOn=[], testIds=['AT-14'],
+                       doneWhen='fixture only', reason='', resumeWhen='')
+        ledger['tasks'] = [dict(fixture, id='FIX-02'), fixture]
         ledger['tasks'][0]['dependsOn'] = [fixture['id']]
         ledger['tasks'][1]['dependsOn'] = [ledger['tasks'][0]['id']]
         p.write_text(json.dumps(ledger), encoding='utf-8')
