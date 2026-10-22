@@ -25,17 +25,10 @@ try
     if (request.SessionId.Length != 32) throw new InvalidDataException("无效会话身份。");
     var mailbox = new ReadPlanMailbox(plan);
     using var cancel = new CancellationTokenSource();
+    var controlExitCode = 0;
     _ = Task.Run(() =>
     {
-        try
-        {
-            while (Console.ReadLine() is { } line)
-            {
-                if (line.Length > 1024 * 1024) throw new InvalidDataException("控制请求过长。");
-                mailbox.Submit(JsonSerializer.Deserialize<ReadPlan>(line) ?? throw new InvalidDataException("缺少计划。"));
-            }
-        }
-        catch (Exception ex) { Console.Error.WriteLine("控制通道失败：" + ex.Message); }
+        try { Volatile.Write(ref controlExitCode, ObservationControl.Read(Console.In, mailbox, Console.Error)); }
         finally { cancel.Cancel(); }
     });
     using var link = new Link(request);
@@ -65,7 +58,7 @@ try
         var delay = (int)Math.Max(0, ++round * 1000.0 / plan.SampleRate - timer.Elapsed.TotalMilliseconds);
         if (delay > 0) { try { await Task.Delay(Math.Min(delay, 1000), cancel.Token); } catch (OperationCanceledException) { } }
     }
-    return 0;
+    return Volatile.Read(ref controlExitCode);
 }
 catch (Exception ex) { Console.Error.WriteLine(ex.Message); return 1; }
 static void Emit(ObservationEvent item) => Console.WriteLine(JsonSerializer.Serialize(item));

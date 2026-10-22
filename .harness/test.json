@@ -939,7 +939,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-26-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "b467b9f61a690441219dd236bc75ab1a792a03d4"
       }
     },
     {
@@ -1220,7 +1221,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：143项客户端测试通过；共享控制读取路径对坏JSON/非法计划/超长行返回1并写原因，EOF返回0；Worker在取消前保存退出码。真实SDK和受控完整Worker进程组合验收尚未执行；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "受控进程/SDK替身注入非法计划、超长控制行及正常EOF。",
@@ -1236,7 +1237,20 @@
         "src/EmbeddedHelper.Worker/Program.cs:38",
         "src/EmbeddedHelper.Worker/Program.cs:65",
         "src/EmbeddedHelper.Core/Observation/Observation.cs:79"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD23-01",
+        "recordedAt": "2026-10-22T10:08:40.216307+00:00",
+        "result": "passed",
+        "details": "143项客户端测试通过；共享控制读取路径对坏JSON/非法计划/超长行返回1并写原因，EOF返回0；Worker在取消前保存退出码。真实SDK和受控完整Worker进程组合验收尚未执行",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD23-01-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-35",

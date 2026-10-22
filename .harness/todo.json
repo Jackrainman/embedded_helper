@@ -21,35 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD23-01",
-      "title": "第3批 · 保留控制通道失败的退出原因（Audit #23）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "Worker/Protocol",
-      "refs": [
-        "CON-03",
-        "NFR-02",
-        "NFR-04"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-34"
-      ],
-      "doneWhen": "触发：控制请求解析异常只写stderr并取消，主循环返回0，父进程按正常退出分支忽略原因。完成：区分正常EOF/停止与控制协议错误，错误返回非零并传到父进程可恢复状态，正常停止保持成功退出；离线测试先行，不声称已测真实SDK。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        23
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Worker/Program.cs:38",
-        "src/EmbeddedHelper.Worker/Program.cs:65",
-        "src/EmbeddedHelper.Core/Observation/Observation.cs:79"
-      ]
-    },
-    {
       "id": "AUD-27",
       "title": "第3批 · 保留 YAML 换行并补齐插入校验（Audit #27）",
       "status": "todo",
