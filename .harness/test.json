@@ -1411,7 +1411,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD23-02-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "b4db1bade5b117290c414c4b228fbaf13a24bff2"
       }
     },
     {
@@ -1429,7 +1430,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：164项客户端测试通过；预览1/16有效，非法数值/缺参/多参明确拒绝；真实CLI帮助含list/refresh、非法命令exit2、标量ELF解析exit0通过；未执行网络/设备命令；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "离线检查帮助、非法命令、elf夹具解析和错误退出；不调用网络refresh或设备命令。",
@@ -1445,7 +1446,21 @@
         "src/EmbeddedHelper.Cli/Program.cs:12",
         "src/EmbeddedHelper.Cli/Program.cs:54",
         "src/EmbeddedHelper.App/App.xaml.cs:27"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD23-03",
+        "recordedAt": "2026-10-22T10:22:56.911132+00:00",
+        "result": "passed",
+        "details": "164项客户端测试通过；预览1/16有效，非法数值/缺参/多参明确拒绝；真实CLI帮助含list/refresh、非法命令exit2、标量ELF解析exit0通过；未执行网络/设备命令",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-build --no-restore",
+          "实际CLI invalid-command及elf tests/fixtures/scalars.elf"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD23-03-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-37",

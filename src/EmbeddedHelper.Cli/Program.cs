@@ -51,7 +51,7 @@ try
         return await Run(executable, forwarded);
     }
     if (args is ["elf", var elf]) { Console.WriteLine(JsonSerializer.Serialize(ElfIndex.Read(elf), Product.Json)); return 0; }
-    Console.Error.WriteLine("embedded-helper-cli --version | elf <文件> | tool install <ZIP> <版本> | tool version <版本>\n--project <目录> check | tool-version | use-tool <版本> | flash --program <固件> | gdb-server --gdb-port <端口>\n可在开头指定--data <便携数据目录>；实际设备操作只在显式flash/gdb-server时执行。");
+    Console.Error.WriteLine("embedded-helper-cli --version | elf <文件> | tool list | tool refresh | tool install <ZIP> <版本> | tool version <版本>\n--project <目录> check | tool-version | use-tool <版本> | flash --program <固件> | gdb-server --gdb-port <端口>\n可在开头指定--data <便携数据目录>；实际设备操作只在显式flash/gdb-server时执行。");
     return 2;
 }
 catch (Exception ex) { Console.Error.WriteLine(ex.Message); return 1; }

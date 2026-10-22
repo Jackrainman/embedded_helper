@@ -19,12 +19,13 @@ public partial class App : Application
         try
         {
             Data.Log("启动 " + Product.Version);
+            var previewRows = DiagnosticArguments.PlotCount(e.Args);
             var window = new MainWindow();
             MainWindow = window;
             if (e.Args is ["--smoke", var directory]) window.Loaded += async (_, _) => await window.SmokeAsync(directory);
             if (e.Args is ["--recording-preview"]) window.Loaded += async (_, _) => await window.PreviewRecordingAsync();
             if (e.Args is ["--serial-preview"]) window.Loaded += (_, _) => window.PreviewSerial();
-            if (e.Args is ["--plot-preview", var count] && int.TryParse(count, out var rows) && rows is >= 1 and <= 16)
+            if (previewRows is { } rows)
                 window.Loaded += async (_, _) => await window.PreviewPlotAsync(rows);
             else if (e.Args.Length == 0) window.Loaded += async (_, _) => await window.RestoreLastProjectAsync();
             window.Show();
@@ -38,8 +39,8 @@ public partial class App : Application
                 Shutdown(1);
                 return;
             }
-            MessageBox.Show("无法启动，请将完整程序目录移动到可写位置。\n" + ex.Message, "Embedded Helper 启动失败", MessageBoxButton.OK, MessageBoxImage.Error);
-            Shutdown(1);
+            MessageBox.Show(ex is ArgumentException ? ex.Message : "无法启动，请将完整程序目录移动到可写位置。\n" + ex.Message, ex is ArgumentException ? "启动参数无效" : "Embedded Helper 启动失败", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown(ex is ArgumentException ? 2 : 1);
         }
     }
 }

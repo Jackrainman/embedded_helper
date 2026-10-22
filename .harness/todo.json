@@ -21,34 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD23-03",
-      "title": "第3批 · 补全入口帮助与非法预览参数反馈（Audit #23）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "CLI + App/diagnostic entry",
-      "refs": [
-        "NFR-05",
-        "PRJ-04"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-36"
-      ],
-      "doneWhen": "触发：CLI帮助遗漏tool list/refresh；非法plot-preview参数落到无明确提示的窗口。完成：帮助涵盖实际可用命令，非法预览输入明确拒绝/诊断；保持设备命令必须显式触发，正常启动及合法预览不变。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        23
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Cli/Program.cs:12",
-        "src/EmbeddedHelper.Cli/Program.cs:54",
-        "src/EmbeddedHelper.App/App.xaml.cs:27"
-      ]
-    },
-    {
       "id": "AUD23-04",
       "title": "第3批 · 使语法与旧证据清理失败可追溯（Audit #23）",
       "status": "todo",
