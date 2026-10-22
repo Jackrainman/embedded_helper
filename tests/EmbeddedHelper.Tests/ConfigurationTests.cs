@@ -132,6 +132,21 @@ public sealed class ConfigurationTests : TestWorkspace
         File.WriteAllText(journal, "broken");
         Assert.Contains(journal, Assert.Throws<InvalidDataException>(() => ConfigTransaction.Pending(journals)).Message);
     }
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"status\":\"commited\"}")]
+    [InlineData("{\"status\":\"conflict\"}")]
+    [InlineData("{\"status\":\"prepared\",\"plan\":{\"root\":\"x\",\"changes\":null}}")]
+    [InlineData("{\"status\":\"conflict\",\"plan\":{\"root\":\"x\",\"changes\":[null]}}")]
+    public void MalformedTransactionCannotBeSkippedOrLoseItsFilename(string content)
+    {
+        var journals = Path.Combine(root, "journals"); Directory.CreateDirectory(journals);
+        var file = Path.Combine(journals, "broken.json"); File.WriteAllText(file, content);
+        Assert.Contains(file, Assert.Throws<InvalidDataException>(() => ConfigTransaction.Pending(journals)).Message);
+        Assert.Contains(file, Assert.Throws<InvalidDataException>(() => ConfigTransaction.RecoverIncomplete(root, journals)).Message);
+        Assert.Contains(file, Assert.Throws<InvalidDataException>(() => ConfigTransaction.PreviewKeepCurrent(root, file)).Message);
+        Assert.Equal(content, File.ReadAllText(file));
+    }
     [Fact]
     public void JsoncEditPreservesCommentsAndUnknownProperties()
     {

@@ -11,15 +11,23 @@ public static class ConfigTransaction
 {
     private static JsonDocument ReadJournal(string path)
     {
+        JsonDocument? doc = null;
         try
         {
-            var doc = JsonDocument.Parse(File.ReadAllText(path));
+            doc = JsonDocument.Parse(File.ReadAllText(path));
             if (!doc.RootElement.TryGetProperty("status", out var status) || status.ValueKind != JsonValueKind.String)
-            { doc.Dispose(); throw new InvalidDataException("缺少 status。"); }
+                throw new InvalidDataException("缺少 status。");
+            if (status.GetString() is not ("prepared" or "conflict" or "committed" or "rolled-back" or "accepted-current"))
+                throw new InvalidDataException("未知事务状态。");
+            if (!doc.RootElement.TryGetProperty("plan", out var node)) throw new InvalidDataException("缺少 plan。");
+            var plan = node.Deserialize<ConfigPlan>(Product.Json);
+            if (plan == null || string.IsNullOrWhiteSpace(plan.Root) || !Path.IsPathFullyQualified(plan.Root) || plan.Changes == null ||
+                plan.Changes.Any(c => c == null || string.IsNullOrWhiteSpace(c.Path) || !Path.IsPathFullyQualified(c.Path) || c.After == null))
+                throw new InvalidDataException("事务计划字段无效。");
             return doc;
         }
-        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidOperationException)
-        { throw new InvalidDataException("事务记录不可读：" + path + "；" + ex.Message, ex); }
+        catch (Exception ex) when (ex is JsonException or IOException or InvalidDataException or UnauthorizedAccessException or InvalidOperationException or ArgumentException)
+        { doc?.Dispose(); throw new InvalidDataException("事务记录不可读：" + path + "；" + ex.Message, ex); }
     }
     public static ConflictClosure PreviewKeepCurrent(string root, string journal)
     {
@@ -63,7 +71,7 @@ public static class ConfigTransaction
         var allConflicts = new List<string>();
         foreach (var journal in Pending(journalRoot))
         {
-            using var doc = JsonDocument.Parse(File.ReadAllText(journal));
+            using var doc = ReadJournal(journal);
             var plan = doc.RootElement.GetProperty("plan").Deserialize<ConfigPlan>(Product.Json) ?? throw new InvalidDataException("事务记录无效。");
             if (!Path.GetFullPath(plan.Root).Equals(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("事务工程身份不匹配。");
             var conflicts = new List<string>();
