@@ -11,6 +11,19 @@ spec.loader.exec_module(package)
 
 
 class PackageDiagnosticsTests(unittest.TestCase):
+    def test_runtime_directory_requires_exactly_one_match(self):
+        with tempfile.TemporaryDirectory(dir=ROOT / 'tmp') as temp:
+            root = Path(temp)
+            for phase in ['首次启动', '搬迁启动']:
+                with self.assertRaisesRegex(RuntimeError, phase):
+                    package.find_runtime(root, '1.0.0', phase)
+            first = root / 'data/runtime/1.0.0-one'
+            first.mkdir(parents=True)
+            self.assertEqual(package.find_runtime(root, '1.0.0', '首次启动'), first)
+            (first.parent / '1.0.0-two').mkdir()
+            with self.assertRaisesRegex(RuntimeError, '2'):
+                package.find_runtime(root, '1.0.0', '搬迁启动')
+
     def test_runtime_comes_from_publish_and_must_match_authority(self):
         with tempfile.TemporaryDirectory(dir=ROOT / 'tmp') as temp:
             root = Path(temp)

@@ -29,6 +29,14 @@ def published_runtime(publish, props):
     return expected
 
 
+def find_runtime(directory, version, phase):
+    parent = directory / 'data/runtime'
+    matches = [p for p in parent.glob(version + '-*') if p.is_dir()]
+    if len(matches) != 1:
+        raise RuntimeError(f'{phase}：预期唯一便携运行目录 {parent / (version + "-*")}，实际找到 {len(matches)} 个。')
+    return matches[0]
+
+
 def run(command, **kwargs):
     subprocess.run(command, cwd=ROOT, check=True, **kwargs)
 
@@ -164,7 +172,7 @@ def main():
                 raise RuntimeError('WPF smoke did not pass.')
         client_script = qa / 'project/LAN_Debug/jlink_flash.py'
         subprocess.run([sys.executable, '-B', str(client_script), '--check', '--config', str(qa / 'project/remote-jlink.json')], check=True)
-        installed = next((extracted / 'data/runtime').glob(version + '-*'))
+        installed = find_runtime(extracted, version, '首次启动')
         external = subprocess.run([str(extracted / 'EmbeddedHelper.exe'), '--cli', '--version'],
                                   check=True, capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=30)
         if external.stdout.strip() != version:
@@ -196,7 +204,7 @@ def main():
                                   check=True, capture_output=True, text=True, encoding='utf-8', env=clean_env, timeout=30)
         if external.stdout.strip() != version:
             raise RuntimeError('Moved portable CLI did not resolve current components.')
-        installed = next((moved / 'data/runtime').glob(version + '-*'))
+        installed = find_runtime(moved, version, '搬迁启动')
         damaged = installed / 'EmbeddedHelper.Worker.exe'
         original = damaged.read_bytes()
         damaged.write_bytes(b'corrupted component')

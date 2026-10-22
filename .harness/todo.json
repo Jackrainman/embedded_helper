@@ -21,32 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-17",
-      "title": "第3批 · 明确缺失便携运行目录的打包诊断（Audit #17）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "Harness/package",
-      "refs": [
-        "REL-11"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-31"
-      ],
-      "doneWhen": "触发：运行目录glob无匹配时 next 抛裸 StopIteration；前置启动非零本来就由check=True阻断。完成：首次/搬迁目录零匹配或歧义时明确报告阶段和预期路径，非零退出且不产出通过证据；保留实际成品启动检查。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        17
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "scripts/package_client.py:152",
-        "scripts/package_client.py:184"
-      ]
-    },
-    {
       "id": "AUD-21",
       "title": "第3批 · 提供端口及工程字段的明确输入错误（Audit #21）",
       "status": "todo",
