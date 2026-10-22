@@ -41,7 +41,8 @@ G4一键VS Code接入/共享移除及LAN_Debug Release脚本包的下载、离�
 | `.gitignore` | 排除个人工具状态、依赖、构建产物、缓存、日志和本机data；保留AGENTS、项目技能、任务账本、共享配置及必要样本。不要整体忽略`.vscode`、`.eide`、`.embedded_helper`或全部ELF文件。 |
 | `.gitattributes` | 明确文本换行与二进制样本处理；新文件用UTF-8，不顺带批量改写既有文件。 |
 | 根`AGENTS.md` | 中文回复、文档入口、源码归属、修改边界、验证方式与完成定义；只引用真实存在的入口，不复述需求全文。 |
-| `.harness/todo.json` | 唯一活动任务账本；包含ID、状态、需求/AC引用、依赖和可验证完成条件；完成记录进入Git，决策继续维护概要ADR，不另建状态日志和决策副本。 |
+| `.harness/todo.json` | 活动开发任务；包含ID、状态、需求/AC引用、开发依赖、关联验收和完成条件。完成后移除，过程进入Git。 |
+| `.harness/test.json` | 验收安排与最近结果；明确执行方式、所需环境、步骤、预期、阻塞/暂缓原因和恢复条件。通过结果绑定候选包、时间、实际环境和证据。 |
 | 验证与环境检查 | 用一个入口编排文档链接、任务结构、文件边界和环境检查；失败返回非零，缺工具/硬件报告未验证；用正例、反例确认检查有效，再接提交钩子并验证真实触发。 |
 | M0隔离样本 | 配置试验用工程副本；记录上游SHA、脱敏范围和已知预期，覆盖中文空格路径、未知字段、ELF及串口字节；结果记录代码基线、工具版本、输入/硬件、退出结果和未覆盖项。 |
 
@@ -57,7 +58,9 @@ SDK 10.0.402锁定在[global.json](global.json)，运行时10.0.12；根[VERSION
 
 统一入口：`python scripts/verify.py`，只运行仓库检查与Harness测试，无pip依赖、不构建、不访问设备。首次克隆运行 `python scripts/verify.py --install-hooks`；提交门仍验证索引快照。开发需要Python 3.12+、Git；客户端开发另需global.json指定的SDK。
 
-`python scripts/verify.py --client-preflight`检查客户端工程和精确SDK，不构建；缺少时返回2。`--client`执行锁定恢复、格式检查、Release构建及C#测试；加`--configuration Debug`验证Debug布局，Worker由测试构建自动准备，不依赖Release目录。`python scripts/package_client.py`从干净已提交基线构建ZIP、解压后运行真实GUI/CLI自检并生成同包证据，产物在dist/candidate。旧Qt入口已退出。活动任务见[唯一账本](.harness/todo.json)，证据见详细设计18节。
+`python scripts/verify.py --client-preflight`检查客户端工程和精确SDK，不构建；缺少时返回2。`--client`执行锁定恢复、格式检查、Release构建及C#测试；加`--configuration Debug`验证Debug布局，Worker由测试构建自动准备，不依赖Release目录。`python scripts/package_client.py`从干净已提交基线构建ZIP、解压后运行真实GUI/CLI自检并生成同包证据，产物在dist/candidate。旧Qt入口已退出。待修改见[开发账本](.harness/todo.json)，手动测试、环境缺口及验收结果见[验收账本](.harness/test.json)，历史证据见详细设计18节。
+
+运行 `python scripts/harness_ledger.py` 生成 `test-results/harness/index.html`，双击即可离线查看；支持状态、来源任务和全文筛选。看板不修改账本、不执行测试或设备操作。更新JSON后须重新生成，HTML不入Git；换候选包会把旧包通过显示为待复验，单纯文档提交不会改变所验包。缺少本机原始证据会明确标注，不凭链接存在宣称重新测试；此看板不替代发布门。
 
 源码构建后的离线GUI验证使用 `python -X utf8 scripts/gui_smoke.py`；支持 `--configuration Debug`、`--app-dir <已有WPF构建目录>`、`--timeout <秒>`，不会自动构建。入口按脚本位置定位仓库，可从其他工作目录启动。样本复制至tmp隔离副本，不复制既有data；结果、日志和24张截图归test-results/gui-smoke，每配置自动保留最近一次成功证据，失败证据保留待排查。成功删除运行副本，失败保留现场；`--keep-workspace`可显式保留成功副本。
 
@@ -73,7 +76,7 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 已发布的开发内测版本：[0.7.3-alpha.1](https://github.com/Jackrainman/embedded_helper/releases/tag/v0.7.3-alpha.1)，[直接下载单EXE](https://github.com/Jackrainman/embedded_helper/releases/download/v0.7.3-alpha.1/EmbeddedHelper.exe)，约98MiB。本次补齐ELF/AXF自动定位与DWARF兼容回退；发布使用成功CI的原始候选，软件门通过，硬件与纯净Windows未验收。
 
-当前开发版本以 VERSION 为准，包含 MCU Viewer 坐标轴、完整记录 Excel 导出及 LAN_Debug 工程接入。最终同包远程实测与发布仍由 C-07 跟踪；构建成功不代表硬件验收通过。
+当前开发版本以 VERSION 为准，包含 MCU Viewer 坐标轴、完整记录 Excel 导出及 LAN_Debug 工程接入。最终同包远程实测由验收账本跟踪，保留 C-07 来源；构建成功不代表硬件验收或发布通过。
 
 远程接入：打开工程，在远程配置页填写服务器地址和端口，点击“一键导入 LAN_Debug”，自动准备已核验工具并写入工程任务；离线可直接选择官方 ZIP。生成任务通过 Python 使用工程内 LAN_Debug/jlink_flash.py 的相对路径，无需绑定本机环境变量或重启 VS Code。新配置使用 LAN_Debug/remote-jlink.json；已有 Debug_LAN 或工程根配置继续兼容。重新导入迁移由助手管理的旧入口，保留用户本地任务；冲突时提示并保留原文件。移除只恢复受管配置，保留远程 JSON、工具锁和缓存供复用。客户端脚本可随工程提交 Git，另一台电脑只需准备 Python 3.10+ 和 SEGGER。
 

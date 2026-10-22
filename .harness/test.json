@@ -1,0 +1,412 @@
+{
+  "schemaVersion": 1,
+  "candidate": {
+    "version": "1.0.1-alpha.1",
+    "commit": "8617637637bd8ba53b6c701ef16a9b8e9912c88e",
+    "packageSha256": "e7a45f5b811ea9567d71d8aa6c2938c90f6fec7f6ba8cf55885892f11fd5cc09",
+    "executableSha256": "f4185762cfc805bec625af479842124eea5ce8b3e828a4d6519948f477b77ff1"
+  },
+  "checks": [
+    {
+      "id": "AT-01",
+      "origin": "R-35",
+      "title": "LAN_Debug 在线与离线工具导入",
+      "refs": [
+        "REM-01",
+        "REM-03"
+      ],
+      "kind": "software",
+      "method": "computer_use",
+      "environment": [
+        "Windows 桌面",
+        "GitHub 下载网络",
+        "官方客户端 ZIP"
+      ],
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "在隔离工程、无缓存条件下一键导入官方脚本包。",
+        "导入无效 ZIP，核对脚本与配置摘要未变化；换有效 ZIP 重试。",
+        "重复导入、正常关闭并重新打开，核对工具版本和接入状态。"
+      ],
+      "expected": "在线/离线导入成功；坏包不覆盖配置；重试恢复、重复操作幂等，重开状态正确。",
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-22T11:06:10+08:00",
+        "method": "computer_use",
+        "kind": "software",
+        "environment": "Windows 桌面隔离工程，1.0.1-alpha.1 最终包，LAN_Debug_client 0.2.0-alpha.1",
+        "candidate": {
+          "version": "1.0.1-alpha.1",
+          "commit": "8617637637bd8ba53b6c701ef16a9b8e9912c88e",
+          "packageSha256": "e7a45f5b811ea9567d71d8aa6c2938c90f6fec7f6ba8cf55885892f11fd5cc09",
+          "executableSha256": "f4185762cfc805bec625af479842124eea5ce8b3e828a4d6519948f477b77ff1"
+        },
+        "details": "从 5aa44a7 的详细设计18.30及本地原始证据导入；recordedAt 为记录提交时间，不是本轮重新执行。",
+        "evidence": [
+          {
+            "path": ".docs/03_详细设计说明书.md",
+            "label": "详细设计18.30：验收过程与边界"
+          },
+          {
+            "path": "test-results/lan-client-20261022/desktop-delivery.json",
+            "label": "最终包身份"
+          },
+          {
+            "path": "test-results/lan-client-20261022/ui-online-import.png",
+            "label": "在线导入"
+          },
+          {
+            "path": "test-results/lan-client-20261022/ui-offline-retry.txt",
+            "label": "离线重试"
+          },
+          {
+            "path": "test-results/lan-client-20261022/ui-reopened.png",
+            "label": "重开状态"
+          },
+          {
+            "path": "test-results/lan-client-20261022/cli-project.json",
+            "label": "CLI 检查"
+          },
+          {
+            "path": "test-results/lan-client-20261022/ui-cleanup.json",
+            "label": "本次窗口清理"
+          }
+        ]
+      }
+    },
+    {
+      "id": "AT-02",
+      "origin": "R-34",
+      "title": "VS Code 消费最终 LAN_Debug 脚本",
+      "refs": [
+        "REM-01",
+        "REM-04",
+        "REM-07",
+        "REM-08"
+      ],
+      "kind": "hardware",
+      "method": "manual",
+      "environment": [
+        "VS Code/EIDE",
+        "Python 3.10+",
+        "目标板与 J-Link",
+        "可用远端"
+      ],
+      "status": "blocked",
+      "reason": "远端目前不可用；尚未完成最终包实际设备任务验收。",
+      "resumeWhen": "远端与目标板恢复，明确本轮设备操作范围后，与 AT-10 同次验收。",
+      "steps": [
+        "确认最终包生成的任务、脚本、连接配置和固件匹配。",
+        "在明确设备操作授权下执行实际烧录和源码调试任务。",
+        "检查结束/取消后释放，核对本地任务和用户配置仍保留。"
+      ],
+      "expected": "实际任务使用正确脚本与固件；烧录/调试可用，结束后探针可再次使用。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-03",
+      "origin": "R-36",
+      "title": "其余页面状态反馈",
+      "refs": [
+        "NFR-01"
+      ],
+      "kind": "software",
+      "method": "computer_use",
+      "environment": [
+        "Windows 桌面",
+        "隔离工程与配置"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "逐页检查工程、共享连接、RTT、远程配置、设置的空状态、有效状态与错误状态。",
+        "检查用途、当前结果、下一步是否明确，错误是否就地显示，反馈是否不只靠颜色。",
+        "核对配置保存和重新读取；确有缺失时建立具体开发任务。"
+      ],
+      "expected": "各页状态可理解且与实际数据一致；已有串口文案和LF/CRLF子项不重复列为缺陷。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-04",
+      "origin": "R-36",
+      "title": "页面窄窗与缩放，以及遗留清理核对",
+      "refs": [
+        "NFR-01"
+      ],
+      "kind": "software",
+      "method": "computer_use",
+      "environment": [
+        "Windows 桌面",
+        "可调整窗口及显示缩放的测试环境"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "在最小窗口和测试缩放环境检查五个页面，确认按钮、错误提示、滚动可用。",
+        "核对旧记录中中断的窗口/标签是否仍存在；仅关闭确认属于该次测试且无未保存内容的对象，不能照旧ID盲目关闭。",
+        "关闭本次创建的窗口，保留用户原有窗口并记录。"
+      ],
+      "expected": "内容无遮挡、操作可达；旧清理事项有核对结果，本次测试不遗留窗口。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-05",
+      "origin": "R-41",
+      "title": "长变量名辨识与真实悬停",
+      "refs": [
+        "VIS-02",
+        "VIS-04"
+      ],
+      "kind": "software",
+      "method": "computer_use",
+      "environment": [
+        "Windows 桌面",
+        "含深层结构体及同名末级字段的 ELF"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "添加两个末级字段同名、父级不同的长变量。",
+        "缩至最小窗口，核对名称区分并用鼠标实际悬停。",
+        "检查搜索、记录和导出仍保留完整变量名。"
+      ],
+      "expected": "窄窗下可区分变量，真实悬停展示完整路径；搜索、记录及导出不丢名称。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-06",
+      "origin": "R-41",
+      "title": "系统 DPI 缩放下的变量名与布局",
+      "refs": [
+        "VIS-02",
+        "VIS-04"
+      ],
+      "kind": "software",
+      "method": "manual",
+      "environment": [
+        "可改变系统DPI的测试桌面"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "记录原始DPI，在测试环境分别使用100%、125%、150%缩放检查长变量名和最小窗口。",
+        "在各缩放下实际悬停，确认完整路径及控件可达；结束恢复原设置。"
+      ],
+      "expected": "系统缩放下无裁切或无法操作；仅改变字体大小不计为通过。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-07",
+      "origin": "R-42",
+      "title": "系统对话框手选外部 AXF",
+      "refs": [
+        "PRJ-02",
+        "PRJ-08",
+        "VIS-02"
+      ],
+      "kind": "software",
+      "method": "computer_use",
+      "environment": [
+        "Windows 系统文件对话框",
+        "工程外可解析 AXF"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "从浏览固件入口打开系统文件对话框，实际选择工程外AXF。",
+        "确认路径进入界面并解析；再取消一次选择，核对已选路径保持。"
+      ],
+      "expected": "完整手选路径可用；取消不破坏现有选择。自动定位和直接填写控件不能替代此路径。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-08",
+      "origin": "R-42",
+      "title": "学弟原始 AXF 兼容回归",
+      "refs": [
+        "PRJ-02",
+        "VIS-02",
+        "AC-14"
+      ],
+      "kind": "sample",
+      "method": "computer_use",
+      "environment": [
+        "学弟原始 AXF",
+        "配套构建信息及预期变量"
+      ],
+      "status": "blocked",
+      "reason": "学弟原始AXF尚未提供。",
+      "resumeWhen": "取得原始AXF及可确认的预期结果后执行。",
+      "steps": [
+        "记录原始样本摘要及来源。",
+        "用最终包解析并核对预期变量、固定地址和readelf回退反馈。",
+        "复核样本摘要未变化，记录失败时可重试的行为。"
+      ],
+      "expected": "真实原始样本得到可核对的解析结果，原文件不被修改。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-09",
+      "origin": "C-07",
+      "title": "本地 USB 实际变量曲线",
+      "refs": [
+        "VIS-05",
+        "CON-01",
+        "AC-04"
+      ],
+      "kind": "hardware",
+      "method": "manual",
+      "environment": [
+        "本地 J-Link 20250010",
+        "目标板",
+        "与固件匹配的 ELF"
+      ],
+      "status": "blocked",
+      "reason": "最终包本地实机验收尚未安排，当前设备状态待确认。",
+      "resumeWhen": "具备本地测试时段并确认设备状态和本轮操作范围。",
+      "steps": [
+        "核对板卡固件与ELF匹配、当前设备状态及本轮授权。",
+        "在最终包检查全局/嵌套变量、200Hz设置、实际值与曲线、接收率。",
+        "暂停/恢复、停止释放并重连，记录真实结果。"
+      ],
+      "expected": "本地采集与释放重连正常；本地通过不替代远程及网页切换验收。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-10",
+      "origin": "C-07",
+      "title": "远程 200Hz 采集与网页 RTT 切换",
+      "refs": [
+        "VIS-05",
+        "CON-01",
+        "AC-04"
+      ],
+      "kind": "hardware",
+      "method": "manual",
+      "environment": [
+        "远端服务",
+        "目标板与匹配 ELF",
+        "可操作的网页RTT浏览器"
+      ],
+      "status": "blocked",
+      "reason": "远端已关闭，浏览器连接状态尚待恢复确认。",
+      "resumeWhen": "远端恢复且网页可操作，确认设备操作范围后执行。",
+      "steps": [
+        "核对最终包和LAN_Debug客户端版本，确认包含取消调试回收修复。",
+        "验证全局/嵌套变量、200Hz设置、实际值、坐标轴、实际接收率、暂停恢复。",
+        "停止释放并重连，在客户端采集与网页RTT之间双向手动切换。"
+      ],
+      "expected": "数据与状态正确，释放后可重连或切换；既有短测、旧包及本地USB结果不能替代。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-11",
+      "origin": "C-05",
+      "title": "变量与 RTT 各30分钟及异常恢复",
+      "refs": [
+        "AC-04",
+        "AC-05",
+        "AC-13"
+      ],
+      "kind": "hardware",
+      "method": "manual",
+      "environment": [
+        "目标板/J-Link",
+        "可用远端",
+        "匹配固件与 ELF"
+      ],
+      "status": "blocked",
+      "reason": "远端不可用；网页重复日志的已有修复仍需核对合入和部署。",
+      "resumeWhen": "远端恢复且C-05开发任务收口，具备长稳测试窗口。",
+      "steps": [
+        "复用AT-02/AT-10的适用证据，使用同一最终包。",
+        "分别运行变量与RTT至少30分钟，记录内存、响应、缺口和重复日志。",
+        "按授权范围验证断连恢复、停止释放后外部调试与恢复采集。"
+      ],
+      "expected": "各30分钟链路稳定，异常恢复和资源释放可核对；网页重复日志修复须完成交付验证。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-12",
+      "origin": "C-05",
+      "title": "串口1Mbps双向30分钟一致性",
+      "refs": [
+        "AC-06",
+        "AC-13"
+      ],
+      "kind": "hardware",
+      "method": "manual",
+      "environment": [
+        "串口测试对端",
+        "1Mbps链路",
+        "可核验序号/校验的输入"
+      ],
+      "status": "paused",
+      "reason": "用户已要求暂缓串口链路排查和长段发送。",
+      "resumeWhen": "用户明确恢复本项后再安排；环境恢复不自动解除暂缓。",
+      "steps": [
+        "仅在用户明确恢复本项后，使用最终包运行1Mbps双向至少30分钟。",
+        "按已知字节/序号/校验核对原始记录、顺序、缺口及异常恢复。"
+      ],
+      "expected": "双向数据一致性和长稳通过；仅收到可读文字不能计为通过。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-13",
+      "origin": "C-05",
+      "title": "干净 Windows 成品运行",
+      "refs": [
+        "AC-07",
+        "AC-13"
+      ],
+      "kind": "clean_windows",
+      "method": "manual",
+      "environment": [
+        "无开发环境的干净 Windows",
+        "最终交付包"
+      ],
+      "status": "blocked",
+      "reason": "干净Windows测试入口尚未确认。",
+      "resumeWhen": "取得干净Windows测试环境，明确最终包身份。",
+      "steps": [
+        "确认未预装.NET及开发环境，记录系统与安装条件。",
+        "检查助手首次/再次启动、搬迁及设置保留。",
+        "验证缺Python时LAN_Debug任务给出明确指引，安装所需Python后执行离线配置检查；不默认连接设备。"
+      ],
+      "expected": "助手自身无需预装.NET/Python可启动；LAN_Debug脚本所需外部Python依赖有明确说明。",
+      "lastResult": null
+    },
+    {
+      "id": "AT-14",
+      "origin": "H-01",
+      "title": "离线看板真实浏览器操作",
+      "refs": [
+        "NFR-05"
+      ],
+      "kind": "software",
+      "method": "manual",
+      "environment": [
+        "支持本地 HTML 的桌面浏览器",
+        "当前双账本生成的 test-results/harness/index.html"
+      ],
+      "status": "pending",
+      "reason": "浏览器工具策略禁止 file: 协议，本轮未进行真实页面交互；用户可在本机双击验收。",
+      "resumeWhen": "",
+      "steps": [
+        "重新生成看板并记录页面底部账本摘要和本次 Harness 源码提交。",
+        "双击 HTML，核对总数、状态筛选、来源筛选、中文搜索及无结果反馈；清空筛选恢复全部。",
+        "展开开发及验收卡片，点击关联验收，核对缺条件、用户暂缓和历史通过说明。",
+        "查看本机证据链接，确认缺失证据以文字说明；窄窗口核对无横向溢出，使用 Tab/Enter 操作筛选与展开。"
+      ],
+      "expected": "筛选组合及关联跳转正确，文字/证据路径可读；无隐式修改、网络依赖或设备操作。结果绑定页面展示的候选包，并在实际环境和证据中额外记录账本摘要及 Harness 源码提交。",
+      "lastResult": null
+    }
+  ]
+}

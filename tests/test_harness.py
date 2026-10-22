@@ -36,7 +36,9 @@ class HarnessTests(unittest.TestCase):
         self.assertTrue(any('单源' in x for x in verify.validate(self.root)))
         p = self.root / '.harness/todo.json'
         ledger = json.loads(p.read_text(encoding='utf-8'))
-        ledger['tasks'][0]['dependsOn'] = [ledger['tasks'][1]['id']]
+        fixture = dict(ledger['tasks'][0], id='FIX-01', dependsOn=[])
+        ledger['tasks'] = [ledger['tasks'][0], fixture]
+        ledger['tasks'][0]['dependsOn'] = [fixture['id']]
         ledger['tasks'][1]['dependsOn'] = [ledger['tasks'][0]['id']]
         p.write_text(json.dumps(ledger), encoding='utf-8')
         self.assertTrue(any('账本' in x for x in verify.validate(self.root)))
@@ -45,6 +47,18 @@ class HarnessTests(unittest.TestCase):
         # 规格文档已迁入.docs，留在根目录视为副本漂移。
         shutil.copy2(self.root / verify.REQUIREMENTS, self.root / '01_需求规格说明书.md')
         self.assertIn('文档不在单源清单: 01_需求规格说明书.md', verify.validate(self.root))
+
+    def test_missing_acceptance_ledger_is_rejected(self):
+        (self.root / '.harness/test.json').unlink(missing_ok=True)
+        self.assertTrue(any('验收账本' in error for error in verify.validate(self.root)))
+
+    def test_blocked_acceptance_requires_a_reason(self):
+        path = self.root / '.harness/test.json'
+        ledger = json.loads(path.read_text(encoding='utf-8'))
+        ledger['checks'][0].update(status='blocked', reason='', resumeWhen='')
+        path.write_text(json.dumps(ledger), encoding='utf-8')
+        self.assertTrue(any('受阻/暂缓须填写原因和恢复条件' in error
+                            for error in verify.validate(self.root)))
 
     def test_real_commit_hook_and_ignore_policy(self):
         def run(*args):

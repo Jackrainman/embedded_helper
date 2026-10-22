@@ -12,6 +12,9 @@ import tempfile
 import unittest
 import xml.etree.ElementTree as ET
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from harness_ledger import validate_ledgers
+
 if hasattr(sys.stdout, 'reconfigure'):
     sys.stdout.reconfigure(encoding='utf-8')
 
@@ -131,31 +134,7 @@ def validate(root):
             target = target.strip('<>').split('#')[0]
             if target and not re.match(r'[a-zA-Z]+:', target) and not (p.parent / target).exists():
                 errors.append(f'断链: {name}: {target}')
-    try:
-        ledger = json.loads((root / '.harness/todo.json').read_text(encoding='utf-8'))
-        assert ledger['schemaVersion'] == 1
-        tasks = ledger['tasks']
-        ids = [t['id'] for t in tasks]
-        assert len(ids) == len(set(ids))
-        requirements = (root / REQUIREMENTS).read_text(encoding='utf-8-sig')
-        graph = {}
-        for t in tasks:
-            assert re.fullmatch(r'[A-Z0-9]+-\d+', t['id'])
-            assert t['status'] in {'todo', 'in_progress', 'blocked', 'done'}
-            assert isinstance(t['doneWhen'], str) and len(t['doneWhen']) > 10
-            assert isinstance(t['refs'], list) and t['refs']
-            assert all(re.fullmatch(r'[A-Z]+-\d+', ref) and ref in requirements for ref in t['refs'])
-            assert isinstance(t['dependsOn'], list)
-            assert all(d in ids and d != t['id'] for d in t['dependsOn'])
-            graph[t['id']] = t['dependsOn']
-        def visit(n, stack):
-            assert n not in stack, '任务依赖环'
-            for d in graph[n]:
-                visit(d, stack | {n})
-        for n in graph:
-            visit(n, set())
-    except (OSError, ValueError, KeyError, TypeError, AssertionError) as e:
-        errors.append(f'任务账本无效: {e}')
+    errors.extend(validate_ledgers(root))
     try:
         manifest = json.loads((root / 'tests/fixtures/manifest.json').read_text(encoding='utf-8'))
         assert re.fullmatch('[0-9a-f]{40}', manifest['upstreamCommit'])
