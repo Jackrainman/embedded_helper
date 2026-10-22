@@ -1220,7 +1220,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-17-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "5a1a82dadba15a520dd63f5dac20f0679953d6b2"
       }
     },
     {
@@ -1238,7 +1239,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：161项客户端测试通过；空/非数/越界端口中文字段提示；workspace folders/path及launch configurations缺失/类型错误指明文件，拒绝无效计划且保留原文件；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "输入空/非数字/越界探针端口和GDB端口，核对错误位置及磁盘未变。",
@@ -1255,7 +1256,20 @@
         "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:60",
         "src/EmbeddedHelper.Core/Projects/ProjectReader.cs:36",
         "src/EmbeddedHelper.Core/Projects/VsCodeIntegration.cs:72"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-21",
+        "recordedAt": "2026-10-22T10:18:15.346147+00:00",
+        "result": "passed",
+        "details": "161项客户端测试通过；空/非数/越界端口中文字段提示；workspace folders/path及launch configurations缺失/类型错误指明文件，拒绝无效计划且保留原文件",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-21-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-33",

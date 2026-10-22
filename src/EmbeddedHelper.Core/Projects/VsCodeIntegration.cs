@@ -74,7 +74,7 @@ public static class VsCodeIntegration
         if (File.Exists(launchPath))
         {
             using var existing = JsonDocument.Parse(File.ReadAllText(launchPath), ProjectReader.JsonOptions);
-            var local = existing.RootElement.GetProperty("configurations").EnumerateArray().Where(e => e.TryGetProperty("servertype", out var type) && type.GetString() == "jlink").ToArray();
+            var local = ProjectReader.LaunchConfigurations(existing.RootElement, launchPath).Where(e => e.TryGetProperty("servertype", out var type) && type.GetString() == "jlink").ToArray();
             if (local.Length == 1 && local[0].TryGetProperty("svdFile", out var svd)) launch["svdFile"] = svd.GetString();
         }
         ManagedEntry[] desired = [new(".vscode/tasks.json", "tasks", "label", flashLabel, flash), new(".vscode/tasks.json", "tasks", "label", gdbLabel, gdb), new(".vscode/launch.json", "configurations", "name", debugName, launch)];

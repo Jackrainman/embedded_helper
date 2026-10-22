@@ -7,6 +7,12 @@ namespace EmbeddedHelper.Core;
 
 public static class RemoteConfiguration
 {
+    public static int ParsePort(string text, string field, int maximum = 65535)
+    {
+        if (!int.TryParse(text, System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var port) || port < 1 || port > maximum)
+            throw new ArgumentException($"{field}须为1～{maximum}的整数，请修改该字段。");
+        return port;
+    }
     public static ConfigPlan Plan(ProjectInfo project, BuildTarget target, string host, int port, string? webAddress = null)
     {
         if (project.Family is not ("G4" or "H7" or "F4" or "F1")) throw new InvalidDataException("该系列尚未完成配置适配，保留只读。");

@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Globalization;
 using System.IO;
 using System.Windows;
 using EmbeddedHelper.Core;
@@ -20,7 +19,7 @@ public partial class MainWindow
     {
         try
         {
-            ShowPlan(RemoteConfiguration.Plan(project ?? throw new InvalidOperationException("请先打开工程。"), Target ?? throw new InvalidOperationException("请选择目标。"), remoteView.Host, int.Parse(remoteView.Port, CultureInfo.InvariantCulture), remoteView.Web));
+            ShowPlan(RemoteConfiguration.Plan(project ?? throw new InvalidOperationException("请先打开工程。"), Target ?? throw new InvalidOperationException("请选择目标。"), remoteView.Host, RemoteConfiguration.ParsePort(remoteView.Port, "远程探针端口"), remoteView.Web));
         }
         catch (Exception ex) { remoteView.Invalidate(); Report(ex.Message); }
     }
@@ -58,7 +57,7 @@ public partial class MainWindow
         {
             var loaded = project ?? throw new InvalidOperationException("请先打开工程。");
             var release = remoteView.SelectedRelease ?? throw new InvalidOperationException("请选择 LAN_Debug 版本。");
-            var candidate = VsCodeIntegration.Plan(loaded, Target ?? throw new InvalidOperationException("请选择目标。"), remoteView.Host, int.Parse(remoteView.Port, CultureInfo.InvariantCulture), int.Parse(remoteView.GdbPort, CultureInfo.InvariantCulture), release, remoteView.EideUpload, remoteView.Web);
+            var candidate = VsCodeIntegration.Plan(loaded, Target ?? throw new InvalidOperationException("请选择目标。"), remoteView.Host, RemoteConfiguration.ParsePort(remoteView.Port, "远程探针端口"), RemoteConfiguration.ParsePort(remoteView.GdbPort, "本机GDB端口", 65533), release, remoteView.EideUpload, remoteView.Web);
             ShowPlan(candidate); toolPlan = candidate; planRelease = release; planZip = null;
         }
         catch (Exception ex) { remoteView.Invalidate(); Report(ex.Message); }

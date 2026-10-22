@@ -8,6 +8,19 @@ public sealed record ProjectInfo(string Root, string Name, string Family, string
 
 public static class ProjectReader
 {
+    internal static JsonElement RequiredJson(JsonElement value, string field, JsonValueKind kind, string file)
+    {
+        if (value.ValueKind != JsonValueKind.Object || !value.TryGetProperty(field, out var item) || item.ValueKind != kind || (kind == JsonValueKind.String && string.IsNullOrWhiteSpace(item.GetString())))
+            throw new InvalidDataException($"{file}：字段 {field} 缺失、为空或类型错误（需要 {kind}）。");
+        return item;
+    }
+    internal static JsonElement[] LaunchConfigurations(JsonElement value, string file)
+    {
+        var items = RequiredJson(value, "configurations", JsonValueKind.Array, file).EnumerateArray().ToArray();
+        if (items.Any(c => c.ValueKind != JsonValueKind.Object || (c.TryGetProperty("servertype", out var type) && type.ValueKind != JsonValueKind.String)))
+            throw new InvalidDataException(file + "：configurations 条目须为对象，servertype 须为字符串。");
+        return items;
+    }
     private static string MissingElf(BuildTarget target) => $"目标 {target.Name} 的 ELF/AXF 不存在，已检查：{Path.ChangeExtension(target.ElfPath, ".elf")}；{Path.ChangeExtension(target.ElfPath, ".axf")}";
     public static string ResolveElfPath(string expectedPath)
     {
@@ -33,9 +46,9 @@ public static class ProjectReader
         if (File.Exists(root))
         {
             using var workspace = JsonDocument.Parse(File.ReadAllText(root), JsonOptions);
-            var folders = workspace.RootElement.GetProperty("folders").EnumerateArray().ToArray();
-            if (folders.Length != 1) throw new InvalidDataException("工作区含多个工程，请直接打开要使用的工程目录。");
-            root = Path.GetFullPath(folders[0].GetProperty("path").GetString()!, Path.GetDirectoryName(root)!);
+            var folders = RequiredJson(workspace.RootElement, "folders", JsonValueKind.Array, root).EnumerateArray().ToArray();
+            if (folders.Length != 1) throw new InvalidDataException(root + "：folders 须包含一个工程，请直接打开要使用的工程目录。");
+            root = Path.GetFullPath(RequiredJson(folders[0], "path", JsonValueKind.String, root).GetString()!, Path.GetDirectoryName(root)!);
         }
         var path = Path.Combine(root, ".eide", "eide.yml");
         if (!File.Exists(path)) throw new InvalidDataException("未找到 .eide/eide.yml，请选择 EIDE 工程根目录。");
@@ -52,8 +65,7 @@ public static class ProjectReader
         if (File.Exists(launchPath))
         {
             using var launch = JsonDocument.Parse(File.ReadAllText(launchPath), JsonOptions);
-            if (launch.RootElement.TryGetProperty("configurations", out var configurations))
-                localLaunches = configurations.EnumerateArray().Where(c => c.TryGetProperty("servertype", out var kind) && kind.GetString() == "jlink").Select(c => c.Clone()).ToArray();
+            localLaunches = LaunchConfigurations(launch.RootElement, launchPath).Where(c => c.TryGetProperty("servertype", out var kind) && kind.GetString() == "jlink").Select(c => c.Clone()).ToArray();
         }
         diagnostics.Add(family == "未知" ? "该系列尚未完成配置适配；工程只读。" : "该系列已验证配置样本适配；硬件链路未验收。");
         var targets = Map(map, "targets").Children.Select(pair =>

@@ -9,6 +9,39 @@ namespace EmbeddedHelper.Tests;
 public sealed class ConfigurationTests : TestWorkspace
 {
     [Theory]
+    [InlineData("")]
+    [InlineData("abc")]
+    [InlineData("0")]
+    [InlineData("65536")]
+    public void InvalidPortsIdentifyTheField(string text)
+    {
+        Assert.Contains("探针端口", Assert.Throws<ArgumentException>(() => RemoteConfiguration.ParsePort(text, "探针端口")).Message);
+        Assert.Equal(65535, RemoteConfiguration.ParsePort("65535", "探针端口"));
+        Assert.Throws<ArgumentException>(() => RemoteConfiguration.ParsePort("65534", "GDB端口", 65533));
+    }
+    [Theory]
+    [InlineData("{}", "folders")]
+    [InlineData("{\"folders\":1}", "folders")]
+    [InlineData("{\"folders\":[{}]}", "path")]
+    [InlineData("{\"folders\":[{\"path\":4}]}", "path")]
+    public void WorkspaceFieldsNameTheFileAndField(string text, string field)
+    {
+        var file = Path.Combine(root, "bad.code-workspace"); File.WriteAllText(file, text);
+        var error = Assert.Throws<InvalidDataException>(() => ProjectReader.Read(file));
+        Assert.Contains(file, error.Message); Assert.Contains(field, error.Message);
+        Assert.Equal(text, File.ReadAllText(file));
+    }
+    [Theory]
+    [InlineData("{}")]
+    [InlineData("{\"configurations\":3}")]
+    public void LaunchConfigurationFieldIsExplicit(string text)
+    {
+        var project = CopyProject(); var file = Path.Combine(project, ".vscode/launch.json"); File.WriteAllText(file, text);
+        var error = Assert.Throws<InvalidDataException>(() => ProjectReader.Read(project));
+        Assert.Contains(Path.GetFullPath(file), error.Message); Assert.Contains("configurations", error.Message);
+        Assert.Equal(text, File.ReadAllText(file));
+    }
+    [Theory]
     [InlineData("{")]
     [InlineData("{}")]
     [InlineData("{\"schemaVersion\":99,\"entries\":[]}")]

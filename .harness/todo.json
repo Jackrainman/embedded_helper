@@ -21,36 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-21",
-      "title": "第3批 · 提供端口及工程字段的明确输入错误（Audit #21）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "App/Remote + Core/Projects",
-      "refs": [
-        "PRJ-04",
-        "REM-03"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-32",
-        "AT-03"
-      ],
-      "doneWhen": "触发：端口int.Parse和必要字段GetProperty直接抛通用异常，未指出应修改的字段。完成：校验空值、类型及端口范围，返回中文字段/文件定位并阻止无效写入；保留未知字段。仅纳入可见诊断，撤回对 Wait+TryWrite 队列模式的指认。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        21
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:23",
-        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:60",
-        "src/EmbeddedHelper.Core/Projects/ProjectReader.cs:36",
-        "src/EmbeddedHelper.Core/Projects/VsCodeIntegration.cs:72"
-      ]
-    },
-    {
       "id": "AUD-25",
       "title": "第3批 · 统一分道缩放阈值的提示语义（Audit #25）",
       "status": "todo",
