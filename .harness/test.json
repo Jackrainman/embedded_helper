@@ -1034,7 +1034,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-10-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "0b6f4040d00c1ad204bba226e726583acc4528ed"
       }
     },
     {
@@ -1052,7 +1053,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：151项客户端测试通过；摘要和下一步统一分类，readelf无变量提示重新构建；文件/工具/权限/损坏/超限错误保留原始详情；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "分别输入未找到固定地址变量、工具缺失、执行失败、调试信息损坏、权限及超限错误。",
@@ -1068,7 +1069,20 @@
         "src/EmbeddedHelper.App/Services/ElfParseFeedback.cs:23",
         "src/EmbeddedHelper.App/Services/ElfParseFeedback.cs:31",
         "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:97"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-15",
+        "recordedAt": "2026-10-22T10:13:00.909392+00:00",
+        "result": "passed",
+        "details": "151项客户端测试通过；摘要和下一步统一分类，readelf无变量提示重新构建；文件/工具/权限/损坏/超限错误保留原始详情",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-15-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-29",

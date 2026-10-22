@@ -8,6 +8,20 @@ namespace EmbeddedHelper.Tests;
 [Collection("Offline client")]
 public sealed class ElfFeedbackTests : TestWorkspace
 {
+    [Theory]
+    [InlineData("readelf 未找到固定地址变量。", "未找到固定地址变量", "重新构建")]
+    [InlineData("ARM readelf 解析失败。", "解析工具", "设置与诊断")]
+    [InlineData("ELF 调试信息长度无效。", "调试信息损坏", "ELF32")]
+    [InlineData("ELF 超过 256 MiB 解析上限。", "超过解析上限", "256 MiB")]
+    public void FailureClassificationAndActionAgree(string reason, string summary, string action)
+    {
+        var error = new InvalidDataException(reason);
+        var feedback = ElfParseFeedback.Failure(error);
+        Assert.Contains(summary, feedback.Message); Assert.Contains(action, feedback.Message);
+        Assert.Equal(error.ToString(), feedback.Details);
+        if (reason.Contains("固定地址变量")) Assert.DoesNotContain("设置与诊断", feedback.Message);
+        Assert.Contains("权限", ElfParseFeedback.Failure(new UnauthorizedAccessException("denied")).Message);
+    }
     [Fact]
     public async Task RealFilesReportFailureAndCanRetryWithoutKeepingOldSuccess()
     {

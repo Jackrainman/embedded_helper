@@ -21,35 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-15",
-      "title": "第3批 · 区分无可观察变量与 readelf 工具错误（Audit #15）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "App/ELF feedback",
-      "refs": [
-        "VIS-02",
-        "PRJ-04"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-28",
-        "AT-03"
-      ],
-      "doneWhen": "触发：readelf 未找到固定地址变量被优先分类为工具缺失/执行失败，summary/action规则重复。完成：统一错误分类且保留详细异常，变量缺失提示检查调试信息而不是错误引导安装工具；覆盖文件权限、缺工具和格式错误，实际反馈复用 AT-03。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        15
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.App/Services/ElfParseFeedback.cs:23",
-        "src/EmbeddedHelper.App/Services/ElfParseFeedback.cs:31",
-        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:97"
-      ]
-    },
-    {
       "id": "AUD-05",
       "title": "第3批 · 明确自动升版等级的使用与失败提示（Audit #5）",
       "status": "todo",
