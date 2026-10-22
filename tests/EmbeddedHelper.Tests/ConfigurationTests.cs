@@ -86,6 +86,30 @@ public sealed class ConfigurationTests : TestWorkspace
         Directory.Delete(Path.GetDirectoryName(second)!); Directory.Delete(alias);
     }
     [Fact]
+    public void RollbackCannotFollowAReplacedDirectoryOutsideTheProject()
+    {
+        var project = Path.Combine(root, "project"); var inner = Path.Combine(project, "config");
+        var outside = Path.Combine(root, "outside"); Directory.CreateDirectory(inner); Directory.CreateDirectory(outside);
+        var file = Path.Combine(inner, "a.json"); var external = Path.Combine(outside, "a.json");
+        File.WriteAllText(file, "before"); File.WriteAllText(external, "after");
+        var journals = Path.Combine(root, "journals");
+        try
+        {
+            Assert.Throws<IOException>(() => ConfigTransaction.Apply(new(project, [new(file, "before", "after")]), journals, _ =>
+            {
+                Directory.Move(inner, inner + "-saved");
+                var start = new System.Diagnostics.ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true };
+                start.ArgumentList.Add("-NoProfile"); start.ArgumentList.Add("-Command");
+                start.ArgumentList.Add("New-Item -ItemType Junction -Path '" + inner.Replace("'", "''") + "' -Target '" + outside.Replace("'", "''") + "' | Out-Null");
+                using var child = System.Diagnostics.Process.Start(start)!; child.WaitForExit(); Assert.Equal(0, child.ExitCode);
+                throw new IOException("injected failure after directory replacement");
+            }));
+            Assert.Equal("after", File.ReadAllText(external));
+            Assert.Single(ConfigTransaction.Pending(journals));
+        }
+        finally { if ((File.GetAttributes(inner) & FileAttributes.ReparsePoint) != 0) Directory.Delete(inner); }
+    }
+    [Fact]
     public void ExplicitConflictClosurePreservesEvidenceAndRejectsRaces()
     {
         var file = Path.Combine(root, "config.json"); File.WriteAllText(file, "external");

@@ -101,7 +101,11 @@ public static class ConfigTransaction
                 written.Add(change);
                 afterWrite?.Invoke(written.Count);
             }
-            if (written.Any(c => File.ReadAllText(c.Path) != c.After)) throw new IOException("写入后文件被外部修改。");
+            foreach (var change in written)
+            {
+                CheckPath(plan.Root, change.Path);
+                if (File.ReadAllText(change.Path) != change.After) throw new IOException("写入后文件被外部修改。");
+            }
             PortableData.SaveFile(journal, new { status = "committed", plan });
         }
         catch (Exception ex)
@@ -111,10 +115,11 @@ public static class ConfigTransaction
             {
                 try
                 {
+                    CheckPath(plan.Root, change.Path);
                     if (!File.Exists(change.Path) || File.ReadAllText(change.Path) != change.After) { conflicts.Add(change.Path); continue; }
                     if (change.Before == null) File.Delete(change.Path); else AtomicText(change.Path, change.Before);
                 }
-                catch (IOException) { conflicts.Add(change.Path); }
+                catch (Exception rollbackError) when (rollbackError is IOException or UnauthorizedAccessException) { conflicts.Add(change.Path); }
             }
             PortableData.SaveFile(journal, new { status = conflicts.Count == 0 ? "rolled-back" : "conflict", conflicts, plan });
             throw new IOException(conflicts.Count == 0 ? "应用失败，已恢复原文件：" + ex.Message : "应用失败，存在外部修改，请按事务备份处理：" + journal, ex);
