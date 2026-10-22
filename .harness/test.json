@@ -807,7 +807,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-06-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "db0833a77df314d9be47e8a30919957c0f48dc03"
       }
     },
     {
@@ -826,7 +827,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：135项客户端测试通过；全轮失败须持续3秒且至少3轮才抛可重试故障，部分成功/新计划清零，RTT-only不计失败；纯健康逻辑替身及既有生命周期通过，真实SDK和端到端采样替身仍待验；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "用受控 SDK/采样替身覆盖单个坏地址、短暂全失败、持续全失败及恢复。",
@@ -842,7 +843,20 @@
         "src/EmbeddedHelper.Worker/Program.cs:55",
         "src/EmbeddedHelper.Worker/Program.cs:128",
         "src/EmbeddedHelper.Core/Observation/Observation.cs:109"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-04",
+        "recordedAt": "2026-10-22T10:04:20.263471+00:00",
+        "result": "passed",
+        "details": "135项客户端测试通过；全轮失败须持续3秒且至少3轮才抛可重试故障，部分成功/新计划清零，RTT-only不计失败；纯健康逻辑替身及既有生命周期通过，真实SDK和端到端采样替身仍待验",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-04-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-24",

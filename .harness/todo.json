@@ -21,36 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-04",
-      "title": "第2批 · 升级持续全轮读取失败的健康状态（Audit #4）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "Worker/Observation",
-      "refs": [
-        "CON-03",
-        "CON-05",
-        "VIS-10"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-23",
-        "AT-24"
-      ],
-      "doneWhen": "触发：SDK 持续返回不完整读取且 RTT 未启用时仍持续发 sample，无事件看门狗无法发现采样已失效。完成：明确持续失败时间/阈值及恢复规则，区别单地址失败、全轮失败和 RTT-only，给出可重试故障并按既有生命周期释放；单次失败不得强退。离线注入和真实断连分别验收。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 2,
-      "auditRefs": [
-        4
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Worker/Program.cs:55",
-        "src/EmbeddedHelper.Worker/Program.cs:128",
-        "src/EmbeddedHelper.Core/Observation/Observation.cs:109"
-      ]
-    },
-    {
       "id": "AUD-26",
       "title": "第3批 · 校验全部通过后再注册远端版本（Audit #26）",
       "status": "todo",

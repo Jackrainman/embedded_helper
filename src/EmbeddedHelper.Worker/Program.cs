@@ -42,21 +42,24 @@ try
     Emit(new ObservationEvent("state", "采集中 · 固件与 ELF 匹配未核验", SessionId: request.SessionId, Generation: plan.Generation));
     Emit(new ObservationEvent("plan", "读取计划已应用", SessionId: request.SessionId, Generation: plan.Generation));
     var timer = Stopwatch.StartNew();
+    var health = new SamplingHealth();
     long sequence = 0, round = 0;
     while (!cancel.IsCancellationRequested)
     {
         if (mailbox.Take() is { } updated)
         {
-            plan = updated; round = 0; timer.Restart();
+            plan = updated; round = 0; timer.Restart(); health.Reset();
             Emit(new ObservationEvent("plan", "读取计划已应用", SessionId: request.SessionId, Generation: plan.Generation));
         }
         var readStart = Stopwatch.GetTimestamp();
         var values = new Dictionary<string, string>();
+        var successful = 0;
         foreach (var variable in plan.Variables)
         {
-            try { values[variable.Identity] = ElfIndex.Decode(variable, link.Read(variable)).ToString("G9", CultureInfo.InvariantCulture); }
+            try { values[variable.Identity] = ElfIndex.Decode(variable, link.Read(variable)).ToString("G9", CultureInfo.InvariantCulture); successful++; }
             catch (IOException) { values[variable.Identity] = "读取失败"; }
         }
+        health.Observe(plan.Variables.Length, successful, timer.Elapsed);
         var rtt = link.Rtt();
         Emit(new ObservationEvent("sample", "", values, rtt.Length > 0 ? Convert.ToBase64String(rtt) : null, ++sequence, request.SessionId, plan.Generation, readStart, Stopwatch.GetTimestamp(), DateTimeOffset.UtcNow));
         var delay = (int)Math.Max(0, ++round * 1000.0 / plan.SampleRate - timer.Elapsed.TotalMilliseconds);
