@@ -27,6 +27,7 @@ public partial class MainWindow
     private async void ApplyConfig(object? sender, RoutedEventArgs e) => await Guard(ApplyConfigAsync);
     private async Task ApplyConfigAsync()
     {
+        if (remoteView.ReadOnlyReason.Length > 0) throw new InvalidOperationException(remoteView.ReadOnlyReason);
         if (acquisition.HasSession || ObservationBusy || configurationBusy) throw new InvalidOperationException("请先停止采集并等待当前操作完成。");
         if (toolBusy) throw new InvalidOperationException("工具正在准备，请稍候。");
         var ready = plan ?? throw new InvalidOperationException("请先预览修改。");
@@ -69,6 +70,7 @@ public partial class MainWindow
     }
     private void ShowPlan(ConfigPlan candidate)
     {
+        if (remoteView.ReadOnlyReason.Length > 0) throw new InvalidOperationException(remoteView.ReadOnlyReason);
         if (configurationBusy || shutdownRequested) throw new InvalidOperationException("当前配置操作尚未结束。");
         remoteView.ShowPlan(candidate);
     }

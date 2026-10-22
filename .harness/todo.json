@@ -21,36 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-06",
-      "title": "第2批 · 处理损坏归属记录的半加载状态（Audit #6）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "App/Project + Core/Projects",
-      "refs": [
-        "PRJ-04",
-        "REM-05"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-22",
-        "AT-03"
-      ],
-      "doneWhen": "触发：integration.json 无效时，工程与连接已更新但加载后半段中断。完成：区分无记录与记录不可读，显示具体文件原因并保持一致的只读工程状态；不可读期间阻止接入/移除写入，修复文件后可重读。不得把异常返回 null 当作新工程。界面反馈由 AT-03 验收。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 2,
-      "auditRefs": [
-        6
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Core/Projects/VsCodeIntegration.cs:12",
-        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:63",
-        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:86",
-        "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:109"
-      ]
-    },
-    {
       "id": "AUD-04",
       "title": "第2批 · 升级持续全轮读取失败的健康状态（Audit #4）",
       "status": "todo",

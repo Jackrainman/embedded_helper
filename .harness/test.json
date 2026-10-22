@@ -758,7 +758,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-01-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "f6b5e06d3f0de2e787afa5e34d4a899f60f8081f"
       }
     },
     {
@@ -776,7 +777,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：134项客户端测试和WPF只读加载/解析/写入拒绝/修复重开回归通过；真实人工入口仍待AT-03；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "覆盖坏 JSON、未知 schema、缺少/错误类型字段及正常无归属记录。",
@@ -793,7 +794,21 @@
         "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:63",
         "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:86",
         "src/EmbeddedHelper.App/Features/Project/MainWindow.Project.cs:109"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-06",
+        "recordedAt": "2026-10-22T10:02:52.524728+00:00",
+        "result": "passed",
+        "details": "134项客户端测试和WPF只读加载/解析/写入拒绝/修复重开回归通过；真实人工入口仍待AT-03",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-build --no-restore",
+          "python -X utf8 scripts/gui_smoke.py"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-06-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-23",

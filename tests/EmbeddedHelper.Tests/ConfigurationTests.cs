@@ -8,6 +8,20 @@ namespace EmbeddedHelper.Tests;
 [Collection("Offline client")]
 public sealed class ConfigurationTests : TestWorkspace
 {
+    [Theory]
+    [InlineData("{")]
+    [InlineData("{}")]
+    [InlineData("{\"schemaVersion\":99,\"entries\":[]}")]
+    [InlineData("{\"schemaVersion\":1,\"target\":\"Debug\",\"entries\":null}")]
+    [InlineData("{\"schemaVersion\":1,\"target\":\"Debug\",\"entries\":[null]}")]
+    public void InvalidOwnershipIsDistinctFromMissingAndNamesTheFile(string text)
+    {
+        Assert.Null(VsCodeIntegration.ReadState(root));
+        var file = Path.Combine(root, ".embedded_helper/integration.json"); Directory.CreateDirectory(Path.GetDirectoryName(file)!);
+        File.WriteAllText(file, text);
+        Assert.Contains(file, Assert.Throws<InvalidDataException>(() => VsCodeIntegration.ReadState(root)).Message);
+        Assert.Equal(text, File.ReadAllText(file));
+    }
     [Fact]
     public void AncestorJunctionWorksButInternalLinksAndWriteTimeChangesAreRejected()
     {

@@ -18,9 +18,11 @@ public sealed class RemoteViewModel : INotifyPropertyChanged
     public string GdbPort { get => gdbPort; set { if (Set(ref gdbPort, value)) Invalidate(); } }
     public bool EideUpload { get => eideUpload; set { if (Set(ref eideUpload, value)) Invalidate(); } }
     public bool Busy { get => busy; set { Set(ref busy, value); Notify(nameof(CanApply)); Notify(nameof(CanEdit)); } }
-    public bool CanEdit => !Busy;
+    private string readOnlyReason = "";
+    public string ReadOnlyReason { get => readOnlyReason; set { Set(ref readOnlyReason, value); Invalidate(); Notify(nameof(CanEdit)); } }
+    public bool CanEdit => !Busy && ReadOnlyReason.Length == 0;
     public ConfigPlan? Plan { get; private set; }
-    public bool CanApply => !Busy && Plan?.Changes.Length > 0;
+    public bool CanApply => CanEdit && Plan?.Changes.Length > 0;
     public string Preview { get => preview; set => Set(ref preview, value); }
     public void ShowPlan(ConfigPlan plan)
     {

@@ -15,6 +15,7 @@ public partial class MainWindow
     }
     private async Task ImportLanAsync(string? zip)
     {
+        if (remoteView.ReadOnlyReason.Length > 0) throw new InvalidOperationException(remoteView.ReadOnlyReason);
         if (configurationBusy || toolBusy || ObservationBusy || acquisition.HasSession) throw new InvalidOperationException("请等待当前操作完成并停止采集。");
         if (zip != null)
         {

@@ -13,10 +13,15 @@ public static class VsCodeIntegration
     {
         var path = Path.Combine(root, OwnerFile);
         if (!File.Exists(path)) return null;
-        var state = JsonSerializer.Deserialize<IntegrationState>(File.ReadAllText(path), Product.Json) ?? throw new InvalidDataException("接入归属记录无效。");
-        if (state.SchemaVersion != 1 || state.Entries.Any(e => (e.File, e.Array, e.Key) is not ((".vscode/tasks.json", "tasks", "label") or (".vscode/launch.json", "configurations", "name")))) throw new InvalidDataException("接入归属记录包含不支持的条目。");
-        if (state.EideFields?.Any(f => f.Keys is not ["targets", _, "uploader"] and not ["targets", _, "uploadConfigMap", "Custom", "bin" or "commandLine" or "eraseChipCommand"]) == true) throw new InvalidDataException("EIDE归属字段无效。");
-        return state;
+        try
+        {
+            var state = JsonSerializer.Deserialize<IntegrationState>(File.ReadAllText(path), Product.Json) ?? throw new InvalidDataException("接入归属记录无效。");
+            if (state.SchemaVersion != 1 || state.Target == null || state.Entries == null || state.Entries.Any(e => e == null || e.Value == null || string.IsNullOrWhiteSpace(e.Identity) || (e.File, e.Array, e.Key) is not ((".vscode/tasks.json", "tasks", "label") or (".vscode/launch.json", "configurations", "name")))) throw new InvalidDataException("接入归属记录包含缺失或不支持的条目。");
+            if (state.EideFields?.Any(f => f == null || f.Keys is not ["targets", _, "uploader"] and not ["targets", _, "uploadConfigMap", "Custom", "bin" or "commandLine" or "eraseChipCommand"]) == true) throw new InvalidDataException("EIDE归属字段无效。");
+            return state;
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidDataException)
+        { throw new InvalidDataException("接入归属记录不可读：" + path + "；" + ex.Message, ex); }
     }
     public static ConfigPlan Plan(ProjectInfo project, BuildTarget target, string host, int port, int gdbPort, ToolRelease tool, bool eideUpload = false, string? webAddress = null)
     {

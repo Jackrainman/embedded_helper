@@ -83,7 +83,14 @@ public partial class MainWindow
             ResetWatchEditing();
             await LoadConnectionAsync();
             remoteView.Host = ""; remoteView.Port = "19011"; remoteView.Web = "";
-            var integration = VsCodeIntegration.ReadState(loaded.Root);
+            IntegrationState? integration = null;
+            remoteView.ReadOnlyReason = "";
+            try { integration = VsCodeIntegration.ReadState(loaded.Root); }
+            catch (InvalidDataException ex)
+            {
+                remoteView.ReadOnlyReason = ex.Message + "；工程接入只读，请修复该文件后重新打开工程。";
+                ProjectPage.ProjectDiagnostics.AppendText("\n" + remoteView.ReadOnlyReason);
+            }
             remoteView.GdbPort = (integration?.GdbPort ?? 2331).ToString(CultureInfo.InvariantCulture);
             remoteView.EideUpload = integration?.EideFields?.Length > 0;
             if (File.Exists(System.IO.Path.Combine(loaded.Root, ".embedded_helper", "tools.lock.json")))
@@ -108,6 +115,7 @@ public partial class MainWindow
             remoteView.Invalidate();
             await RefreshIntegrationStatusAsync();
             Report("已打开 " + loaded.Name + "。请选择 ELF 解析变量，或维护远程配置。");
+            if (remoteView.ReadOnlyReason.Length > 0) Report(remoteView.ReadOnlyReason);
             if (configuration.HasPending(loaded.Root)) Report("该工程有未完成写入，请到远程配置页恢复；外部修改不会被覆盖。");
         }
         finally { loadingProject = false; SyncObservationState(); await RefreshProjectConnectionAsync(); }
