@@ -21,36 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-26",
-      "title": "第3批 · 校验全部通过后再注册远端版本（Audit #26）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "Core/Tools",
-      "refs": [
-        "REL-06",
-        "REL-07"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-25"
-      ],
-      "doneWhen": "触发：新实现 FromManifest 在附件/标签核验前 Register；后续刷新抛错仍污染进程内 Available，之后 Save 可持久化。完成：解析与接纳分离，完整来源/附件/标签核验后再注册；失败候选不能进入内存可选目录或后续保存。保留同版本冲突和坏包拒绝，不改成静默 continue；更新依赖 FromManifest 注册副作用的测试夹具。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        26
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:42",
-        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:49",
-        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:51",
-        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:62",
-        "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:22"
-      ]
-    },
-    {
       "id": "AUD23-01",
       "title": "第3批 · 保留控制通道失败的退出原因（Audit #23）",
       "status": "todo",

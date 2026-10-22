@@ -855,7 +855,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-04-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "81e27a39bb9261f0f918f204c225aa56a5d94c7b"
       }
     },
     {
@@ -908,7 +909,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：140项客户端测试通过；离线HTTP响应覆盖size/digest/commit拒绝后Available/Find/Save均不含候选，合法注册及冲突拒绝通过；本地显式导入与纯解析分离；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "用独立进程/离线响应构造格式合法但附件大小、digest或标签提交不符的候选。",
@@ -926,7 +927,20 @@
         "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:51",
         "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:62",
         "src/EmbeddedHelper.Core/Tools/ToolCatalog.cs:22"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-26",
+        "recordedAt": "2026-10-22T10:06:50.530062+00:00",
+        "result": "passed",
+        "details": "140项客户端测试通过；离线HTTP响应覆盖size/digest/commit拒绝后Available/Find/Save均不含候选，合法注册及冲突拒绝通过；本地显式导入与纯解析分离",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-26-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-26",

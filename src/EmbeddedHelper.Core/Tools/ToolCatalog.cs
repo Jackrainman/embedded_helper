@@ -21,9 +21,9 @@ public static class ToolCatalog
         var path = CatalogPath(root); ConfigTransaction.CheckPath(root, path);
         PortableData.SaveFile(path, new Catalog(ToolRelease.Repository, ToolRelease.Available));
     }
-    public static async Task<ToolRelease[]> RefreshAsync(string root)
+    public static async Task<ToolRelease[]> RefreshAsync(string root, HttpMessageHandler? handler = null)
     {
-        using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(30) };
+        using var client = new HttpClient(handler ?? new HttpClientHandler()) { Timeout = TimeSpan.FromSeconds(30) };
         client.DefaultRequestHeaders.UserAgent.ParseAdd("EmbeddedHelper/" + Product.Version);
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(2));
         async Task<JsonDocument> Read(string url, int maximum)

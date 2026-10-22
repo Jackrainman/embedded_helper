@@ -23,7 +23,7 @@ public partial class MainWindow
             if (File.Exists(manifest))
             {
                 if (new FileInfo(manifest).Length > 65536) throw new InvalidDataException("发布清单过大。");
-                var imported = ToolRelease.FromManifest(await File.ReadAllTextAsync(manifest));
+                var imported = ToolRelease.ImportManifest(await File.ReadAllTextAsync(manifest));
                 RemotePage.ToolVersionBox.ItemsSource = ToolRelease.Available;
                 remoteView.SelectedRelease = imported;
             }

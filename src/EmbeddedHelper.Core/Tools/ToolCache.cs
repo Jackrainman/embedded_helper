@@ -32,9 +32,13 @@ public sealed record ToolRelease(string Version, string Sha256, string Commit)
         }
         return x.Length.CompareTo(y.Length);
     }
-    internal static void Register(ToolRelease release)
+    private static void Validate(ToolRelease release)
     {
         if (!Regex.IsMatch(release.Version, @"^\d+\.\d+\.\d+(?:-[A-Za-z0-9.-]+)?$") || release.Version.Length > 64 || !System.Version.TryParse(release.Version.Split('-')[0], out _) || !Regex.IsMatch(release.Sha256, "^[0-9a-f]{64}$") || !Regex.IsMatch(release.Commit, "^[0-9a-f]{40}$")) throw new InvalidDataException("客户端版本或摘要格式无效。");
+    }
+    internal static void Register(ToolRelease release)
+    {
+        Validate(release);
         var known = Known.SingleOrDefault(r => r.Version == release.Version);
         if (known != null) { if (known != release) throw new InvalidDataException("同一已发布客户端版本的内容发生变化。"); return; }
         if (discovered.GetOrAdd(release.Version, release) != release) throw new InvalidDataException("同一客户端版本存在冲突摘要。");
@@ -46,9 +50,12 @@ public sealed record ToolRelease(string Version, string Sha256, string Commit)
         if (m.GetProperty("manifestSchema").GetInt32() != 2 || m.GetProperty("toolId").GetString() != ToolId || m.GetProperty("sourceRepository").GetString() != Repository || m.GetProperty("entrypoint").GetString() != "jlink_flash.py" || m.GetProperty("pythonMinimum").GetString() != "3.10") throw new InvalidDataException("不是兼容的 LAN_Debug 客户端脚本包清单。");
         var release = new ToolRelease(m.GetProperty("version").GetString()!, m.GetProperty("packageSha256").GetString()!, m.GetProperty("upstreamCommit").GetString()!);
         if (m.GetProperty("packageName").GetString() != release.AssetName || m.GetProperty("packageBytes").GetInt64() is < 1 or > 2097152) throw new InvalidDataException("客户端包名称或大小无效。");
-        Register(release);
+        Validate(release);
         return release;
     }
+    // Explicit local manifest import is distinct from parsing an unverified remote candidate.
+    public static ToolRelease ImportManifest(string text)
+    { var release = FromManifest(text); Register(release); return release; }
     public static ToolRelease Find(string version) => Known.SingleOrDefault(r => r.Version == version) ?? (discovered.TryGetValue(version, out var value) ? value : throw new InvalidDataException("未知客户端版本；请刷新 LAN_Debug Release 目录或同时提供发布清单。"));
 }
 

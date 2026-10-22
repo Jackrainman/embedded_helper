@@ -56,7 +56,7 @@ public abstract class TestWorkspace : IDisposable
             packageBytes = new FileInfo(zip).Length,
             packageSha256 = sha
         });
-        return (zip, ToolRelease.FromManifest(manifest));
+        return (zip, ToolRelease.ImportManifest(manifest));
     }
     public void Dispose() => Directory.Delete(root, true);
 }
