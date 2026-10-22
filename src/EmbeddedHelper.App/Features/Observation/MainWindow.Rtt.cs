@@ -47,11 +47,18 @@ public partial class MainWindow
             if (shutdownRequested) return;
             await VerifySelectedProbeAsync(ready.Request);
             if (shutdownRequested) return;
-            rttSession = true;
-            ResetObservationDisplay(); RttPage.RttText.Clear();
-            await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, ready.Request);
+            await StartRttSessionAsync(ready.Request);
             RttPage.Status.Text = acquisition.State.ToString();
         }
         finally { preparing = false; SyncObservationState(); }
     });
+    private async Task StartRttSessionAsync(ObservationRequest request)
+    {
+        var previous = rttSession;
+        // Changed runs during StartAsync: retain RTT ownership until failed release is resolved.
+        rttSession = true;
+        try { await acquisition.StartAsync(RuntimePaths.Current.WorkerExecutable, request); }
+        catch { rttSession = acquisition.HasSession || previous; throw; }
+        ResetObservationDisplay(); RttPage.RttText.Clear();
+    }
 }

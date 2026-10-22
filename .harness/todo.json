@@ -21,33 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-09",
-      "title": "第1批 · 保留 RTT 启动失败前的历史与状态（Audit #9）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "App/RTT",
-      "refs": [
-        "CON-03",
-        "VIS-07"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-16"
-      ],
-      "doneWhen": "触发：StartAsync 前置位 rttSession 并清历史，启动异常后仅复位 preparing。完成：核对启动期间 Changed 回调，失败恢复原会话标志及历史，在成功边界处理清屏；保留 Coordinator 已有释放/重试约束，不把标志机械后移。离线失败注入通过，实机占用场景另由 AT-11 补验。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 1,
-      "auditRefs": [
-        9
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.App/Features/Observation/MainWindow.Rtt.cs:50",
-        "src/EmbeddedHelper.Core/Observation/ObservationCoordinator.cs:46"
-      ]
-    },
-    {
       "id": "AUD-03",
       "title": "第1批 · 防护异常 RTT Base64 事件（Audit #3）",
       "status": "todo",

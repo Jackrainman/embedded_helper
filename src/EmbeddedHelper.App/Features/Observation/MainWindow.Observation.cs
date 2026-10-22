@@ -14,7 +14,7 @@ public partial class MainWindow
 {
     private readonly ObservationViewModel observationView = new();
     public ObservableCollection<VariableRow> Variables => observationView.Variables;
-    private readonly ObservationCoordinator acquisition = new();
+    private readonly ObservationCoordinator acquisition;
     private readonly Decoder rttDecoder = Encoding.UTF8.GetDecoder();
     private readonly StringBuilder rttHistory = new();
     private DateTime elfStamp;

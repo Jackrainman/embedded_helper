@@ -467,7 +467,8 @@
           "test-results/audit-20261022/AUD-08-green.log"
         ],
         "result": "passed",
-        "scope": "显示断言，不代表Worker或硬件链路"
+        "scope": "显示断言，不代表Worker或硬件链路",
+        "commit": "afe07f765ae34b0b035d522c312fd92a54d25000"
       }
     },
     {
@@ -485,7 +486,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：WPF替身覆盖启动失败、释放失败保留停止入口、成功重试清屏及Changed归属；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "预置 RTT 历史，注入启动失败及释放失败，核对文本、标志和按钮状态。",
@@ -500,7 +501,21 @@
       "sourceEvidence": [
         "src/EmbeddedHelper.App/Features/Observation/MainWindow.Rtt.cs:50",
         "src/EmbeddedHelper.Core/Observation/ObservationCoordinator.cs:46"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-09",
+        "recordedAt": "2026-10-22T09:47:11.741046+00:00",
+        "result": "passed",
+        "details": "WPF替身覆盖启动失败、释放失败保留停止入口、成功重试清屏及Changed归属",
+        "commands": [
+          "dotnet build EmbeddedHelper.slnx -c Release --no-restore",
+          "python -X utf8 scripts/gui_smoke.py"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-09-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-17",

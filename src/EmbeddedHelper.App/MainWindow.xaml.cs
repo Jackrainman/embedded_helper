@@ -12,8 +12,11 @@ public partial class MainWindow : Window
     private bool closing, shutdownRequested;
     private readonly ConnectionView ConnectionPage = new();
 
-    public MainWindow()
+    public MainWindow() : this(new ObservationCoordinator()) { }
+
+    internal MainWindow(ObservationCoordinator coordinator)
     {
+        acquisition = coordinator;
         InitializeComponent();
         ConnectionPage.SaveRequested += SaveConnection;
         ConnectionPage.RefreshRequested += async (_, _) => await RefreshProbeListAsync();
