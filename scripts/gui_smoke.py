@@ -106,7 +106,7 @@ def run_smoke(app_directory, configuration='Release', timeout=60, keep_workspace
         if code:
             raise RuntimeError(f'GUI进程退出码: {code}')
         result = validate_result(qa)
-        metadata.update(status='passed', version=result.get('version'), screenshots=len(SCREENSHOTS))
+        metadata.update(status='passed', guiStatus='passed', version=result.get('version'), screenshots=len(SCREENSHOTS))
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError, KeyboardInterrupt) as error:
         metadata['error'] = f'{type(error).__name__}: {error}'
     finally:
@@ -132,18 +132,26 @@ def run_smoke(app_directory, configuration='Release', timeout=60, keep_workspace
             latest = evidence.parent / 'latest.json'
             try:
                 previous = json.loads(latest.read_text(encoding='utf-8')) if latest.is_file() else {}
-            except (OSError, ValueError):
-                previous = {}
-            write_json(latest, {'run': evidence.name})
-            old_name = previous.get('run', '') if isinstance(previous, dict) else ''
-            old_name = old_name if isinstance(old_name, str) else ''
-            old = evidence.parent / old_name
-            if (old_name.startswith('run-') and len(old_name) == 36
-                    and all(c in '0123456789abcdef' for c in old_name[4:])
-                    and old.parent == evidence.parent and old != evidence and not old.is_symlink()
-                    and (old / 'run.json').is_file()
-                    and json.loads((old / 'run.json').read_text(encoding='utf-8')).get('status') == 'passed'):
-                remove_run(old, evidence.parent)
+                if not isinstance(previous, dict):
+                    raise ValueError(f'旧证据索引不是对象: {latest}')
+                old_name = previous.get('run', '')
+                old_name = old_name if isinstance(old_name, str) else ''
+                old = evidence.parent / old_name
+                if (old_name.startswith('run-') and len(old_name) == 36
+                        and all(c in '0123456789abcdef' for c in old_name[4:])
+                        and old.parent == evidence.parent and old != evidence and not old.is_symlink()
+                        and not old.is_junction() and (old / 'run.json').is_file()):
+                    previous_run = json.loads((old / 'run.json').read_text(encoding='utf-8'))
+                    if not isinstance(previous_run, dict):
+                        raise ValueError(f'旧证据不是对象: {old / "run.json"}')
+                    if previous_run.get('status') == 'passed':
+                        remove_run(old, evidence.parent)
+                write_json(latest, {'run': evidence.name})
+                metadata['maintenanceStatus'] = 'passed'
+            except (OSError, ValueError) as error:
+                metadata.update(status='failed', maintenanceStatus='failed',
+                                error=f'证据维护失败（新GUI证据已保留）: {error}')
+            write_json(evidence / 'run.json', metadata)
     print(json.dumps(metadata, ensure_ascii=False))
     print('GUI验证证据:', evidence)
     return 0 if metadata['status'] == 'passed' else 1

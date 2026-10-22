@@ -16,6 +16,27 @@ spec.loader.exec_module(gui)
 
 
 class GuiSmokeTests(unittest.TestCase):
+    def test_old_evidence_failure_retains_new_evidence_and_reports_failure(self):
+        for mode in ['corrupt', 'locked']:
+            with self.subTest(mode=mode):
+                parent = self.root / 'test-results/gui-smoke/Release'
+                old = parent / ('run-' + ('a' if mode == 'corrupt' else 'b') * 32)
+                old.mkdir(parents=True, exist_ok=True)
+                (old / 'run.json').write_text('{' if mode == 'corrupt' else '{"status":"passed"}')
+                gui.write_json(parent / 'latest.json', {'run': old.name})
+                before = set(self.runs())
+                original = gui.remove_run
+                def remove(path, parent):
+                    if path == old:
+                        raise PermissionError('old evidence locked')
+                    original(path, parent)
+                with patch.object(gui, 'run_process', side_effect=self.fake_gui), patch.object(gui, 'remove_run', side_effect=remove), patch('builtins.print'):
+                    self.assertEqual(gui.run_smoke(self.app), 1)
+                latest = json.loads((parent / 'latest.json').read_text())
+                self.assertEqual(latest['run'], old.name)
+                records = [json.loads((p / 'run.json').read_text(encoding='utf-8')) for p in set(self.runs()) - before]
+                self.assertTrue(any(r.get('maintenanceStatus') == 'failed' and r['status'] == 'failed' and r.get('guiStatus') == 'passed' for r in records))
+
     def setUp(self):
         (ROOT / 'tmp').mkdir(exist_ok=True)
         self.temp = tempfile.TemporaryDirectory(dir=ROOT / 'tmp')

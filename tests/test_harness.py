@@ -14,6 +14,16 @@ spec.loader.exec_module(verify)
 
 
 class HarnessTests(unittest.TestCase):
+    def test_python_syntax_error_reports_source_line_and_nonzero(self):
+        source = self.root / 'scripts/bad.py'
+        source.parent.mkdir(exist_ok=True)
+        source.write_text('def broken(:\n    pass\n')
+        errors = verify.python_syntax_errors(self.root)
+        self.assertTrue(any('bad.py:1:' in error for error in errors))
+        with patch.object(verify, 'ROOT', self.root), patch.object(verify, 'validate', return_value=[]), patch.object(verify, 'environment'), patch('sys.argv', ['verify.py']), patch('builtins.print') as output:
+            self.assertEqual(verify.main(), 1)
+        self.assertTrue(any('bad.py:1:' in str(call) for call in output.call_args_list))
+
     def setUp(self):
         (ROOT / 'tmp').mkdir(exist_ok=True)
         self.temp = tempfile.TemporaryDirectory(dir=ROOT / 'tmp')

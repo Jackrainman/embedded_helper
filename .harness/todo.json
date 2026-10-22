@@ -19,35 +19,6 @@
       "doneWhen": "定位已有隔离修复并完成评审合入；在获得具体部署授权及环境后部署，留下版本证据。实机验收单独由AT-10/AT-11记录。",
       "reason": "",
       "resumeWhen": ""
-    },
-    {
-      "id": "AUD23-04",
-      "title": "第3批 · 使语法与旧证据清理失败可追溯（Audit #23）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "Harness/diagnostics",
-      "refs": [
-        "NFR-05",
-        "REL-11"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-37"
-      ],
-      "doneWhen": "触发：Python语法错误直接逸出；GUI成功证据落盘后旧记录读取/清理失败可抛异常而未写明收尾失败。完成：语法错误给出文件行和非零结果；区分GUI验证与证据维护结果，旧记录损坏/占用时保留新证据和失败原因，不能静默算整体通过或误删其他目录。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        23
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "scripts/verify.py:258",
-        "scripts/gui_smoke.py:130",
-        "scripts/gui_smoke.py:137",
-        "scripts/gui_smoke.py:146"
-      ]
     }
   ],
   "auditImport": {

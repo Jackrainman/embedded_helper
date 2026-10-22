@@ -218,6 +218,17 @@ def verify_client(root, configuration='Release'):
     return 0
 
 
+def python_syntax_errors(root):
+    errors = []
+    for directory in ['scripts', 'tests']:
+        for source in (root / directory).rglob('*.py'):
+            try:
+                compile(source.read_text(encoding='utf-8'), str(source), 'exec')
+            except SyntaxError as error:
+                errors.append(f'Python语法错误: {source}:{error.lineno}:{error.offset}: {error.msg}')
+    return errors
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--install-hooks', action='store_true')
@@ -248,14 +259,11 @@ def main():
             git(ROOT, 'checkout-index', '--all', '--prefix=' + snapshot.as_posix() + '/')
             # 从暂存副本执行，避免未暂存脚本让坏提交漏检。
             return subprocess.call([sys.executable, str(snapshot / 'scripts/verify.py')], cwd=snapshot)
-    errors = validate(ROOT)
+    errors = validate(ROOT) + python_syntax_errors(ROOT)
     for error in errors:
         print('FAIL', error)
     if errors:
         return 1
-    for directory in ['scripts', 'tests']:
-        for source in (ROOT / directory).rglob('*.py'):
-            compile(source.read_text(encoding='utf-8'), str(source), 'exec')
     suite = unittest.defaultTestLoader.discover(str(ROOT / 'tests'), pattern='test_*.py')
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     print('PASS 离线验证' if result.wasSuccessful() else 'FAIL 测试')
