@@ -986,7 +986,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-27-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "26c980f17b6aad49b1523d2ab202a00e2fedbcb9"
       }
     },
     {
@@ -1004,7 +1005,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：WPF慢枚举确认后台线程，保留手选COM，重复刷新新结果优先，关闭迟到结果忽略，权限失败就地反馈；未打开COM；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "注入慢枚举和权限失败，核对主界面持续响应、重复刷新结果有序。",
@@ -1020,7 +1021,21 @@
         "src/EmbeddedHelper.App/Features/Serial/SerialPortDiscovery.cs:20",
         "src/EmbeddedHelper.App/Features/Serial/MainWindow.Serial.cs:29",
         "src/EmbeddedHelper.App/MainWindow.xaml.cs:47"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-10",
+        "recordedAt": "2026-10-22T10:12:02.064306+00:00",
+        "result": "passed",
+        "details": "WPF慢枚举确认后台线程，保留手选COM，重复刷新新结果优先，关闭迟到结果忽略，权限失败就地反馈；未打开COM",
+        "commands": [
+          "dotnet build EmbeddedHelper.slnx -c Release --no-restore",
+          "python -X utf8 scripts/gui_smoke.py"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-10-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-28",

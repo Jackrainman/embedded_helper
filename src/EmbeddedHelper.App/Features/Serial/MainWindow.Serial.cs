@@ -26,8 +26,21 @@ public partial class MainWindow
     private double lastSerialTime;
     private long clearThrough, skipDecodeThrough, displayRevision = -1;
 
-    private void RefreshPorts(object? sender, RoutedEventArgs e)
-    { try { var current = SerialPortDiscovery.PortName(SerialPage.SerialPortBox.Text); var ports = SerialPortDiscovery.List(); SerialPage.SerialPortBox.ItemsSource = ports; SerialPage.SerialPortBox.Text = ports.FirstOrDefault(p => SerialPortDiscovery.PortName(p) == current) ?? current; } catch (Exception ex) { Report(ex.Message); } }
+    private async void RefreshPorts(object? sender, RoutedEventArgs e) => await RefreshPortsAsync();
+    private int portDiscoveryRevision;
+    private async Task RefreshPortsAsync(Func<string[]>? discover = null)
+    {
+        var revision = ++portDiscoveryRevision;
+        try
+        {
+            var ports = await Task.Run(discover ?? SerialPortDiscovery.List);
+            if (revision != portDiscoveryRevision || shutdownRequested || closing) return;
+            var current = SerialPortDiscovery.PortName(SerialPage.SerialPortBox.Text);
+            SerialPage.SerialPortBox.ItemsSource = ports;
+            SerialPage.SerialPortBox.Text = ports.FirstOrDefault(p => SerialPortDiscovery.PortName(p) == current) ?? current;
+        }
+        catch (Exception ex) { if (revision == portDiscoveryRevision && !shutdownRequested && !closing) Report("串口列表读取失败：" + ex.Message); }
+    }
     private SerialSettings ReadSerialSettings() => new(SerialPortDiscovery.PortName(SerialPage.SerialPortBox.Text), int.Parse(SerialPage.BaudBox.Text, CultureInfo.InvariantCulture), SerialPage.DataBitsBox.SelectedIndex + 5, (Parity)SerialPage.ParityBox.SelectedItem, (StopBits)SerialPage.StopBitsBox.SelectedItem, (Handshake)SerialPage.FlowBox.SelectedItem);
     private async void ToggleSerial(object? sender, RoutedEventArgs e) => await Guard(async () =>
     {

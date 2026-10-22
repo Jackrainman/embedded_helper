@@ -89,6 +89,25 @@ public partial class MainWindow
             await SmokeProjectStatusAsync(directory);
             await SmokePresentationAsync(directory);
             await SmokeRttLifecycleAsync();
+            var uiThread = Environment.CurrentManagedThreadId;
+            var discoveryThread = uiThread;
+            SerialPage.SerialPortBox.Text = "COM42";
+            await RefreshPortsAsync(() => { discoveryThread = Environment.CurrentManagedThreadId; Thread.Sleep(100); return ["COM1"]; });
+            if (discoveryThread == uiThread || SerialPage.SerialPortBox.Text != "COM42") throw new InvalidDataException("串口枚举阻塞UI或覆盖手选端口。");
+            using (var gate = new ManualResetEventSlim())
+            {
+                var oldRefresh = RefreshPortsAsync(() => { gate.Wait(); return ["COM2"]; });
+                await RefreshPortsAsync(() => ["COM3"]);
+                gate.Set(); await oldRefresh;
+                if (!SerialPage.SerialPortBox.Items.Contains("COM3")) throw new InvalidDataException("旧枚举覆盖了最新结果。");
+                gate.Reset();
+                var late = RefreshPortsAsync(() => { gate.Wait(); return ["COM4"]; });
+                shutdownRequested = true; gate.Set(); await late; shutdownRequested = false;
+                if (SerialPage.SerialPortBox.Items.Contains("COM4")) throw new InvalidDataException("关闭后仍应用枚举结果。");
+            }
+            await RefreshPortsAsync(() => throw new UnauthorizedAccessException("离线权限失败"));
+            if (!StatusLabel.Text.Contains("离线权限失败")) throw new InvalidDataException("枚举错误没有反馈。");
+            SerialPage.SerialPortBox.Text = "";
             var ownerFile = System.IO.Path.Combine(project!.Root, ".embedded_helper/integration.json");
             var ownerBefore = File.Exists(ownerFile) ? File.ReadAllText(ownerFile) : null;
             File.WriteAllText(ownerFile, "{");

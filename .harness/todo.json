@@ -21,34 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-10",
-      "title": "第3批 · 将串口设备枚举移出界面线程（Audit #10）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "App/Serial",
-      "refs": [
-        "SER-02",
-        "NFR-02"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-27"
-      ],
-      "doneWhen": "触发：窗口构造和刷新事件同步遍历注册表设备树，耗时尚未量化。完成：后台只枚举数据，UI线程应用结果；处理重复刷新、选择保留及关闭时迟到结果。用受控慢枚举验证响应，不杜撰当前耗时；不打开COM。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        10
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.App/Features/Serial/SerialPortDiscovery.cs:20",
-        "src/EmbeddedHelper.App/Features/Serial/MainWindow.Serial.cs:29",
-        "src/EmbeddedHelper.App/MainWindow.xaml.cs:47"
-      ]
-    },
-    {
       "id": "AUD-15",
       "title": "第3批 · 区分无可观察变量与 readelf 工具错误（Audit #15）",
       "status": "todo",
