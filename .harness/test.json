@@ -1268,7 +1268,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-21-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "1d64cc93e73a2e0306b5d8bf9e6cd5ab19c65d8e"
       }
     },
     {
@@ -1285,7 +1286,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：161项客户端测试通过；保留1/2/3变量行为、自动切回和PropertyChanged测试；需求、悬停提示、WPF精确断言统一不超过两个；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "分别选择1、2、3个变量，核对分道可用性、自动切回和禁用时悬停说明。",
@@ -1301,7 +1302,20 @@
         "src/EmbeddedHelper.App/Features/Observation/ObservationViewModel.cs:50",
         "tests/EmbeddedHelper.Tests/PlotAxisTests.cs:44",
         ".docs/01_需求规格说明书.md:127"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-25",
+        "recordedAt": "2026-10-22T10:19:01.565032+00:00",
+        "result": "passed",
+        "details": "161项客户端测试通过；保留1/2/3变量行为、自动切回和PropertyChanged测试；需求、悬停提示、WPF精确断言统一不超过两个",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-25-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-34",

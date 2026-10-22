@@ -41,7 +41,7 @@ public sealed class PlotAxisTests
         model.Variables[2].Selected = true;
         Assert.False(model.CanScaleIndependently);
         Assert.False(model.IndependentScale);
-        Assert.Equal("仅显示少于2个参数", model.ScaleHint);
+        Assert.Equal("仅显示不超过两个参数时可用", model.ScaleHint);
         model.IndependentScale = true;
         Assert.False(model.IndependentScale);
         model.Variables[2].Selected = false;

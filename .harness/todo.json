@@ -21,34 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-25",
-      "title": "第3批 · 统一分道缩放阈值的提示语义（Audit #25）",
-      "status": "todo",
-      "priority": "P2",
-      "component": "App/Observation + requirements",
-      "refs": [
-        "VIS-04"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-33",
-        "AT-04"
-      ],
-      "doneWhen": "触发：实际允许两个及以下变量，提示和需求中的字面文案却写少于2个。完成：保持两个及以下的行为，统一需求、提示及真实反馈断言为不超过两个；保留PropertyChanged去重测试和发布门目录模式，不以非空断言弱化覆盖。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 3,
-      "auditRefs": [
-        25
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.App/Features/Observation/ObservationViewModel.cs:50",
-        "tests/EmbeddedHelper.Tests/PlotAxisTests.cs:44",
-        ".docs/01_需求规格说明书.md:127"
-      ]
-    },
-    {
       "id": "AUD23-02",
       "title": "第3批 · 避免日志权限失败掩盖原始错误（Audit #23）",
       "status": "todo",

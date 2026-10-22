@@ -60,7 +60,7 @@ public partial class MainWindow
         bitmap.CopyPixels(pixels, bitmap.PixelWidth * 4, 0);
         if (!pixels.Any(b => b != 0)) throw new InvalidDataException("独立绘图控件没有渲染曲线。");
         SaveSmokeScreenshot(directory, "page-1-plot.png");
-        if (ObservationPage.IndependentScale.IsEnabled || ObservationPage.Plot.Independent || observationView.ScaleHint != "仅显示少于2个参数") throw new InvalidDataException("超过两个变量时没有禁用分道缩放。");
+        if (ObservationPage.IndependentScale.IsEnabled || ObservationPage.Plot.Independent || observationView.ScaleHint != "仅显示不超过两个参数时可用") throw new InvalidDataException("超过两个变量时没有禁用分道缩放。");
         object Measure(bool updateSnapshot)
         {
             var allocated = GC.GetAllocatedBytesForCurrentThread();

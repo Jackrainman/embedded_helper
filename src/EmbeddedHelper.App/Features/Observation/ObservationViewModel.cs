@@ -47,7 +47,7 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
         }
     }
     public bool CanScaleIndependently => VisibleRows.Length <= 2;
-    public string? ScaleHint => CanScaleIndependently ? null : "仅显示少于2个参数";
+    public string? ScaleHint => CanScaleIndependently ? null : "仅显示不超过两个参数时可用";
     private bool independentScale = true;
     public bool IndependentScale { get => independentScale; set => Set(ref independentScale, value && CanScaleIndependently); }
     public bool HasVariables => VisibleRows.Length > 0;
