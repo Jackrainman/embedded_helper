@@ -2,9 +2,9 @@
   "schemaVersion": 1,
   "candidate": {
     "version": "1.0.24-alpha.1",
-    "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
-    "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
-    "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+    "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+    "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+    "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
   },
   "checks": [
     {
@@ -2744,6 +2744,16 @@
       },
       "retiredAt": "2026-10-22T11:42:29.967920+00:00",
       "reason": "保留原包身份及AT-01历史结果；新候选不继承通过结论。"
+    },
+    {
+      "candidate": {
+        "version": "1.0.24-alpha.1",
+        "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+        "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+      },
+      "retiredAt": "2026-10-22T12:27:32.252576+00:00",
+      "reason": "用户授权发布1.0.24-alpha.1；当前候选切换为成功CI的实际发布包。桌面包及其全部历史验收结果保留，不转记为新包通过。"
     }
   ],
   "offlineValidation": {
@@ -2802,5 +2812,29 @@
     "runtime": "10.0.12",
     "scope": "代码完成；已列离线检查通过。完整人工/设备验收未通过。没有设备操作、远程部署、发布、push或tag。",
     "windowCleanup": "自动测试自有进程均已退出；桌面新候选窗口70356检测到人机并发输入，保留供用户使用，没有强制关闭或清理其data。"
+  },
+  "publishedRelease": {
+    "candidate": {
+      "version": "1.0.24-alpha.1",
+      "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+      "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+      "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+    },
+    "url": "https://github.com/Jackrainman/embedded_helper/releases/tag/v1.0.24-alpha.1",
+    "publishedAt": "2026-10-22T12:23:18Z",
+    "profile": "developer-preview",
+    "verificationRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/39776259853",
+    "releaseRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/39777756971",
+    "result": "passed",
+    "scope": "CI仓库/静态/构建/205项客户端测试及最终包首次、重复、搬迁冒烟通过；本地发布前48项Harness与205项客户端测试通过。硬件、纯净Windows与该云端包旧版替换升级未验证，原人工验收状态不变。",
+    "assetsVerification": "EXE、ZIP、清单、SHA256SUMS与原CI字节一致；验收JSON经工作流重新序列化，内容一致并核对远端摘要。",
+    "evidence": [
+      "test-results/push-release-verify.log",
+      "test-results/push-release-ci.log",
+      "test-results/push-release-publish.log",
+      "test-results/push-release-remote.json",
+      "test-results/push-release-asset-verification.json",
+      "dist/candidates/1.0.24-alpha.1-c2e9dab-ci/verification-evidence.json"
+    ]
   }
 }
