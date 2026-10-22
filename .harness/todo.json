@@ -21,35 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-01",
-      "title": "第2批 · 区分工程祖先联接与工程内越界链接（Audit #1）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "Core/Configuration",
-      "refs": [
-        "PRJ-03",
-        "PRJ-07",
-        "NFR-07"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-21"
-      ],
-      "doneWhen": "触发：CheckPath 一直检查到文件系统根，工程祖先是目录联接时也被拒绝。完成：明确实际工程根及链接边界，允许受支持的联接祖先访问，继续拒绝工程内逃逸、文件链接及路径竞争；Portable 运行目录策略单独保留。Windows 正反例通过。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 2,
-      "auditRefs": [
-        1
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:83",
-        "src/EmbeddedHelper.Core/Tools/ToolCache.cs:84",
-        "src/EmbeddedHelper.Core/Tools/ProjectToolCache.cs:29"
-      ]
-    },
-    {
       "id": "AUD-06",
       "title": "第2批 · 处理损坏归属记录的半加载状态（Audit #6）",
       "status": "todo",

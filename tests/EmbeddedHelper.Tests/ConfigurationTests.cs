@@ -9,6 +9,36 @@ namespace EmbeddedHelper.Tests;
 public sealed class ConfigurationTests : TestWorkspace
 {
     [Fact]
+    public void AncestorJunctionWorksButInternalLinksAndWriteTimeChangesAreRejected()
+    {
+        if (!OperatingSystem.IsWindows()) return;
+        var physical = Path.Combine(root, "physical"); Directory.CreateDirectory(Path.Combine(physical, "project"));
+        var alias = Path.Combine(root, "alias");
+        static void Junction(string link, string target)
+        {
+            var start = new System.Diagnostics.ProcessStartInfo("powershell.exe") { UseShellExecute = false, CreateNoWindow = true };
+            start.ArgumentList.Add("-NoProfile"); start.ArgumentList.Add("-Command");
+            start.ArgumentList.Add("New-Item -ItemType Junction -Path '" + link.Replace("'", "''") + "' -Target '" + target.Replace("'", "''") + "' | Out-Null");
+            using var process = System.Diagnostics.Process.Start(start)!; process.WaitForExit(); Assert.Equal(0, process.ExitCode);
+        }
+        Junction(alias, physical);
+        var project = Path.Combine(alias, "project");
+        var file = Path.Combine(project, "a.json");
+        ConfigTransaction.CheckPath(project + Path.DirectorySeparatorChar, file);
+        var journals = Path.Combine(root, "journals");
+        ConfigTransaction.Apply(new(project, [new(file, null, "saved")]), journals);
+        Assert.Equal("saved", File.ReadAllText(Path.Combine(physical, "project/a.json")));
+        var outside = Path.Combine(root, "outside"); Directory.CreateDirectory(outside);
+        var link = Path.Combine(project, "escape"); Junction(link, outside);
+        Assert.Throws<IOException>(() => ConfigTransaction.CheckPath(project, Path.Combine(link, "evil.json")));
+        Assert.Throws<IOException>(() => ConfigTransaction.CheckPath(project, project + "-other/config.json"));
+        Directory.Delete(link);
+        var second = Path.Combine(project, "late/b.json");
+        Assert.Throws<IOException>(() => ConfigTransaction.Apply(new(project, [new(file, "saved", "next"), new(second, null, "bad")]), journals, n => { if (n == 1) Junction(Path.GetDirectoryName(second)!, outside); }));
+        Assert.False(File.Exists(Path.Combine(outside, "b.json")));
+        Directory.Delete(Path.GetDirectoryName(second)!); Directory.Delete(alias);
+    }
+    [Fact]
     public void ExplicitConflictClosurePreservesEvidenceAndRejectsRaces()
     {
         var file = Path.Combine(root, "config.json"); File.WriteAllText(file, "external");

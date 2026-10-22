@@ -122,11 +122,15 @@ public static class ConfigTransaction
     }
     public static void CheckPath(string root, string path)
     {
-        var fullRoot = Path.GetFullPath(root);
+        var fullRoot = Path.TrimEndingDirectorySeparator(Path.GetFullPath(root));
         var fullPath = Path.GetFullPath(path);
         if (!fullPath.StartsWith(fullRoot.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase)) throw new IOException("配置路径超出工程。");
         for (var current = fullPath; current != null; current = Path.GetDirectoryName(current))
+        {
             if ((Directory.Exists(current) || File.Exists(current)) && (File.GetAttributes(current) & FileAttributes.ReparsePoint) != 0) throw new IOException("配置路径含目录联接或符号链接，已停止写入。");
+            // The chosen root is the boundary; a junction above it is a supported access path.
+            if (current.Equals(fullRoot, StringComparison.OrdinalIgnoreCase)) break;
+        }
     }
     private static void CheckBefore(FileChange change)
     {

@@ -710,7 +710,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-02-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "1447507a4eec81009e2eafd39d43fc6c48ea681b"
       }
     },
     {
@@ -729,7 +730,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：129项客户端离线测试通过；Windows祖先junction、末尾斜杠、工程内逃逸、相似前缀和写入前变化均覆盖；文件符号链接专门用例及工具计划经联接路径复验仍待补；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "在独有隔离目录建立普通工程及经祖先 junction 访问的同一工程，验证事务与工具计划。",
@@ -745,7 +746,20 @@
         "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:83",
         "src/EmbeddedHelper.Core/Tools/ToolCache.cs:84",
         "src/EmbeddedHelper.Core/Tools/ProjectToolCache.cs:29"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-01",
+        "recordedAt": "2026-10-22T09:59:25.133288+00:00",
+        "result": "passed",
+        "details": "129项客户端离线测试通过；Windows祖先junction、末尾斜杠、工程内逃逸、相似前缀和写入前变化均覆盖；文件符号链接专门用例及工具计划经联接路径复验仍待补",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-01-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-22",
