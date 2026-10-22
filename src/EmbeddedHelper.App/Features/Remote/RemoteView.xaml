@@ -14,6 +14,6 @@
     <CheckBox x:Name="UseEideUpload" IsChecked="{Binding EideUpload}" Content="同时切换 EIDE 上传按钮（适配 3.27.2，可恢复）"/>
     <WrapPanel><Button Content="预览接入修改" Click="PreviewIntegration"/><Button Content="仅预览连接参数" Click="PreviewConfig"/><Button x:Name="ApplyConfigButton" Content="应用已预览的修改" Click="ApplyConfig" IsEnabled="{Binding CanApply}"/></WrapPanel>
     <GroupBox Header="修改预览"><TextBox x:Name="ConfigPreview" Text="{Binding Preview, Mode=OneWay}" IsReadOnly="True" Height="220" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap" FontFamily="Consolas" Margin="0"/></GroupBox>
-    <Expander Header="恢复与移除" Margin="0,0,0,14"><StackPanel Margin="0,10,0,0"><WrapPanel><Button Content="预览移除接入" Click="PreviewRemoveIntegration"/><Button Content="恢复未完成写入" Click="RecoverConfig"/></WrapPanel><TextBlock Text="旧 Debug_LAN 配置继续兼容；重新导入更新受管任务。导入和移除均不执行烧录或调试，未受管内容保持原样。" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/></StackPanel></Expander>
+    <Expander Header="恢复与移除" Margin="0,0,0,14"><StackPanel Margin="0,10,0,0"><WrapPanel><Button Content="预览移除接入" Click="PreviewRemoveIntegration"/><Button Content="恢复未完成写入" Click="RecoverConfig"/><Button Content="保留现状并结案…" Click="KeepCurrentConfig"/></WrapPanel><TextBlock Text="旧 Debug_LAN 配置继续兼容；重新导入更新受管任务。导入和移除均不执行烧录或调试，未受管内容保持原样。" Foreground="{StaticResource MutedBrush}" TextWrapping="Wrap"/></StackPanel></Expander>
   </StackPanel></ScrollViewer>
 </UserControl>

@@ -21,37 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-02",
-      "title": "第2批 · 提供保留外部修改的事务结案入口（Audit #2）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "Core/Configuration + App/Remote",
-      "refs": [
-        "PRJ-07",
-        "AC-02"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-20",
-        "AT-03"
-      ],
-      "doneWhen": "触发：恢复时保留外部内容会留下 conflict，后续 Apply 被阻止，UI 无保留现状结案入口；恢复 Before 后能解除，不是永久锁死。完成：加入用户明确选择的保留现状结案语义，校验工程身份、并发状态并保留证据；自动恢复不放弃冲突，不删除日志假装修好。异常日志须指明文件且不绕过待处理状态。离线回归通过，界面入口另见 AT-03。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 2,
-      "auditRefs": [
-        2
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:24",
-        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:38",
-        "src/EmbeddedHelper.Core/Configuration/ConfigTransaction.cs:50",
-        "src/EmbeddedHelper.App/Features/Remote/MainWindow.Remote.cs:82",
-        "tests/EmbeddedHelper.Tests/ConfigurationTests.cs:49"
-      ]
-    },
-    {
       "id": "AUD-01",
       "title": "第2批 · 区分工程祖先联接与工程内越界链接（Audit #1）",
       "status": "todo",

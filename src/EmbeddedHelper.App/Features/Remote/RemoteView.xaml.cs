@@ -20,6 +20,8 @@ public partial class RemoteView : UserControl
     public event RoutedEventHandler? PreviewRemoveIntegrationRequested;
     private void PreviewRemoveIntegration(object? sender, RoutedEventArgs e) => PreviewRemoveIntegrationRequested?.Invoke(sender, e);
     public event RoutedEventHandler? RecoverConfigRequested;
+    public event RoutedEventHandler? KeepCurrentConfigRequested;
+    private void KeepCurrentConfig(object? sender, RoutedEventArgs e) => KeepCurrentConfigRequested?.Invoke(sender, e);
     private void RecoverConfig(object? sender, RoutedEventArgs e) => RecoverConfigRequested?.Invoke(sender, e);
     public event RoutedEventHandler? ApplyConfigRequested;
     private void ApplyConfig(object? sender, RoutedEventArgs e) => ApplyConfigRequested?.Invoke(sender, e);

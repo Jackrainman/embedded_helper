@@ -9,4 +9,7 @@ internal sealed class ConfigurationService(string dataDirectory)
     public bool HasPending(string root) => ConfigTransaction.Pending(JournalFor(root)).Length > 0;
     public Task ApplyAsync(ConfigPlan plan) => Task.Run(() => ConfigTransaction.Apply(plan, JournalFor(plan.Root)));
     public Task<string[]> RecoverAsync(string root) => Task.Run(() => ConfigTransaction.RecoverIncomplete(root, JournalFor(root)));
+    public ConflictClosure PreviewKeepCurrent(string root) => ConfigTransaction.PreviewKeepCurrent(root,
+        ConfigTransaction.Pending(JournalFor(root)).FirstOrDefault() ?? throw new InvalidOperationException("没有待处理事务。"));
+    public Task KeepCurrentAsync(ConflictClosure preview) => Task.Run(() => ConfigTransaction.KeepCurrent(preview, JournalFor(preview.Root)));
 }

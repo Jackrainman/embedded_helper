@@ -86,6 +86,22 @@ public partial class MainWindow
         }
         finally { configurationBusy = false; remoteView.Busy = false; SyncObservationState(); await RefreshProjectConnectionAsync(); }
     });
+    private async void KeepCurrentConfig(object? sender, RoutedEventArgs e) => await Guard(async () =>
+    {
+        if (acquisition.HasSession || ObservationBusy || configurationBusy || toolBusy) throw new InvalidOperationException("请等待当前操作完成。");
+        var root = project?.Root ?? throw new InvalidOperationException("请先打开工程。");
+        var preview = configuration.PreviewKeepCurrent(root);
+        if (MessageBox.Show(this, "保留以下文件的当前内容，并将此事务标为已人工处理？备份记录将保留。\n" + string.Join("\n", preview.FileHashes.Keys), "保留现状并结案", MessageBoxButton.YesNo, MessageBoxImage.Warning, MessageBoxResult.No) != MessageBoxResult.Yes) return;
+        configurationBusy = true; remoteView.Busy = true; SyncObservationState();
+        try
+        {
+            await configuration.KeepCurrentAsync(preview);
+            remoteView.Invalidate();
+            remoteView.Preview = "已保留当前文件并结案；事务备份：" + preview.Journal;
+            Report(remoteView.Preview);
+        }
+        finally { configurationBusy = false; remoteView.Busy = false; SyncObservationState(); }
+    });
     private async void OpenWeb(object? sender, RoutedEventArgs e)
     {
         Pages.SelectedIndex = 2;

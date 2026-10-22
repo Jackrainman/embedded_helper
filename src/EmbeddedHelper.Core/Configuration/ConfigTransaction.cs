@@ -5,14 +5,54 @@ using System.Text.Json.Nodes;
 
 namespace EmbeddedHelper.Core;
 
+public sealed record ConflictClosure(string Root, string Journal, string JournalHash, Dictionary<string, string> FileHashes);
+
 public static class ConfigTransaction
 {
+    private static JsonDocument ReadJournal(string path)
+    {
+        try
+        {
+            var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (!doc.RootElement.TryGetProperty("status", out var status) || status.ValueKind != JsonValueKind.String)
+            { doc.Dispose(); throw new InvalidDataException("缺少 status。"); }
+            return doc;
+        }
+        catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidOperationException)
+        { throw new InvalidDataException("事务记录不可读：" + path + "；" + ex.Message, ex); }
+    }
+    public static ConflictClosure PreviewKeepCurrent(string root, string journal)
+    {
+        using var doc = ReadJournal(journal);
+        if (doc.RootElement.GetProperty("status").GetString() != "conflict") throw new IOException("请先恢复未完成写入，仅冲突记录可保留现状结案。");
+        var plan = doc.RootElement.GetProperty("plan").Deserialize<ConfigPlan>(Product.Json) ?? throw new InvalidDataException("事务记录无效：" + journal);
+        if (!Path.GetFullPath(plan.Root).Equals(Path.GetFullPath(root), StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("事务工程身份不匹配：" + journal);
+        var hashes = new Dictionary<string, string>();
+        foreach (var change in plan.Changes)
+        {
+            CheckPath(root, change.Path);
+            hashes.Add(change.Path, Hash(File.Exists(change.Path) ? File.ReadAllText(change.Path) : null));
+        }
+        return new(root, journal, Hash(File.ReadAllText(journal)), hashes);
+    }
+    public static void KeepCurrent(ConflictClosure preview, string journalRoot)
+    {
+        if (!Path.GetFullPath(Path.GetDirectoryName(preview.Journal)!).Equals(Path.GetFullPath(journalRoot), StringComparison.OrdinalIgnoreCase)) throw new InvalidDataException("事务日志目录不匹配。");
+        using var guard = new FileStream(Path.Combine(journalRoot, "write.lock"), FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+        var current = PreviewKeepCurrent(preview.Root, preview.Journal);
+        if (current.JournalHash != preview.JournalHash || current.FileHashes.Count != preview.FileHashes.Count || current.FileHashes.Any(p => preview.FileHashes.GetValueOrDefault(p.Key) != p.Value))
+            throw new IOException("预览后文件或事务记录已变化，请重新确认保留现状。");
+        var journal = JsonNode.Parse(File.ReadAllText(preview.Journal))!.AsObject();
+        journal["status"] = "accepted-current";
+        journal["resolution"] = JsonSerializer.SerializeToNode(new { method = "explicit-keep-current", at = DateTimeOffset.UtcNow, current.FileHashes }, Product.Json);
+        PortableData.SaveFile(preview.Journal, journal);
+    }
     public static string[] Pending(string journalRoot)
     {
         if (!Directory.Exists(journalRoot)) return [];
         return Directory.GetFiles(journalRoot, "*.json").Where(path =>
         {
-            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            using var doc = ReadJournal(path);
             return doc.RootElement.GetProperty("status").GetString() is "prepared" or "conflict";
         }).ToArray();
     }

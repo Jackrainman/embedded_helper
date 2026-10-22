@@ -9,6 +9,29 @@ namespace EmbeddedHelper.Tests;
 public sealed class ConfigurationTests : TestWorkspace
 {
     [Fact]
+    public void ExplicitConflictClosurePreservesEvidenceAndRejectsRaces()
+    {
+        var file = Path.Combine(root, "config.json"); File.WriteAllText(file, "external");
+        var plan = new ConfigPlan(root, [new(file, "before", "after")]);
+        var journals = Path.Combine(root, "journal"); Directory.CreateDirectory(journals);
+        var journal = Path.Combine(journals, "pending.json");
+        PortableData.SaveFile(journal, new { status = "conflict", plan });
+        var preview = ConfigTransaction.PreviewKeepCurrent(root, journal);
+        Assert.Throws<IOException>(() => ConfigTransaction.Apply(plan, journals));
+        File.WriteAllText(file, "changed-again");
+        Assert.Throws<IOException>(() => ConfigTransaction.KeepCurrent(preview, journals));
+        Assert.Single(ConfigTransaction.Pending(journals));
+        Assert.Throws<InvalidDataException>(() => ConfigTransaction.PreviewKeepCurrent(Path.Combine(root, "other"), journal));
+        preview = ConfigTransaction.PreviewKeepCurrent(root, journal);
+        ConfigTransaction.KeepCurrent(preview, journals);
+        Assert.Empty(ConfigTransaction.Pending(journals));
+        Assert.Equal("changed-again", File.ReadAllText(file));
+        Assert.Contains("before", File.ReadAllText(journal));
+        Assert.Throws<IOException>(() => ConfigTransaction.KeepCurrent(preview, journals));
+        File.WriteAllText(journal, "broken");
+        Assert.Contains(journal, Assert.Throws<InvalidDataException>(() => ConfigTransaction.Pending(journals)).Message);
+    }
+    [Fact]
     public void JsoncEditPreservesCommentsAndUnknownProperties()
     {
         const string input = "{\n// 用户注释\n\"unknown\": [1,2],\n\"host\": \"before\", //尾部\n}";
