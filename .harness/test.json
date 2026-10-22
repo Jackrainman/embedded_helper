@@ -561,7 +561,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-03-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "a5f98d812ab414f839861ca507208ad221b29846"
       }
     },
     {
@@ -580,7 +581,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "合成两个相同 DW_AT_name、不同 comp_dir 的 CU，各有同名静态变量。",
@@ -598,7 +599,20 @@
         "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:92",
         "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:98",
         "src/EmbeddedHelper.Core/Observation/ObservationPreparation.cs:59"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-07",
+        "recordedAt": "2026-10-22T09:53:18.463336+00:00",
+        "result": "passed",
+        "details": "127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-07-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-19",
@@ -614,9 +628,9 @@
         "尚待制作的双 CU ELF 碰撞夹具",
         "可重现的 ARM 编译器及 readelf"
       ],
-      "status": "blocked",
-      "reason": "现有复核只有合成 DWARF 文本复现，尚无满足碰撞条件的真实 ELF 夹具；本轮未制作。",
-      "resumeWhen": "取得或制作符合条件的真实 ELF、记录工具链和摘要后执行；修复回归须绑定包含 AUD-07 的候选。",
+      "status": "pending",
+      "reason": "已完成源码离线部分：127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移；候选同包复验及未覆盖条件仍待验证。",
+      "resumeWhen": "最终候选同包复验",
       "steps": [
         "制作可追溯的双 CU ELF，核对调试节实际具有同名 name、不同 comp_dir。",
         "分别走内置与 readelf，比较变量数量、身份、地址及 watch 重开；保留样本摘要。"
@@ -633,7 +647,20 @@
         "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:92",
         "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:98",
         "src/EmbeddedHelper.Core/Observation/ObservationPreparation.cs:59"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-07",
+        "recordedAt": "2026-10-22T09:53:18.463336+00:00",
+        "result": "passed",
+        "details": "127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移",
+        "commands": [
+          "dotnet test tests/EmbeddedHelper.Tests -c Release --no-restore"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-07-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-20",

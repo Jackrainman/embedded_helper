@@ -1,0 +1,80 @@
+Contents of the .debug_info section:
+
+  Compilation Unit @ offset 0:
+   Length:        0x56 (32-bit)
+   Version:       4
+   Abbrev Offset: 0
+   Pointer Size:  4
+ <0><b>: Abbrev Number: 1 (DW_TAG_compile_unit)
+    <c>   DW_AT_producer    : (strp) (offset: 0x20): GNU C23 15.2.1 20251203 -mcpu=arm7tdmi -mfloat-abi=soft -marm -march=armv4t -g -gdwarf-4 -O0
+    <10>   DW_AT_language    : (data1) 12	(ANSI C99)
+    <11>   DW_AT_name        : (strp) (offset: 0x17): source.c
+    <15>   DW_AT_comp_dir    : (strp) (offset: 0): /fixtures/left
+    <19>   DW_AT_low_pc      : (addr) 0x8000000
+    <1d>   DW_AT_high_pc     : (data4) 0x24
+    <21>   DW_AT_stmt_list   : (sec_offset) 0
+ <1><25>: Abbrev Number: 2 (DW_TAG_variable)
+    <26>   DW_AT_name        : (strp) (offset: 0xf): counter
+    <2a>   DW_AT_decl_file   : (data1) 1
+    <2b>   DW_AT_decl_line   : (data1) 1
+    <2c>   DW_AT_decl_column : (data1) 21
+    <2d>   DW_AT_type        : (ref4) <0x3e>, int
+    <31>   DW_AT_location    : (exprloc) 5 byte block: 3 0 0 0 20 	(DW_OP_addr: 20000000)
+ <1><37>: Abbrev Number: 3 (DW_TAG_base_type)
+    <38>   DW_AT_byte_size   : (data1) 4
+    <39>   DW_AT_encoding    : (data1) 5	(signed)
+    <3a>   DW_AT_name        : (string) int
+ <1><3e>: Abbrev Number: 4 (DW_TAG_volatile_type)
+    <3f>   DW_AT_type        : (ref4) <0x37>, int
+ <1><43>: Abbrev Number: 5 (DW_TAG_subprogram)
+    <44>   DW_AT_external    : (flag_present) 1
+    <44>   DW_AT_name        : (strp) (offset: 0xa): left
+    <48>   DW_AT_decl_file   : (data1) 1
+    <49>   DW_AT_decl_line   : (data1) 2
+    <4a>   DW_AT_decl_column : (data1) 5
+    <4b>   DW_AT_prototyped  : (flag_present) 1
+    <4b>   DW_AT_type        : (ref4) <0x37>, int
+    <4f>   DW_AT_low_pc      : (addr) 0x8000000
+    <53>   DW_AT_high_pc     : (data4) 0x24
+    <57>   DW_AT_frame_base  : (exprloc) 1 byte block: 9c 	(DW_OP_call_frame_cfa)
+    <59>   DW_AT_GNU_all_call_sites: (flag_present) 1
+ <1><59>: Abbrev Number: 0
+  Compilation Unit @ offset 0x5a:
+   Length:        0x56 (32-bit)
+   Version:       4
+   Abbrev Offset: 0x53
+   Pointer Size:  4
+ <0><65>: Abbrev Number: 1 (DW_TAG_compile_unit)
+    <66>   DW_AT_producer    : (strp) (offset: 0x20): GNU C23 15.2.1 20251203 -mcpu=arm7tdmi -mfloat-abi=soft -marm -march=armv4t -g -gdwarf-4 -O0
+    <6a>   DW_AT_language    : (data1) 12	(ANSI C99)
+    <6b>   DW_AT_name        : (strp) (offset: 0x17): source.c
+    <6f>   DW_AT_comp_dir    : (strp) (offset: 0x7d): /fixtures/right
+    <73>   DW_AT_low_pc      : (addr) 0x8000024
+    <77>   DW_AT_high_pc     : (data4) 0x24
+    <7b>   DW_AT_stmt_list   : (sec_offset) 0x3e
+ <1><7f>: Abbrev Number: 2 (DW_TAG_variable)
+    <80>   DW_AT_name        : (strp) (offset: 0xf): counter
+    <84>   DW_AT_decl_file   : (data1) 1
+    <85>   DW_AT_decl_line   : (data1) 1
+    <86>   DW_AT_decl_column : (data1) 21
+    <87>   DW_AT_type        : (ref4) <0x98>, int
+    <8b>   DW_AT_location    : (exprloc) 5 byte block: 3 4 0 0 20 	(DW_OP_addr: 20000004)
+ <1><91>: Abbrev Number: 3 (DW_TAG_base_type)
+    <92>   DW_AT_byte_size   : (data1) 4
+    <93>   DW_AT_encoding    : (data1) 5	(signed)
+    <94>   DW_AT_name        : (string) int
+ <1><98>: Abbrev Number: 4 (DW_TAG_volatile_type)
+    <99>   DW_AT_type        : (ref4) <0x91>, int
+ <1><9d>: Abbrev Number: 5 (DW_TAG_subprogram)
+    <9e>   DW_AT_external    : (flag_present) 1
+    <9e>   DW_AT_name        : (strp) (offset: 0x87): right
+    <a2>   DW_AT_decl_file   : (data1) 1
+    <a3>   DW_AT_decl_line   : (data1) 2
+    <a4>   DW_AT_decl_column : (data1) 5
+    <a5>   DW_AT_prototyped  : (flag_present) 1
+    <a5>   DW_AT_type        : (ref4) <0x91>, int
+    <a9>   DW_AT_low_pc      : (addr) 0x8000024
+    <ad>   DW_AT_high_pc     : (data4) 0x24
+    <b1>   DW_AT_frame_base  : (exprloc) 1 byte block: 9c 	(DW_OP_call_frame_cfa)
+    <b3>   DW_AT_GNU_all_call_sites: (flag_present) 1
+ <1><b3>: Abbrev Number: 0

@@ -8,6 +8,43 @@ namespace EmbeddedHelper.Tests;
 [Collection("Offline client")]
 public sealed class ElfTests : TestWorkspace
 {
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void SameNamedCompilationUnitsKeepBothStatics(bool native)
+    {
+        static string Unit(int offset, string dir, string address) => $$"""
+        <0><{{offset:x}}>: Abbrev Number: 1 (DW_TAG_compile_unit)
+         <1> DW_AT_name : source.c
+         <2> DW_AT_comp_dir : {{dir}}
+        <1><{{offset + 16:x}}>: Abbrev Number: 1 (DW_TAG_base_type)
+         <3> DW_AT_byte_size : 4
+         <4> DW_AT_encoding : 5 (signed)
+        <1><{{offset + 32:x}}>: Abbrev Number: 1 (DW_TAG_variable)
+         <5> DW_AT_name : counter
+         <6> DW_AT_type : <0x{{offset + 16:x}}>
+         <7> DW_AT_location : (DW_OP_addr: {{address}})
+        """;
+        var dump = Unit(12, "/left", "20000000") + "\n" + Unit(112, "/right", "20000004");
+        var values = ReadElfIndex.Parse(dump, native);
+        Assert.Equal(2, values.Length);
+        Assert.Equal(2, values.Select(v => v.Identity).Distinct().Count());
+        Assert.Equal(new ulong[] { 0x20000000, 0x20000004 }, values.Select(v => v.Address));
+        Assert.Equal(ReadElfIndex.Parse(dump, true), values);
+        Assert.DoesNotContain(values, v => v.Identity == "source.c::counter");
+        Assert.Throws<InvalidDataException>(() => ReadElfIndex.Parse(dump.Replace("/right", "/left"), native));
+    }
+    [Fact]
+    public void RealSameNamedCompilationUnitsAgreeAcrossReaders()
+    {
+        var native = ElfIndex.Read(Path.Combine(fixtures, "dual-cu.elf"), "must-not-fallback");
+        var dump = File.ReadAllText(Path.Combine(fixtures, "dual-cu.dwarf.txt"));
+        Assert.Equal(2, native.Length);
+        Assert.Equal(2, native.Select(v => v.Identity).Distinct().Count());
+        Assert.Equal(native, ReadElfIndex.Parse(dump));
+        Assert.Equal(native, ReadElfIndex.Parse(dump, true));
+        Assert.All(native, v => Assert.Contains("|dir=", v.Identity));
+    }
     [Fact]
     public void RealStructFixturesAgreeAcrossNativeAndReadElfReaders()
     {

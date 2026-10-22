@@ -8,7 +8,7 @@ namespace EmbeddedHelper.Core;
 public static partial class ReadElfIndex
 {
     private sealed record Entry(ulong Offset, string Tag, string Scope, Dictionary<string, string> Attributes)
-    { public List<Entry> Children { get; } = []; }
+    { public List<Entry> Children { get; } = []; public Entry? Unit { get; set; } }
     public static string? FindTool()
     {
         var result = ToolDiscovery.Find(LocalToolKind.ReadElf, "", ToolDiscovery.Current());
@@ -42,6 +42,7 @@ public static partial class ReadElfIndex
     {
         var entries = new Dictionary<ulong, Entry>();
         Entry? current = null;
+        Entry? unit = null;
         var scopes = new Dictionary<int, string>();
         var functions = new Dictionary<int, string>();
         var parents = new Dictionary<int, Entry>();
@@ -57,9 +58,10 @@ public static partial class ReadElfIndex
                 var offset = ulong.Parse(header.Groups[2].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture);
                 var tag = header.Groups[3].Value;
                 if (depth == 0) cu = "";
-                var scope = nativeIdentities ? string.Concat(functions.OrderBy(p => p.Key).Select(p => "/" + p.Value))
-                    : string.Join("/", scopes.OrderBy(p => p.Key).Select(p => p.Value));
+                var scope = string.Concat(functions.OrderBy(p => p.Key).Select(p => "/" + p.Value));
                 current = new Entry(offset, tag, scope, new());
+                if (depth == 0) unit = current;
+                current.Unit = unit;
                 foreach (var level in parents.Keys.Where(k => k >= depth).ToArray()) parents.Remove(level);
                 if (parents.TryGetValue(depth - 1, out var parent)) parent.Children.Add(current);
                 parents[depth] = current;
@@ -83,19 +85,23 @@ public static partial class ReadElfIndex
             }
         }
         var result = new List<Variable>();
+        var units = entries.Values.Where(e => e.Tag == "compile_unit").ToArray();
         foreach (var item in entries.Values.Where(e => e.Tag == "variable"))
         {
             var location = Location().Match(item.Attributes.GetValueOrDefault("location", ""));
             if (!location.Success || !item.Attributes.TryGetValue("name", out var rawName)) continue;
             var name = Name(rawName);
             var external = Number(item.Attributes.GetValueOrDefault("external", "")) == 1;
-            var identity = external ? "global:" + name : item.Attributes.GetValueOrDefault("cu", "") + ":" + item.Scope + ":" + name;
+            var unitName = Name(item.Unit?.Attributes.GetValueOrDefault("name", "") ?? "").Replace('\\', '/');
+            var directory = Name(item.Unit?.Attributes.GetValueOrDefault("comp_dir", "") ?? "");
+            var unitIdentity = ElfIndex.CompilationUnitIdentity(unitName, directory, units.Count(u => Name(u.Attributes.GetValueOrDefault("name", "")).Replace('\\', '/') == unitName) > 1);
+            var identity = external ? "global:" + name : unitIdentity + ":" + item.Scope + ":" + name;
             result.AddRange(ElfTypeExpansion.Expand(identity, name,
                 ulong.Parse(location.Groups[1].Value, NumberStyles.HexNumber, CultureInfo.InvariantCulture),
                 BuildType(Referenced(item, entries), entries, new())));
         }
         if (result.Count == 0) throw new InvalidDataException("readelf 未找到固定地址变量。");
-        return result.DistinctBy(v => v.Identity).OrderBy(v => v.Name, StringComparer.Ordinal).ToArray();
+        return ElfIndex.UniqueVariables(result);
     }
     private static Entry? Referenced(Entry entry, Dictionary<ulong, Entry> entries)
     {

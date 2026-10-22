@@ -37,7 +37,11 @@
     "structures.elf": "3900e571c1ae03350bbba96718bf4aab94c8d6c36113807e3cba30dc5ded9ec2",
     "structures5.elf": "00aaa27e997d7494a9ffccdbe8a952bc3295463ff236562466e3a405ced6eb95",
     "structures.dwarf.txt": "9943346ddc626e98e0ceb2d53bd052ae7579bea1dbcaf3e561178b6ae20a9fe5",
-    "structures5.dwarf.txt": "fdc89f8b2d546266e84604eb541934d0ec0a52815bb2478755a032da20df8c10"
+    "structures5.dwarf.txt": "fdc89f8b2d546266e84604eb541934d0ec0a52815bb2478755a032da20df8c10",
+    "dual-cu-left.c": "25d177c81aba28bb415a3de873c3b90a18bec2cb7518f3f60adb4bce69b00a5e",
+    "dual-cu-right.c": "059143c1c6b0a7bc7067e1df59ca4b9859521c1675d862109d348d571a3c33e6",
+    "dual-cu.elf": "e335a30bf547cc65981a85cbeaf145bc7999512400d171b1018ae98f797b2016",
+    "dual-cu.dwarf.txt": "549af9413756a68a522f45830b203c684e6e95840698fdacc799bdf6d3d06629"
   },
   "syntheticElf": {
     "compiler": "arm-none-eabi-gcc.exe (Arm GNU Toolchain 15.2.Rel1 (Build arm-15.86)) 15.2.1 20251203",
@@ -61,5 +65,10 @@
     "compiler": "Arm GNU 15.2.1",
     "arguments": "-g -gdwarf-4/-gdwarf-5 -O0 -nostdlib -Wl,-e,main -Wl,-Ttext=0x08000000 -Wl,-Tdata=0x20000000 -ffile-prefix-map=tmp/struct-fixture=fixtures tmp/struct-fixture/structures.c; readelf --debug-dump=info --wide",
     "dumpNormalization": "Trailing whitespace removed; UTF-8 LF."
+  },
+  "dualCuElf": {
+    "purpose": "Self-owned offline same-name compilation units; never flash",
+    "compiler": "arm-none-eabi-gcc.exe (Arm GNU Toolchain 15.2.Rel1 (Build arm-15.86)) 15.2.1 20251203",
+    "arguments": "Each source copied as source.c in left/right; -g -gdwarf-4 -O0 -c source.c -ffile-prefix-map=<build-dir>=/fixtures/<side>; link -nostdlib -Wl,-e,left -Wl,-Ttext=0x08000000 -Wl,-Tdata=0x20000000; readelf --debug-dump=info --wide"
   }
 }

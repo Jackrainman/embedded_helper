@@ -21,38 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-07",
-      "title": "第2批 · 消除同名编译单元的静态变量身份碰撞（Audit #7）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "Core/ELF",
-      "refs": [
-        "VIS-02",
-        "VIS-04",
-        "PRJ-08"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-18",
-        "AT-19"
-      ],
-      "doneWhen": "触发：两个 CU 的 DW_AT_name 相同、comp_dir 不同且有同名静态变量时身份重复；readelf 去重丢变量，内置结果后续字典可能失败。完成：两后端采用一致且可追溯的 CU 身份，保留全部变量或明确报告歧义，处理既有 watch identity 兼容；不得静默选错地址。合成文本及真实双 CU 夹具均有回归，缺夹具时保留未验状态。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 2,
-      "auditRefs": [
-        7
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.Core/Elf/ElfIndex.cs:76",
-        "src/EmbeddedHelper.Core/Elf/ElfIndex.cs:94",
-        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:92",
-        "src/EmbeddedHelper.Core/Elf/ReadElfIndex.cs:98",
-        "src/EmbeddedHelper.Core/Observation/ObservationPreparation.cs:59"
-      ]
-    },
-    {
       "id": "AUD-02",
       "title": "第2批 · 提供保留外部修改的事务结案入口（Audit #2）",
       "status": "todo",

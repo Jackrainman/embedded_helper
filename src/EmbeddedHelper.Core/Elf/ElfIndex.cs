@@ -70,13 +70,24 @@ public static class ElfIndex
         finally { debug.Position = originalPosition; }
         if (dwarf.InfoSection.Units.Count == 0) throw new InvalidDataException("ELF 缺少可用调试信息。");
         var result = new List<Variable>();
+        var names = dwarf.InfoSection.Units.Where(u => u.Root != null).Select(u => Attribute(u.Root!, DwarfAttributeKind.Name)?.ValueAsObject as string ?? "").ToArray();
         foreach (var unit in dwarf.InfoSection.Units)
         {
             if (unit.Root is not { } root) continue;
             var cu = Attribute(root, DwarfAttributeKind.Name)?.ValueAsObject as string ?? "";
+            cu = CompilationUnitIdentity(cu, Attribute(root, DwarfAttributeKind.CompDir)?.ValueAsObject as string ?? "", names.Count(n => n.Replace('\\', '/') == cu.Replace('\\', '/')) > 1);
             Walk(root, cu, "", result);
         }
-        return result.OrderBy(v => v.Name, StringComparer.Ordinal).ToArray();
+        return UniqueVariables(result);
+    }
+
+    internal static string CompilationUnitIdentity(string name, string directory, bool duplicated) => name.Replace('\\', '/')
+        + (duplicated ? "|dir=" + Uri.EscapeDataString(directory.Replace('\\', '/')) : "");
+    internal static Variable[] UniqueVariables(List<Variable> variables)
+    {
+        var duplicate = variables.GroupBy(v => v.Identity).FirstOrDefault(g => g.Count() > 1);
+        if (duplicate != null) throw new InvalidDataException("ELF 变量身份有歧义，无法安全选择地址：" + duplicate.Key);
+        return variables.OrderBy(v => v.Name, StringComparer.Ordinal).ToArray();
     }
 
     private static DwarfAttribute? Attribute(DwarfDIE die, DwarfAttributeKind kind) => die.Attributes.FirstOrDefault(a => a.Kind == kind);
