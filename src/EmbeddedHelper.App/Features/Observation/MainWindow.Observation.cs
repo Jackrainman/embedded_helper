@@ -19,6 +19,7 @@ public partial class MainWindow
     private readonly StringBuilder rttHistory = new();
     private DateTime elfStamp;
     private bool indexing, displayDirty, rttDirty, wasPaused;
+    private bool rttFormatReported;
     private long samples;
     private long? observationOriginTicks;
     private readonly Stopwatch sampling = new();
@@ -150,7 +151,7 @@ public partial class MainWindow
         displayDirty = rttDirty = true;
     });
     private void ResetObservationDisplay()
-    { samples = 0; observationOriginTicks = null; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear(); displayDirty = rttDirty = true; }
+    { samples = 0; observationOriginTicks = null; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear(); rttFormatReported = false; displayDirty = rttDirty = true; }
     private async void StopObservation(object? sender, RoutedEventArgs e) => await Guard(StopObservationAsync);
     private async Task StopObservationAsync()
     {
@@ -200,7 +201,14 @@ public partial class MainWindow
                     }
                 if (item.RttBase64 != null)
                 {
-                    rttHistory.Append(Decode(rttDecoder, Convert.FromBase64String(item.RttBase64)));
+                    byte[] bytes;
+                    try { bytes = Convert.FromBase64String(item.RttBase64); }
+                    catch (FormatException)
+                    {
+                        if (!rttFormatReported) { Report("已忽略无效 RTT Base64 数据；本会话同类错误不再重复提示。"); rttFormatReported = true; }
+                        continue;
+                    }
+                    rttHistory.Append(Decode(rttDecoder, bytes));
                     if (rttHistory.Length > 65536) rttHistory.Remove(0, rttHistory.Length - 65536);
                     rttDirty = true;
                 }

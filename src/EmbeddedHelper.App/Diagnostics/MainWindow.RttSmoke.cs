@@ -33,6 +33,15 @@ public partial class MainWindow
                 await window.StartRttSessionAsync(request);
                 if (!window.rttSession || window.rttHistory.Length != 0 || window.RttPage.RttText.Text.Length != 0)
                     throw new InvalidDataException("成功启动未清空旧会话显示。");
+                foreach (var block in new[] { "!", "!", "!", "", "5L0=", "oA==" })
+                    fake.Queue.Writer.TryWrite(new("sample", "", RttBase64: block, SessionId: fake.SessionId));
+                window.RefreshObservation();
+                if (window.rttHistory.ToString() != "你") throw new InvalidDataException("坏编码阻断后续UTF-8块或污染解码器。");
+                var diagnostic = window.StatusLabel.Text;
+                window.StatusLabel.Text = "后续状态";
+                fake.Queue.Writer.TryWrite(new("sample", "", RttBase64: "!", SessionId: fake.SessionId));
+                window.RefreshObservation();
+                if (!diagnostic.Contains("Base64") || window.StatusLabel.Text != "后续状态") throw new InvalidDataException("连续坏块没有有界诊断。");
                 await window.StopObservationAsync();
             }
             finally { fake.FailRelease = false; await coordinator.StopAsync(); window.refresh.Stop(); window.closing = true; window.Close(); }

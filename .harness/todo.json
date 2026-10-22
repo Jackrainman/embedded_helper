@@ -21,33 +21,6 @@
       "resumeWhen": ""
     },
     {
-      "id": "AUD-03",
-      "title": "第1批 · 防护异常 RTT Base64 事件（Audit #3）",
-      "status": "todo",
-      "priority": "P1",
-      "component": "App/Observation",
-      "refs": [
-        "VIS-07",
-        "NFR-02"
-      ],
-      "dependsOn": [],
-      "testIds": [
-        "AT-17"
-      ],
-      "doneWhen": "触发：协议注入非法 RttBase64 时 Convert.FromBase64String 异常逃出 Tick；同包正常 Worker 目前生成合法 Base64。完成：在输入边界处理格式错误并给出有界诊断，继续消费后续合法事件；覆盖跨块 UTF-8 和连续坏事件。不把协议防御缺口描述为已复现的正常采集故障。",
-      "reason": "",
-      "resumeWhen": "",
-      "batch": 1,
-      "auditRefs": [
-        3
-      ],
-      "reviewedAtCommit": "70feaf21a8298eb7e76b27d360f65980eff309fe",
-      "sourceEvidence": [
-        "src/EmbeddedHelper.App/Features/Observation/MainWindow.Observation.cs:201",
-        "src/EmbeddedHelper.Worker/Program.cs:61"
-      ]
-    },
-    {
       "id": "AUD-07",
       "title": "第2批 · 消除同名编译单元的静态变量身份碰撞（Audit #7）",
       "status": "todo",

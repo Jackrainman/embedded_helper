@@ -514,7 +514,8 @@
         "evidence": [
           "test-results/audit-20261022/AUD-09-green.log"
         ],
-        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收",
+        "commit": "a7617644e7b4d24be5a745f4312716a326cf9998"
       }
     },
     {
@@ -532,7 +533,7 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "",
+      "reason": "已完成源码离线部分：真实事件消费覆盖连续坏块、空块、跨块UTF-8及每会话一次诊断，WPF离线冒烟通过；候选同包复验及未覆盖条件仍待验证。",
       "resumeWhen": "",
       "steps": [
         "通过事件消费路径注入非法 Base64、空块、有效块及跨块 UTF-8。",
@@ -547,7 +548,21 @@
       "sourceEvidence": [
         "src/EmbeddedHelper.App/Features/Observation/MainWindow.Observation.cs:201",
         "src/EmbeddedHelper.Worker/Program.cs:61"
-      ]
+      ],
+      "offlineResult": {
+        "task": "AUD-03",
+        "recordedAt": "2026-10-22T09:50:04.952356+00:00",
+        "result": "passed",
+        "details": "真实事件消费覆盖连续坏块、空块、跨块UTF-8及每会话一次诊断，WPF离线冒烟通过",
+        "commands": [
+          "dotnet build EmbeddedHelper.slnx -c Release --no-restore",
+          "python -X utf8 scripts/gui_smoke.py"
+        ],
+        "evidence": [
+          "test-results/audit-20261022/AUD-03-green.log"
+        ],
+        "scope": "源码离线检查；不等同人工、硬件或候选包验收"
+      }
     },
     {
       "id": "AT-18",
