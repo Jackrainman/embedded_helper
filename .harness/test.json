@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "candidate": {
-    "version": "1.0.1-alpha.1",
-    "commit": "8617637637bd8ba53b6c701ef16a9b8e9912c88e",
-    "packageSha256": "e7a45f5b811ea9567d71d8aa6c2938c90f6fec7f6ba8cf55885892f11fd5cc09",
-    "executableSha256": "f4185762cfc805bec625af479842124eea5ce8b3e828a4d6519948f477b77ff1"
+    "version": "1.0.24-alpha.1",
+    "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+    "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+    "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
   },
   "checks": [
     {
@@ -119,8 +119,8 @@
         "隔离工程与配置"
       ],
       "status": "pending",
-      "reason": "",
-      "resumeWhen": "",
+      "reason": "新包已启动并读到版本/空状态。Computer Use截图与目标可访问性树不一致，激活时报 user input was detected in this window；重新观察时页面已由外部输入切换。未继续发送输入，未把启动或自动冒烟替代本项完整UI验收。",
+      "resumeWhen": "在可独占操作的桌面时段，用本次候选完成列出的用户路径；保留当前用户使用中的新包窗口和data。",
       "steps": [
         "逐页检查工程、共享连接、RTT、远程配置、设置的空状态、有效状态与错误状态。",
         "检查用途、当前结果、下一步是否明确，错误是否就地显示，反馈是否不只靠颜色。",
@@ -134,6 +134,9 @@
         6,
         15,
         21
+      ],
+      "partialEvidence": [
+        "test-results/audit-20261022/ui/status.json"
       ]
     },
     {
@@ -150,8 +153,8 @@
         "可调整窗口及显示缩放的测试环境"
       ],
       "status": "pending",
-      "reason": "",
-      "resumeWhen": "",
+      "reason": "新包已启动并读到版本/空状态。Computer Use截图与目标可访问性树不一致，激活时报 user input was detected in this window；重新观察时页面已由外部输入切换。未继续发送输入，未把启动或自动冒烟替代本项完整UI验收。",
+      "resumeWhen": "在可独占操作的桌面时段，用本次候选完成列出的用户路径；保留当前用户使用中的新包窗口和data。",
       "steps": [
         "在最小窗口和测试缩放环境检查五个页面，确认按钮、错误提示、滚动可用。",
         "核对旧记录中中断的窗口/标签是否仍存在；仅关闭确认属于该次测试且无未保存内容的对象，不能照旧ID盲目关闭。",
@@ -162,6 +165,9 @@
       "lastResult": null,
       "auditRefs": [
         25
+      ],
+      "partialEvidence": [
+        "test-results/audit-20261022/ui/status.json"
       ]
     },
     {
@@ -179,15 +185,18 @@
         "含深层结构体及同名末级字段的 ELF"
       ],
       "status": "pending",
-      "reason": "",
-      "resumeWhen": "",
+      "reason": "新包已启动并读到版本/空状态。Computer Use截图与目标可访问性树不一致，激活时报 user input was detected in this window；重新观察时页面已由外部输入切换。未继续发送输入，未把启动或自动冒烟替代本项完整UI验收。",
+      "resumeWhen": "在可独占操作的桌面时段，用本次候选完成列出的用户路径；保留当前用户使用中的新包窗口和data。",
       "steps": [
         "添加两个末级字段同名、父级不同的长变量。",
         "缩至最小窗口，核对名称区分并用鼠标实际悬停。",
         "检查搜索、记录和导出仍保留完整变量名。"
       ],
       "expected": "窄窗下可区分变量，真实悬停展示完整路径；搜索、记录及导出不丢名称。",
-      "lastResult": null
+      "lastResult": null,
+      "partialEvidence": [
+        "test-results/audit-20261022/ui/status.json"
+      ]
     },
     {
       "id": "AT-06",
@@ -228,14 +237,17 @@
         "工程外可解析 AXF"
       ],
       "status": "pending",
-      "reason": "",
-      "resumeWhen": "",
+      "reason": "新包已启动并读到版本/空状态。Computer Use截图与目标可访问性树不一致，激活时报 user input was detected in this window；重新观察时页面已由外部输入切换。未继续发送输入，未把启动或自动冒烟替代本项完整UI验收。",
+      "resumeWhen": "在可独占操作的桌面时段，用本次候选完成列出的用户路径；保留当前用户使用中的新包窗口和data。",
       "steps": [
         "从浏览固件入口打开系统文件对话框，实际选择工程外AXF。",
         "确认路径进入界面并解析；再取消一次选择，核对已选路径保持。"
       ],
       "expected": "完整手选路径可用；取消不破坏现有选择。自动定位和直接填写控件不能替代此路径。",
-      "lastResult": null
+      "lastResult": null,
+      "partialEvidence": [
+        "test-results/audit-20261022/ui/status.json"
+      ]
     },
     {
       "id": "AT-08",
@@ -334,7 +346,9 @@
           "test-results/audit-20261022/C-05-timeout-green.log",
           "test-results/audit-20261022/C-05-server-suite.log"
         ],
-        "details": "真实页面函数离线回放覆盖重入、游标、切换、失败、10秒取消与旧finally隔离；服务端17项通过。最初默认WSL Bash路径不兼容失败，使用既有Git Bash后通过。未部署。"
+        "details": "真实页面函数离线回放覆盖重入、游标、切换、失败、10秒取消与旧finally隔离；服务端17项通过。最初默认WSL Bash路径不兼容失败，使用既有Git Bash后通过。未部署。",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -386,7 +400,9 @@
           "test-results/audit-20261022/C-05-timeout-green.log",
           "test-results/audit-20261022/C-05-server-suite.log"
         ],
-        "details": "真实页面函数离线回放覆盖重入、游标、切换、失败、10秒取消与旧finally隔离；服务端17项通过。最初默认WSL Bash路径不兼容失败，使用既有Git Bash后通过。未部署。"
+        "details": "真实页面函数离线回放覆盖重入、游标、切换、失败、10秒取消与旧finally隔离；服务端17项通过。最初默认WSL Bash路径不兼容失败，使用既有Git Bash后通过。未部署。",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -478,15 +494,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "源码离线回归已通过：错误文本使真实WPF冒烟失败，修复后整体冒烟通过；待最终候选同包复验。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "正常预期文本通过，再故意改变实际文本确认冒烟非零失败。",
         "分别核对绘图与 RTT 文本检查，不用自身值派生预期。"
       ],
       "expected": "正确文本通过、错误文本失败；证据说明本用例是显示断言，完整解码路径由 AT-17 覆盖。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "正确文本通过、错误文本失败；证据说明本用例是显示断言，完整解码路径由 AT-17 覆盖。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         8
       ],
@@ -508,8 +547,13 @@
         ],
         "result": "passed",
         "scope": "显示断言，不代表Worker或硬件链路",
-        "commit": "afe07f765ae34b0b035d522c312fd92a54d25000"
-      }
+        "commit": "afe07f765ae34b0b035d522c312fd92a54d25000",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "afe07f765ae34b0b035d522c312fd92a54d25000"
+      ]
     },
     {
       "id": "AT-16",
@@ -525,15 +569,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：WPF替身覆盖启动失败、释放失败保留停止入口、成功重试清屏及Changed归属；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "预置 RTT 历史，注入启动失败及释放失败，核对文本、标志和按钮状态。",
         "再成功启动、停止、重试，检查回调不会把 RTT 分派到变量页。"
       ],
       "expected": "失败不丢既有历史；成功边界行为明确；释放失败时仍禁止新连接。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "WPF替身覆盖启动失败、释放失败保留停止入口、成功重试清屏及Changed归属",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         9
       ],
@@ -555,8 +622,13 @@
           "test-results/audit-20261022/AUD-09-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "a7617644e7b4d24be5a745f4312716a326cf9998"
-      }
+        "commit": "a7617644e7b4d24be5a745f4312716a326cf9998",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "a7617644e7b4d24be5a745f4312716a326cf9998"
+      ]
     },
     {
       "id": "AT-17",
@@ -572,15 +644,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：真实事件消费覆盖连续坏块、空块、跨块UTF-8及每会话一次诊断，WPF离线冒烟通过；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "通过事件消费路径注入非法 Base64、空块、有效块及跨块 UTF-8。",
         "连续发送坏块后发送合法块，核对历史、后续消费和诊断频率。"
       ],
       "expected": "不抛未处理异常或连续模态弹窗，后续合法文本正确；不能只直接赋值 TextBox 验证。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "真实事件消费覆盖连续坏块、空块、跨块UTF-8及每会话一次诊断，WPF离线冒烟通过",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         3
       ],
@@ -602,8 +697,13 @@
           "test-results/audit-20261022/AUD-03-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "a5f98d812ab414f839861ca507208ad221b29846"
-      }
+        "commit": "a5f98d812ab414f839861ca507208ad221b29846",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "a5f98d812ab414f839861ca507208ad221b29846"
+      ]
     },
     {
       "id": "AT-18",
@@ -620,15 +720,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "合成两个相同 DW_AT_name、不同 comp_dir 的 CU，各有同名静态变量。",
         "在 readelf 两种 identity 模式、旧 watch 身份及歧义场景核对变量数量和地址。"
       ],
       "expected": "两个变量均可辨识，歧义显式诊断；旧配置能安全迁移或提示重新选择，不错误绑定。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "127项客户端测试通过；真实ARM双CU夹具及合成文本两模式均保留两个地址；不再静默去重。无冲突内置身份保持；旧回退/冲突身份不能匹配时沿现有缺失变量提示重新选择，不猜测迁移",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         7
       ],
@@ -652,8 +775,13 @@
           "test-results/audit-20261022/AUD-07-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "d88660fbcf93baf0bb84afb3dd0c7a28be354482"
-      }
+        "commit": "d88660fbcf93baf0bb84afb3dd0c7a28be354482",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "d88660fbcf93baf0bb84afb3dd0c7a28be354482"
+      ]
     },
     {
       "id": "AT-19",
@@ -669,15 +797,42 @@
         "尚待制作的双 CU ELF 碰撞夹具",
         "可重现的 ARM 编译器及 readelf"
       ],
-      "status": "pending",
-      "reason": "双CU真实ELF已由内置和本机ARM readelf两种身份模式实际解析一致；新增watch保存重读及旧身份安全缺失回归。 最终源码/候选绑定待完成。",
-      "resumeWhen": "最终候选同包复验",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "制作可追溯的双 CU ELF，核对调试节实际具有同名 name、不同 comp_dir。",
         "分别走内置与 readelf，比较变量数量、身份、地址及 watch 重开；保留样本摘要。"
       ],
       "expected": "真实 ELF 不崩溃、不静默丢变量，两后端结果及兼容策略一致；合成文本不能替代。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "sample",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "双CU真实ELF已由内置和本机ARM readelf两种身份模式实际解析一致；新增watch保存重读及旧身份安全缺失回归。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "AT-19-live-readelf.log",
+            "path": "test-results/audit-20261022/AT-19-live-readelf.log"
+          }
+        ]
+      },
       "auditRefs": [
         7
       ],
@@ -698,7 +853,9 @@
           "test-results/audit-20261022/AT-19-live-readelf.log",
           "test-results/audit-20261022/final-boundaries.log"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       },
       "offlineHistory": [
         {
@@ -715,6 +872,9 @@
           "scope": "源码离线检查；不等同人工、硬件或候选包验收",
           "commit": "d88660fbcf93baf0bb84afb3dd0c7a28be354482"
         }
+      ],
+      "codeCommits": [
+        "d88660fbcf93baf0bb84afb3dd0c7a28be354482"
       ]
     },
     {
@@ -732,8 +892,8 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "已完成源码离线部分：128项客户端测试及WPF冒烟通过；显式确认结案保留原plan和当前摘要，拒绝并发变化、重复结案、错误工程；取消不调用写入。人工按钮确认留AT-03；候选同包复验及未覆盖条件仍待验证。",
-      "resumeWhen": "",
+      "reason": "核心冲突恢复、显式保留结案、重复/并发/损坏日志/备份保护已通过；新包真实确认对话框的取消与明确选择尚未完成。",
+      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
       "steps": [
         "恢复冲突并验证 Apply 仍拒绝；分别测试恢复 Before、显式保留当前内容结案及取消。",
         "核对重复结案、错误工程、并发改动、损坏日志和备份保留。"
@@ -764,8 +924,14 @@
           "test-results/audit-20261022/AUD-02-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "1447507a4eec81009e2eafd39d43fc6c48ea681b"
-      }
+        "commit": "1447507a4eec81009e2eafd39d43fc6c48ea681b",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "1447507a4eec81009e2eafd39d43fc6c48ea681b",
+        "3fe0dcb6c0cc890b803bbb3503f40116b084ce0b"
+      ]
     },
     {
       "id": "AT-21",
@@ -782,15 +948,50 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：129项客户端离线测试通过；Windows祖先junction、末尾斜杠、工程内逃逸、相似前缀和写入前变化均覆盖；文件符号链接专门用例及工具计划经联接路径复验仍待补；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "在独有隔离目录建立普通工程及经祖先 junction 访问的同一工程，验证事务与工具计划。",
         "覆盖工程内指向外部的链接、文件链接、边界相似路径和写前变化，确认外部文件摘要未变。"
       ],
       "expected": "支持工程祖先联接而不放宽工程内部边界；不能以停止全部链接检查代替修复。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "129项客户端离线测试通过；Windows祖先junction、末尾斜杠、工程内逃逸、相似前缀和写入前变化均覆盖；文件符号链接专门用例及工具计划经联接路径复验仍待补 已补文件符号链接实测；外部文件保持不变；回滚和祖先换根红绿回归通过。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "AT-21-file-link.log",
+            "path": "test-results/audit-20261022/AT-21-file-link.log"
+          },
+          {
+            "label": "AUD-01-root-green.log",
+            "path": "test-results/audit-20261022/AUD-01-root-green.log"
+          },
+          {
+            "label": "AUD-01-review-green.log",
+            "path": "test-results/audit-20261022/AUD-01-review-green.log"
+          }
+        ]
+      },
       "auditRefs": [
         1
       ],
@@ -812,8 +1013,15 @@
           "test-results/audit-20261022/AUD-01-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "f6b5e06d3f0de2e787afa5e34d4a899f60f8081f"
-      }
+        "commit": "f6b5e06d3f0de2e787afa5e34d4a899f60f8081f",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "f6b5e06d3f0de2e787afa5e34d4a899f60f8081f",
+        "bd8ce76a1abb1c9c4a6597273d01b151222e7d80",
+        "ec4b460c54a18e861839379ef6e781c351b60abd"
+      ]
     },
     {
       "id": "AT-22",
@@ -829,15 +1037,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：134项客户端测试和WPF只读加载/解析/写入拒绝/修复重开回归通过；真实人工入口仍待AT-03；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "覆盖坏 JSON、未知 schema、缺少/错误类型字段及正常无归属记录。",
         "核对工程切换、ELF只读查看、接入/移除禁用和修复后重新打开，比较原文件摘要。"
       ],
       "expected": "失败状态可解释、无半加载误导；只读降级不授予写入权限，原有配置不变。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "134项客户端测试和WPF只读加载/解析/写入拒绝/修复重开回归通过；真实人工入口仍待AT-03",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         6
       ],
@@ -861,8 +1092,13 @@
           "test-results/audit-20261022/AUD-06-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "db0833a77df314d9be47e8a30919957c0f48dc03"
-      }
+        "commit": "db0833a77df314d9be47e8a30919957c0f48dc03",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "db0833a77df314d9be47e8a30919957c0f48dc03"
+      ]
     },
     {
       "id": "AT-23",
@@ -880,8 +1116,8 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "已完成源码离线部分：135项客户端测试通过；全轮失败须持续3秒且至少3轮才抛可重试故障，部分成功/新计划清零，RTT-only不计失败；纯健康逻辑替身及既有生命周期通过，真实SDK和端到端采样替身仍待验；候选同包复验及未覆盖条件仍待验证。",
-      "resumeWhen": "",
+      "reason": "SamplingHealth阈值、单次/部分失败/恢复/无变量及会话释放替身已通过；受控原生SDK与完整Worker循环组合尚未验证，不能用纯逻辑测试代替。",
+      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
       "steps": [
         "用受控 SDK/采样替身覆盖单个坏地址、短暂全失败、持续全失败及恢复。",
         "覆盖 RTT-only 无变量、RTT 空闲、停止/重试和释放失败。"
@@ -909,8 +1145,13 @@
           "test-results/audit-20261022/AUD-04-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "81e27a39bb9261f0f918f204c225aa56a5d94c7b"
-      }
+        "commit": "81e27a39bb9261f0f918f204c225aa56a5d94c7b",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "81e27a39bb9261f0f918f204c225aa56a5d94c7b"
+      ]
     },
     {
       "id": "AT-24",
@@ -945,6 +1186,9 @@
         "src/EmbeddedHelper.Worker/Program.cs:55",
         "src/EmbeddedHelper.Worker/Program.cs:128",
         "src/EmbeddedHelper.Core/Observation/Observation.cs:109"
+      ],
+      "codeCommits": [
+        "81e27a39bb9261f0f918f204c225aa56a5d94c7b"
       ]
     },
     {
@@ -961,15 +1205,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：140项客户端测试通过；离线HTTP响应覆盖size/digest/commit拒绝后Available/Find/Save均不含候选，合法注册及冲突拒绝通过；本地显式导入与纯解析分离；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "用独立进程/离线响应构造格式合法但附件大小、digest或标签提交不符的候选。",
         "每次刷新失败后检查 Available/Find/Save，再验证合法新版本和同版本冲突。"
       ],
       "expected": "被拒绝候选从未进入可信目录或持久化，既有可信版本不受影响；本项不要求改变整次刷新失败策略。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "140项客户端测试通过；离线HTTP响应覆盖size/digest/commit拒绝后Available/Find/Save均不含候选，合法注册及冲突拒绝通过；本地显式导入与纯解析分离",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         26
       ],
@@ -993,8 +1260,13 @@
           "test-results/audit-20261022/AUD-26-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "b467b9f61a690441219dd236bc75ab1a792a03d4"
-      }
+        "commit": "b467b9f61a690441219dd236bc75ab1a792a03d4",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "b467b9f61a690441219dd236bc75ab1a792a03d4"
+      ]
     },
     {
       "id": "AT-26",
@@ -1010,15 +1282,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：147项客户端测试通过；LF/CRLF和无末尾换行删除注释保真，空父节点插入回读校验通过；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "分别用 CRLF/LF、有/无末尾换行的 YAML 删除带行尾注释的字段，比较未修改区域字节。",
         "对空标量父节点和缺失父节点插入、回读、移除，覆盖注释及复杂语法拒绝。"
       ],
       "expected": "换行和未知内容保留，生成结果可重解析且值一致；失败不写原文件。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "147项客户端测试通过；LF/CRLF和无末尾换行删除注释保真，空父节点插入回读校验通过",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         27
       ],
@@ -1040,8 +1335,13 @@
           "test-results/audit-20261022/AUD-27-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "26c980f17b6aad49b1523d2ab202a00e2fedbcb9"
-      }
+        "commit": "26c980f17b6aad49b1523d2ab202a00e2fedbcb9",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "26c980f17b6aad49b1523d2ab202a00e2fedbcb9"
+      ]
     },
     {
       "id": "AT-27",
@@ -1058,8 +1358,8 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "已完成源码离线部分：WPF慢枚举确认后台线程，保留手选COM，重复刷新新结果优先，关闭迟到结果忽略，权限失败就地反馈；未打开COM；候选同包复验及未覆盖条件仍待验证。",
-      "resumeWhen": "",
+      "reason": "实际WPF慢枚举、权限错误、COM手选保留、重叠刷新与关闭后迟到结果已通过；友好名称PortName提取和未知名称的定向分支未完整验证。",
+      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
       "steps": [
         "注入慢枚举和权限失败，核对主界面持续响应、重复刷新结果有序。",
         "覆盖关闭窗口、保留手选COM、友好名称PortName提取与未知名称。"
@@ -1088,8 +1388,13 @@
           "test-results/audit-20261022/AUD-10-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "0b6f4040d00c1ad204bba226e726583acc4528ed"
-      }
+        "commit": "0b6f4040d00c1ad204bba226e726583acc4528ed",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "0b6f4040d00c1ad204bba226e726583acc4528ed"
+      ]
     },
     {
       "id": "AT-28",
@@ -1105,15 +1410,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：151项客户端测试通过；摘要和下一步统一分类，readelf无变量提示重新构建；文件/工具/权限/损坏/超限错误保留原始详情；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "分别输入未找到固定地址变量、工具缺失、执行失败、调试信息损坏、权限及超限错误。",
         "核对分类、下一步动作及原始详情一致。"
       ],
       "expected": "不同原因给出可行动的准确说明，不能仅删除分支或断言非空。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "151项客户端测试通过；摘要和下一步统一分类，readelf无变量提示重新构建；文件/工具/权限/损坏/超限错误保留原始详情",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         15
       ],
@@ -1135,8 +1463,13 @@
           "test-results/audit-20261022/AUD-15-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "2d2341cf602c12bcfaaf6be9fca064d245a2b02b"
-      }
+        "commit": "2d2341cf602c12bcfaaf6be9fca064d245a2b02b",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "2d2341cf602c12bcfaaf6be9fca064d245a2b02b"
+      ]
     },
     {
       "id": "AT-29",
@@ -1152,15 +1485,46 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：5项版本门测试通过（含真实临时Git钩子），不足等级提示显式环境/预升版及已暂存状态恢复；版本门未放宽；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "在独立 Git 仓库测试默认环境 feat/feat! 失败、显式等级通过、提前升版通过。",
         "核对重试、索引与工作树VERSION冲突和实际提示。"
       ],
       "expected": "等级不足明确说明恢复方式，不暗示自动从提交消息回溯改写prepare；原版本门仍有效。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "5项版本门测试通过（含真实临时Git钩子），不足等级提示显式环境/预升版及已暂存状态恢复；版本门未放宽 实际环境变量minor/major的feat/feat!提交已分别通过；默认拒绝和提前升版恢复亦通过。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "AT-29-explicit-level.json",
+            "path": "test-results/audit-20261022/AT-29-explicit-level.json"
+          },
+          {
+            "label": "AUD-05-final.log",
+            "path": "test-results/audit-20261022/AUD-05-final.log"
+          }
+        ]
+      },
       "auditRefs": [
         5
       ],
@@ -1183,8 +1547,13 @@
           "test-results/audit-20261022/AUD-05-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "3728e2fdbd759700d86f5ade3d7c593aa775f691"
-      }
+        "commit": "3728e2fdbd759700d86f5ade3d7c593aa775f691",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "3728e2fdbd759700d86f5ade3d7c593aa775f691"
+      ]
     },
     {
       "id": "AT-30",
@@ -1200,15 +1569,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：运行时权威属性/三个publish runtimeconfig交叉检查用例通过，制造不一致时明确拒绝；最终实际publish验证随后统一运行；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "核对固定运行时属性、publish产物和清单三者。",
         "在隔离输入中制造运行时不一致，确认生成/校验明确失败。"
       ],
       "expected": "一致值被记录，漂移被阻断，SDK版本与运行时版本不混淆。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "运行时权威属性/三个publish runtimeconfig交叉检查用例通过，制造不一致时明确拒绝；最终实际publish验证随后统一运行",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         16
       ],
@@ -1229,8 +1621,13 @@
           "test-results/audit-20261022/AUD-16-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "f20bba2be03df4e83e8d1fa9a9558e72f1ff9c64"
-      }
+        "commit": "f20bba2be03df4e83e8d1fa9a9558e72f1ff9c64",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "f20bba2be03df4e83e8d1fa9a9558e72f1ff9c64"
+      ]
     },
     {
       "id": "AT-31",
@@ -1245,15 +1642,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：首次/搬迁运行目录零、单、多匹配回归通过；异常阻断主流程，不生成通过证据；原启动check=True保留；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "隔离构造零匹配、单匹配及多匹配运行目录。",
         "核对首次和搬迁阶段失败诊断、退出码与证据状态。"
       ],
       "expected": "异常清楚可定位，不把已失败启动归因为目录查找，也不留下假通过。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "首次/搬迁运行目录零、单、多匹配回归通过；异常阻断主流程，不生成通过证据；原启动check=True保留",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         17
       ],
@@ -1274,8 +1694,13 @@
           "test-results/audit-20261022/AUD-17-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "5a1a82dadba15a520dd63f5dac20f0679953d6b2"
-      }
+        "commit": "5a1a82dadba15a520dd63f5dac20f0679953d6b2",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "5a1a82dadba15a520dd63f5dac20f0679953d6b2"
+      ]
     },
     {
       "id": "AT-32",
@@ -1291,15 +1716,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：161项客户端测试通过；空/非数/越界端口中文字段提示；workspace folders/path及launch configurations缺失/类型错误指明文件，拒绝无效计划且保留原文件；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "输入空/非数字/越界探针端口和GDB端口，核对错误位置及磁盘未变。",
         "输入缺folders/path/configurations或类型错误的工程文件，核对具体诊断和未知字段保留。"
       ],
       "expected": "用户能定位无效输入，失败不写配置、不泄露未处理异常；有效端口仍可用。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "161项客户端测试通过；空/非数/越界端口中文字段提示；workspace folders/path及launch configurations缺失/类型错误指明文件，拒绝无效计划且保留原文件",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         21
       ],
@@ -1322,8 +1770,13 @@
           "test-results/audit-20261022/AUD-21-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "1d64cc93e73a2e0306b5d8bf9e6cd5ab19c65d8e"
-      }
+        "commit": "1d64cc93e73a2e0306b5d8bf9e6cd5ab19c65d8e",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "1d64cc93e73a2e0306b5d8bf9e6cd5ab19c65d8e"
+      ]
     },
     {
       "id": "AT-33",
@@ -1339,8 +1792,8 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "已完成源码离线部分：161项客户端测试通过；保留1/2/3变量行为、自动切回和PropertyChanged测试；需求、悬停提示、WPF精确断言统一不超过两个；候选同包复验及未覆盖条件仍待验证。",
-      "resumeWhen": "",
+      "reason": "1/2/3变量阈值、自动切回、通知及固定提示的源码/自动检查通过；新包禁用控件真实鼠标悬停未完成。",
+      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
       "steps": [
         "分别选择1、2、3个变量，核对分道可用性、自动切回和禁用时悬停说明。",
         "确认说明与阈值一致，保留通知及目录发布契约测试。"
@@ -1368,8 +1821,13 @@
           "test-results/audit-20261022/AUD-25-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "84ff5b5f6a22dec4bfffb80e08d5285b2f8eadc2"
-      }
+        "commit": "84ff5b5f6a22dec4bfffb80e08d5285b2f8eadc2",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "84ff5b5f6a22dec4bfffb80e08d5285b2f8eadc2"
+      ]
     },
     {
       "id": "AT-34",
@@ -1387,8 +1845,8 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "已完成源码离线部分：143项客户端测试通过；共享控制读取路径对坏JSON/非法计划/超长行返回1并写原因，EOF返回0；Worker在取消前保存退出码。真实SDK和受控完整Worker进程组合验收尚未执行；候选同包复验及未覆盖条件仍待验证。",
-      "resumeWhen": "",
+      "reason": "控制读取器对非法计划/超长行/EOF的退出结果和stderr、父进程协议故障/回收已分别通过；真实Worker配受控原生SDK的整条控制失败-释放-重试链尚未完成。",
+      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
       "steps": [
         "受控进程/SDK替身注入非法计划、超长控制行及正常EOF。",
         "核对exitCode、stderr、父进程可见原因、释放后重试。"
@@ -1416,8 +1874,13 @@
           "test-results/audit-20261022/AUD23-01-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "ada3c7d782341f9e53fe70ee9f0a3ea79f08b854"
-      }
+        "commit": "ada3c7d782341f9e53fe70ee9f0a3ea79f08b854",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "ada3c7d782341f9e53fe70ee9f0a3ea79f08b854"
+      ]
     },
     {
       "id": "AT-35",
@@ -1433,15 +1896,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：WPF隔离日志目标实际UnauthorizedAccessException已复现；修复后Guard保留原业务错误且恢复正常日志，未改目录ACL；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "在隔离日志目标模拟权限拒绝与文件占用，再触发原始业务错误。",
         "核对日志恢复后的行为和原始原因显示。"
       ],
       "expected": "日志故障不引发二次未处理异常或遮蔽原始错误；业务失败仍可见。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "WPF隔离日志目标实际UnauthorizedAccessException已复现；修复后Guard保留原业务错误且恢复正常日志，未改目录ACL 成品冒烟覆盖日志目标为目录、文件独占占用及解除后写入恢复。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         23
       ],
@@ -1465,8 +1951,13 @@
           "test-results/audit-20261022/AUD23-02-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "b4db1bade5b117290c414c4b228fbaf13a24bff2"
-      }
+        "commit": "b4db1bade5b117290c414c4b228fbaf13a24bff2",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "b4db1bade5b117290c414c4b228fbaf13a24bff2"
+      ]
     },
     {
       "id": "AT-36",
@@ -1483,8 +1974,8 @@
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
       "status": "pending",
-      "reason": "已完成源码离线部分：164项客户端测试通过；预览1/16有效，非法数值/缺参/多参明确拒绝；真实CLI帮助含list/refresh、非法命令exit2、标量ELF解析exit0通过；未执行网络/设备命令；候选同包复验及未覆盖条件仍待验证。",
-      "resumeWhen": "",
+      "reason": "真实CLI帮助、非法命令、ELF解析及返回码通过；plot-preview非法/边界参数解析测试通过；新包实际错误弹窗和合法预览窗口反馈未完成。",
+      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
       "steps": [
         "离线检查帮助、非法命令、elf夹具解析和错误退出；不调用网络refresh或设备命令。",
         "对plot-preview覆盖非数字、0、17及1/16合法边界，核对反馈。"
@@ -1513,8 +2004,13 @@
           "test-results/audit-20261022/AUD23-03-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "ff547cfa6aa693a2d08765165a1d6bd8f120450a"
-      }
+        "commit": "ff547cfa6aa693a2d08765165a1d6bd8f120450a",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "ff547cfa6aa693a2d08765165a1d6bd8f120450a"
+      ]
     },
     {
       "id": "AT-37",
@@ -1530,15 +2026,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "已完成源码离线部分：完整仓库离线门通过；Python语法错误含文件行列及非零；旧run损坏/占用失败保留新GUI证据、旧latest及maintenance失败状态，正常清理通过；候选同包复验及未覆盖条件仍待验证。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "隔离Python输入制造语法错误，确认非零和具体定位。",
         "模拟旧run.json损坏、旧目录占用/删除失败和正常清理，核对run/latest/退出码一致及新证据保留。"
       ],
       "expected": "失败来源明确，证据与退出状态一致；清理仍限定本次管理目录。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "完整仓库离线门通过；Python语法错误含文件行列及非零；旧run损坏/占用失败保留新GUI证据、旧latest及maintenance失败状态，正常清理通过",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         23
       ],
@@ -1561,8 +2080,13 @@
           "test-results/audit-20261022/AUD23-04-green.log"
         ],
         "scope": "源码离线检查；不等同人工、硬件或候选包验收",
-        "commit": "9ed1ff5cca147c0c36a63fb0225bcc241f216baf"
-      }
+        "commit": "9ed1ff5cca147c0c36a63fb0225bcc241f216baf",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
+      },
+      "codeCommits": [
+        "9ed1ff5cca147c0c36a63fb0225bcc241f216baf"
+      ]
     },
     {
       "id": "AT-38",
@@ -1579,15 +2103,42 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "实际WPF消费路径8种合成输入已测量：16/3000变量，16选中，200/1000Hz；本地和受控慢读取，Tick/分配/GC/元数据/UI让步及丢弃有实测。无硬件吞吐承诺。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "在离线合成输入下测试典型与数千变量、200Hz及支持上限1000Hz请求；记录实际消费率。",
         "测量Tick耗时分布、字典分配/GC、ELF元数据访问及UI响应，分别报告本地路径和可控慢路径。"
       ],
       "expected": "形成可重现测量与是否超过现有预算的结论；只有证实退化才另立优化，不直接新增缓存或承诺实际1000Hz吞吐。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "实际WPF消费路径8种合成输入已测量：16/3000变量，16选中，200/1000Hz；本地和受控慢读取，Tick/分配/GC/元数据/UI让步及丢弃有实测。无硬件吞吐承诺。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "final-benchmark.json",
+            "path": "test-results/audit-20261022/final-benchmark.json"
+          }
+        ]
+      },
       "auditRefs": [
         11
       ],
@@ -1605,7 +2156,9 @@
           "test-results/audit-20261022/AT-38.log",
           "test-results/audit-20261022/AT-38-measurements.json"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -1622,15 +2175,42 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "受控真实子进程覆盖错误会话、1MiB超长输出、未确认计划、静默看门狗；故障时子进程仍活着，Dispose强制回收后逐PID核验退出。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "使用受控假子进程覆盖错误SessionId、超过1MiB输出行、计划代次未确认与静默超时。",
         "验证faulted后停止/重试的Dispose路径，子进程不响应EOF时强制回收；记录进程ID和退出结果。"
       ],
       "expected": "指定分支有行为回归且无遗留进程；15秒看门狗只标故障，不误称立即Kill。保留已有真实Worker非零退出及重试测试。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "受控真实子进程覆盖错误会话、1MiB超长输出、未确认计划、静默看门狗；故障时子进程仍活着，Dispose强制回收后逐PID核验退出。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "process-evidence.json",
+            "path": "test-results/audit-20261022/process-evidence.json"
+          }
+        ]
+      },
       "auditRefs": [
         18
       ],
@@ -1649,7 +2229,9 @@
         "evidence": [
           "test-results/audit-20261022/AT-39-42.log"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -1666,8 +2248,8 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "缓存入口/依赖和installed来源字段篡改、缺文件/错VERSION/非法UTF8/解压超限、目录来源/容量/数量/冲突等离线拒绝分支通过；非法manifest字段的完整矩阵仍待补。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "分别篡改本机缓存入口/依赖、installed.json版本/提交/摘要，验证Resolve拒绝且不覆盖现场。",
@@ -1675,7 +2257,30 @@
         "覆盖Catalog.Load来源/数量/容量及同版本冲突；注册时机另由AUD-26验收。"
       ],
       "expected": "关键拒绝分支被验证，既有工程脚本篡改与事务回滚测试继续保留；旧EXE文件清单不用于新脚本包。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "缓存入口/依赖和installed来源字段篡改、缺文件/错VERSION/非法UTF8/解压超限、目录来源/容量/数量/冲突等离线拒绝分支通过。 最终已补清单来源、协议、包名、版本、摘要、Python门槛及0/2MiB上限的8个拒绝分支。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         18
       ],
@@ -1694,7 +2299,9 @@
         "evidence": [
           "test-results/audit-20261022/AT-40-41-44.log"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -1711,15 +2318,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "JSONC根重复键拒绝、嵌套同名保留、末尾注释插入，及无远程配置的新路径创建/应用/重读/幂等通过。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "覆盖根重复键拒绝、嵌套同名键不替换及末尾注释无逗号的插入；比较未修改内容并重解析。",
         "复制工程后移除所有远程配置，从不存在路径生成并应用计划，检查必填字段、重读和幂等。"
       ],
       "expected": "边界结果正确，失败不改原文件；目前是缺定向回归，不声称已写坏配置。现有新路径识别测试随后创建旧配置，不能代替全新创建。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "JSONC根重复键拒绝、嵌套同名保留、末尾注释插入，及无远程配置的新路径创建/应用/重读/幂等通过。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         18
       ],
@@ -1738,7 +2368,9 @@
         "evidence": [
           "test-results/audit-20261022/AT-40-41-44.log"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -1755,15 +2387,42 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "受控进程8秒超时强制回收、stderr非零、合法空列表各重复两次；未调用真实枚举SDK。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "用不访问SDK的受控子进程模拟不退出、stderr失败和合法空列表。",
         "验证8秒超时后的Kill/等待及进程清理，重复执行确认可重试。"
       ],
       "expected": "超时错误明确，本次子进程确实退出，不连接或枚举真实设备。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "受控进程8秒超时强制回收、stderr非零、合法空列表各重复两次；未调用真实枚举SDK。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "process-evidence.json",
+            "path": "test-results/audit-20261022/process-evidence.json"
+          }
+        ]
+      },
       "auditRefs": [
         18
       ],
@@ -1780,7 +2439,9 @@
         "evidence": [
           "test-results/audit-20261022/AT-39-42.log"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -1797,15 +2458,42 @@
         "可追溯的合法x64原生DLL样本",
         "离线静态PE检查入口"
       ],
-      "status": "pending",
-      "reason": "只读静态Inspect真实本机MCUViewer附带JLink_x64.dll，版本8.16，x64导出接口通过；SHA256 BEC44D4151BA062F44C3A2E2BAE7F5A8038B7D942571FD8190FE1930F7E939EB；未加载DLL。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "选定可追溯官方x64 DLL或具备所需导出表的原生测试夹具，记录摘要。",
         "仅调用静态Inspect并核对版本、位数、导出表结论，同时保留托管/错误架构反例。"
       ],
       "expected": "真实静态解析正分支通过；注入Accept函数、加载库或连接探针不能替代本项。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "sample",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "只读静态Inspect真实本机MCUViewer附带JLink_x64.dll，版本8.16，x64导出接口通过；SHA256 BEC44D4151BA062F44C3A2E2BAE7F5A8038B7D942571FD8190FE1930F7E939EB；未加载DLL。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "AT-43.log",
+            "path": "test-results/audit-20261022/AT-43.log"
+          }
+        ]
+      },
       "auditRefs": [
         18
       ],
@@ -1822,7 +2510,9 @@
         "evidence": [
           "test-results/audit-20261022/AT-43.log"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -1838,15 +2528,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "结束标记后数据、重复及倒退序号均拒绝；原记录字节、已有xlsx和临时文件清理通过。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "在隔离记录中插入结束标记后的数据、重复和倒退序号。",
         "预置目标xlsx，检查失败后原记录和已有导出摘要、临时文件与可行动诊断。"
       ],
       "expected": "两个指定分支明确拒绝，原文件不损坏；不重复将已覆盖的空记录/不完整记录称为缺口。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "结束标记后数据、重复及倒退序号均拒绝；原记录字节、已有xlsx和临时文件清理通过。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          }
+        ]
+      },
       "auditRefs": [
         18
       ],
@@ -1864,7 +2577,9 @@
         "evidence": [
           "test-results/audit-20261022/AT-40-41-44.log"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -1881,15 +2596,42 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "隔离源码副本仅插入等待点、离线HTTP替身：普通下载异常清理通过；强杀留65536字节下载ZIP或空.install目录，安装锁拒绝并发，强杀后重试成功，残留不自动清理。没有将插桩构建冒充成品字节测试。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "在隔离data和自有进程测试普通下载/安装异常的finally清理，再在明确阶段强制结束自有进程。",
         "记录.download ZIP和.install目录残留、并发占用及后续重试；工程写入检查当前ConfigTransaction恢复，不再寻找已删除的.prepare目录。"
       ],
       "expected": "区分正常异常清理和崩溃残留，量化恢复影响后再决定清理任务；新脚本包上限为ZIP 2MiB、展开8MiB，不沿用128/512MiB旧结论。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "隔离源码副本仅插入等待点、离线HTTP替身：普通下载异常清理通过；强杀留65536字节下载ZIP或空.install目录，安装锁拒绝并发，强杀后重试成功，残留不自动清理。没有将插桩构建冒充成品字节测试。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "fault-trials/results.json",
+            "path": "test-results/audit-20261022/fault-trials/results.json"
+          }
+        ]
+      },
       "auditRefs": [
         22
       ],
@@ -1910,7 +2652,9 @@
           "test-results/audit-20261022/AT-45-46.log",
           "test-results/audit-20261022/fault-trials/results.json"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     },
     {
@@ -1927,15 +2671,46 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "隔离源码/运行副本：显式设置诊断异常时finally恢复；备份后强杀留下完整备份和空window.json目录；确认自有进程退出后移除空目录并将备份改回原名，摘要一致。正常启动未注入，未操作用户安装。 最终源码/候选绑定待完成。",
+      "status": "complete",
+      "reason": "",
       "resumeWhen": "",
       "steps": [
         "只在完整隔离运行副本准备独有设置，定位移动设置到备份及恢复的阶段。",
         "测试正常异常恢复和强制结束自有冒烟进程后的备份/目录状态，记录可恢复步骤；不对用户安装运行--smoke。"
       ],
       "expected": "确定显式诊断入口的恢复边界；已有finally恢复保留，不把崩溃窗口夸大为正常启动必然丢设置。发现实际不可恢复再立修复。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "method": "automated",
+        "kind": "software",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+        },
+        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+        "details": "隔离源码/运行副本：显式设置诊断异常时finally恢复；备份后强杀留下完整备份和空window.json目录；确认自有进程退出后移除空目录并将备份改回原名，摘要一致。正常启动未注入，未操作用户安装。",
+        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "evidence": [
+          {
+            "label": "同包构建及自动验证日志",
+            "path": "test-results/audit-20261022/final-package.log"
+          },
+          {
+            "label": "Release完整客户端TRX",
+            "path": "test-results/audit-20261022/release.trx"
+          },
+          {
+            "label": "fault-trials/results.json",
+            "path": "test-results/audit-20261022/fault-trials/results.json"
+          },
+          {
+            "label": "fault-trials/settings-crash-backup.json",
+            "path": "test-results/audit-20261022/fault-trials/settings-crash-backup.json"
+          }
+        ]
+      },
       "auditRefs": [
         23
       ],
@@ -1953,8 +2728,79 @@
           "test-results/audit-20261022/fault-trials/results.json",
           "test-results/audit-20261022/fault-trials/settings-crash-backup.json"
         ],
-        "scope": "源码/隔离测试证据；同包最终绑定待完成"
+        "scope": "源码/隔离测试证据；同包最终绑定待完成",
+        "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
     }
-  ]
+  ],
+  "candidateHistory": [
+    {
+      "candidate": {
+        "version": "1.0.1-alpha.1",
+        "commit": "8617637637bd8ba53b6c701ef16a9b8e9912c88e",
+        "packageSha256": "e7a45f5b811ea9567d71d8aa6c2938c90f6fec7f6ba8cf55885892f11fd5cc09",
+        "executableSha256": "f4185762cfc805bec625af479842124eea5ce8b3e828a4d6519948f477b77ff1"
+      },
+      "retiredAt": "2026-10-22T11:42:29.967920+00:00",
+      "reason": "保留原包身份及AT-01历史结果；新候选不继承通过结论。"
+    }
+  ],
+  "offlineValidation": {
+    "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+    "candidate": {
+      "version": "1.0.24-alpha.1",
+      "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+      "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+      "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+    },
+    "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+    "commands": [
+      {
+        "command": "python -X utf8 scripts/verify.py --client",
+        "exitCode": 0,
+        "harnessTests": 48,
+        "clientTests": 205,
+        "evidence": "test-results/audit-20261022/final-package.log"
+      },
+      {
+        "command": "python -X utf8 scripts/verify.py --client --configuration Debug",
+        "exitCode": 0,
+        "harnessTests": 48,
+        "clientTests": 205,
+        "evidence": "test-results/audit-20261022/final-debug.log"
+      },
+      {
+        "command": "python -X utf8 scripts/gui_smoke.py --configuration Debug",
+        "exitCode": 0,
+        "evidence": "test-results/audit-20261022/final-debug-gui.log"
+      },
+      {
+        "command": "EMBEDDED_HELPER_SMOKE_PERF=1 python -X utf8 scripts/package_client.py --output dist/candidates/1.0.24-alpha.1-78e65f4-audit --tool-zip <已核验本机ZIP> --upgrade-from <1.0.1-alpha.1原包EXE>",
+        "exitCode": 0,
+        "evidence": "test-results/audit-20261022/final-package.log"
+      },
+      {
+        "command": "python -X utf8 scripts/offline_fault_trials.py --tool-zip <已核验本机ZIP> --evidence test-results/audit-20261022/fault-trials",
+        "exitCode": 0,
+        "evidence": "test-results/audit-20261022/fault-trials/results.json"
+      },
+      {
+        "command": "LAN_Debug: python -X utf8 -m unittest discover -s client/LAN_Debug/tests",
+        "exitCode": 0,
+        "tests": 22,
+        "evidence": "test-results/audit-20261022/final-lan-client.log"
+      },
+      {
+        "command": "LAN_Debug/server: LAN_DEBUG_TEST_BASH=<已定位Git Bash> python -X utf8 -m unittest discover -s tests; node tests/test_rtt_poll.js; node tests/test_client_config.js",
+        "exitCode": 0,
+        "tests": 17,
+        "evidence": "test-results/audit-20261022/C-05-server-suite.log"
+      }
+    ],
+    "deliveryPath": "C:\\Users\\Mechrevo\\Desktop\\EmbeddedHelper_test\\EmbeddedHelper-1.0.24-alpha.1-78e65f4-audit",
+    "runtime": "10.0.12",
+    "scope": "代码完成；已列离线检查通过。完整人工/设备验收未通过。没有设备操作、远程部署、发布、push或tag。",
+    "windowCleanup": "自动测试自有进程均已退出；桌面新候选窗口70356检测到人机并发输入，保留供用户使用，没有强制关闭或清理其data。"
+  }
 }
