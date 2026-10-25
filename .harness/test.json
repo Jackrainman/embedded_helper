@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "candidate": {
-    "version": "1.0.26-alpha.1",
-    "commit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
-    "packageSha256": "8785d11af4afa944e452413c7ca812b1ba5bba92e1ddd5d92a26739c0b790e7a",
-    "executableSha256": "c83bc89ee8c63fa192747f07ae9efe2288acaccce8e4d913472f1cb9b9522e8b"
+    "version": "1.0.27-alpha.1",
+    "commit": "e62aa73ef443f871e9c0bc6245ba18f5ba911cac",
+    "packageSha256": "e1a09eb55e07f036f70adcc1132778002e51e9584fd663d0740324c35054e64f",
+    "executableSha256": "cde2195cff3dec2cc6c3ae0762547a94b58c0243374e27e930734a5006514c63"
   },
   "checks": [
     {
@@ -3397,16 +3397,49 @@
         "Windows 桌面新包",
         "tmp 隔离模板工程；不连接设备"
       ],
-      "status": "pending",
-      "reason": "",
-      "resumeWhen": "",
+      "status": "paused",
+      "reason": "Computer Use 未获准操作 EmbeddedHelper；用户明确要求先交付，暂不验收界面。",
+      "resumeWhen": "用户要求恢复本次实际界面验收时继续。",
       "steps": [
         "打开隔离工程，确认“不替换Custom CLI烧录选项”默认未勾选，导入后回读 Custom CLI 命令。",
         "勾选后重复导入，确认 EIDE 配置字节不变，其他接入正常；切换选项使旧预览失效。",
         "重新打开工程确认默认未勾选；移除接入恢复原配置。"
       ],
       "expected": "默认自动写入；勾选保留当前 EIDE 配置及恢复历史；只写配置，不执行烧录。",
-      "lastResult": null
+      "lastResult": null,
+      "offlineResult": {
+        "recordedAt": "2026-10-25T21:09:24.780507+08:00",
+        "result": "passed",
+        "candidate": {
+          "version": "1.0.27-alpha.1",
+          "commit": "e62aa73ef443f871e9c0bc6245ba18f5ba911cac",
+          "packageSha256": "e1a09eb55e07f036f70adcc1132778002e51e9584fd663d0740324c35054e64f",
+          "executableSha256": "cde2195cff3dec2cc6c3ae0762547a94b58c0243374e27e930734a5006514c63"
+        },
+        "details": "209 项客户端测试、48 项 Harness、格式检查和零警告构建通过；成品首次/重复/移动后自检及原始 EXE/ZIP 摘要校验通过。新增3项回归验证默认写入、未接入/已接入时不替换及移除恢复。UI 尚未验收。",
+        "evidence": [
+          {
+            "path": "test-results/custom-cli-20261025/package.log",
+            "label": "package.log"
+          },
+          {
+            "path": "test-results/custom-cli-20261025/release.trx",
+            "label": "release.trx"
+          },
+          {
+            "path": "test-results/custom-cli-20261025/package-smoke.json",
+            "label": "package-smoke.json"
+          },
+          {
+            "path": "test-results/custom-cli-20261025/delivery.json",
+            "label": "delivery.json"
+          },
+          {
+            "path": "test-results/custom-cli-20261025/ui-status.json",
+            "label": "ui-status.json"
+          }
+        ]
+      }
     }
   ],
   "candidateHistory": [
