@@ -119,8 +119,8 @@
         "隔离工程与配置"
       ],
       "status": "pending",
-      "reason": "新包已启动并读到版本/空状态。Computer Use截图与目标可访问性树不一致，激活时报 user input was detected in this window；重新观察时页面已由外部输入切换。未继续发送输入，未把启动或自动冒烟替代本项完整UI验收。",
-      "resumeWhen": "在可独占操作的桌面时段，用本次候选完成列出的用户路径；保留当前用户使用中的新包窗口和data。",
+      "reason": "已完成本地页面反馈矩阵；RTT-only 实机拔线仍显示采集中，LOCAL-02 待修复。",
+      "resumeWhen": "修复 LOCAL-02 后复验 RTT 离线提示。",
       "steps": [
         "逐页检查工程、共享连接、RTT、远程配置、设置的空状态、有效状态与错误状态。",
         "检查用途、当前结果、下一步是否明确，错误是否就地显示，反馈是否不只靠颜色。",
@@ -128,7 +128,58 @@
         "审计修复后补核对：事务保留现状结案的明确选择；损坏归属记录的只读降级/写入禁用；端口与ELF错误的具体下一步。按实际所验修复版本记录，当前包不能预记通过。"
       ],
       "expected": "各页状态可理解且与实际数据一致；已有串口文案和LF/CRLF子项不重复列为缺陷。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "failed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "computer_use",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "五页空/有效状态、USB连接错误、非法端口提示、组件保存回读、配置冲突确认均已实测；损坏归属记录使接入操作禁用，修复并重开后入口恢复；损坏ELF提示具体重试方法，替换文件后解析744/958项成功。但RTT实机断线仍显示采集中100Hz，页面反馈与探针离线事实不一致。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/corrupt-owner-readonly-0.png",
+            "label": "corrupt-owner-readonly-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/corrupt-owner-disabled-actions-0.png",
+            "label": "corrupt-owner-disabled-actions-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/corrupt-owner-recovered-actions-0.png",
+            "label": "corrupt-owner-recovered-actions-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/invalid-elf-feedback-0.png",
+            "label": "invalid-elf-feedback-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/invalid-elf-recovered-0.png",
+            "label": "invalid-elf-recovered-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/invalid-port-inline-0.png",
+            "label": "invalid-port-inline-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/settings-diagnostic-refreshed-0.png",
+            "label": "settings-diagnostic-refreshed-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/rtt-disconnect-false-live-0.png",
+            "label": "rtt-disconnect-false-live-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/rtt-disconnected-probes.json",
+            "label": "rtt-disconnected-probes.json"
+          }
+        ]
+      },
       "auditRefs": [
         2,
         6,
@@ -153,8 +204,8 @@
         "可调整窗口及显示缩放的测试环境"
       ],
       "status": "pending",
-      "reason": "新包已启动并读到版本/空状态。Computer Use截图与目标可访问性树不一致，激活时报 user input was detected in this window；重新观察时页面已由外部输入切换。未继续发送输入，未把启动或自动冒烟替代本项完整UI验收。",
-      "resumeWhen": "在可独占操作的桌面时段，用本次候选完成列出的用户路径；保留当前用户使用中的新包窗口和data。",
+      "reason": "实测发现：最小窗口下串口实时日志区被压缩成约一行以下的细条，无法阅读。工程/MCU/RTT/设置页操作可达；串口布局需修复后复验。",
+      "resumeWhen": "修复 LOCAL-01 后重新检查最小窗口；系统DPI单列AT-06。",
       "steps": [
         "在最小窗口和测试缩放环境检查五个页面，确认按钮、错误提示、滚动可用。",
         "核对旧记录中中断的窗口/标签是否仍存在；仅关闭确认属于该次测试且无未保存内容的对象，不能照旧ID盲目关闭。",
@@ -162,7 +213,42 @@
         "Audit #25修复后核对1/2/3个变量的分道缩放及禁用悬停说明，行为仍以两个及以下可用为准。"
       ],
       "expected": "内容无遮挡、操作可达；旧清理事项有核对结果，本次测试不遗留窗口。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "failed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "computer_use",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "Computer Use 将窗口缩至1000×720逻辑最小值（截图986×714含可见框），串口参数栏换行后，实时日志区域剩余空间被上方/下方Auto行挤占，接收区不可读。已记录LOCAL-01。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/minimum-serial-0.png",
+            "label": "minimum-serial-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/minimum-serial.txt",
+            "label": "minimum-serial.txt"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/minimum-project-0.png",
+            "label": "minimum-project-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/minimum-rtt-0.png",
+            "label": "minimum-rtt-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/minimum-settings-0.png",
+            "label": "minimum-settings-0.png"
+          }
+        ]
+      },
       "auditRefs": [
         25
       ],
@@ -184,16 +270,43 @@
         "Windows 桌面",
         "含深层结构体及同名末级字段的 ELF"
       ],
-      "status": "pending",
-      "reason": "新包已启动并读到版本/空状态。Computer Use截图与目标可访问性树不一致，激活时报 user input was detected in this window；重新观察时页面已由外部输入切换。未继续发送输入，未把启动或自动冒烟替代本项完整UI验收。",
-      "resumeWhen": "在可独占操作的桌面时段，用本次候选完成列出的用户路径；保留当前用户使用中的新包窗口和data。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "添加两个末级字段同名、父级不同的长变量。",
         "缩至最小窗口，核对名称区分并用鼠标实际悬停。",
         "检查搜索、记录和导出仍保留完整变量名。"
       ],
       "expected": "窄窗下可区分变量，真实悬停展示完整路径；搜索、记录及导出不丢名称。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "computer_use",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "Computer Use 在最小 1000×720 逻辑窗口中检查 hdma_lpuart1_rx.Init.MemInc 与 hdma_usart1_rx.Init.MemInc；父路径可区分，真实鼠标悬停显示完整名称/类型/地址。搜索、原始记录与 Excel 表头保留完整名称。未将本轮结果扩展到其他系统 DPI。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/minimum-variable-hover-0.png",
+            "label": "minimum-variable-hover-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/minimum-variable-hover.txt",
+            "label": "minimum-variable-hover.txt"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-export-saved.txt",
+            "label": "usb-export-saved.txt"
+          }
+        ]
+      },
       "partialEvidence": [
         "test-results/audit-20261022/ui/status.json"
       ]
@@ -211,9 +324,9 @@
       "environment": [
         "可改变系统DPI的测试桌面"
       ],
-      "status": "pending",
-      "reason": "",
-      "resumeWhen": "",
+      "status": "blocked",
+      "reason": "Computer Use 访问 Windows 设置未获应用授权；没有读取/改变系统缩放。现有最小窗口截图不替代100%/125%/150%系统DPI测试。",
+      "resumeWhen": "用户提供允许测试的显示环境或自行切换100%/125%/150%后按步骤验收；不绕过设置应用授权。",
       "steps": [
         "记录原始DPI，在测试环境分别使用100%、125%、150%缩放检查长变量名和最小窗口。",
         "在各缩放下实际悬停，确认完整路径及控件可达；结束恢复原设置。"
@@ -236,15 +349,42 @@
         "Windows 系统文件对话框",
         "工程外可解析 AXF"
       ],
-      "status": "pending",
-      "reason": "新包已启动并读到版本/空状态。Computer Use截图与目标可访问性树不一致，激活时报 user input was detected in this window；重新观察时页面已由外部输入切换。未继续发送输入，未把启动或自动冒烟替代本项完整UI验收。",
-      "resumeWhen": "在可独占操作的桌面时段，用本次候选完成列出的用户路径；保留当前用户使用中的新包窗口和data。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "从浏览固件入口打开系统文件对话框，实际选择工程外AXF。",
         "确认路径进入界面并解析；再取消一次选择，核对已选路径保持。"
       ],
       "expected": "完整手选路径可用；取消不破坏现有选择。自动定位和直接填写控件不能替代此路径。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "computer_use",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "通过真实系统文件对话框选择工程外 external.axf，解析出 744 个可观察变量/958 总项；再次打开对话框后取消，已选路径与解析结果保持。样本为匹配 G4 ELF 的 .axf 后缀副本，仅验证文件选择路径，不替代 AT-08 原始 AXF 兼容性。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/axf-system-dialog-selected-0.png",
+            "label": "axf-system-dialog-selected-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/axf-parsed.txt",
+            "label": "axf-parsed.txt"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/axf-cancel-preserved.txt",
+            "label": "axf-cancel-preserved.txt"
+          }
+        ]
+      },
       "partialEvidence": [
         "test-results/audit-20261022/ui/status.json"
       ]
@@ -291,16 +431,63 @@
         "目标板",
         "与固件匹配的 ELF"
       ],
-      "status": "blocked",
-      "reason": "最终包本地实机验收尚未安排，当前设备状态待确认。",
-      "resumeWhen": "具备本地测试时段并确认设备状态和本轮操作范围。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "核对板卡固件与ELF匹配、当前设备状态及本轮授权。",
         "在最终包检查全局/嵌套变量、200Hz设置、实际值与曲线、接收率。",
         "暂停/恢复、停止释放并重连，记录真实结果。"
       ],
       "expected": "本地采集与释放重连正常；本地通过不替代远程及网页切换验收。",
-      "lastResult": null
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "manual",
+        "kind": "hardware",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "USB 20250010，STM32G474VE，SWD 8000 kHz。先逐段只读比对板上 Flash 与当前 G4 ELF，相同且比较前后 halted=0。真实 GUI 读取两项嵌套成员及 xTickCount，200 Hz 设置、约200 Hz接收、缺口0；暂停显示时原始记录继续，恢复显示、停止释放及重连通过。导出11441批次Excel，完整表头经XML核对。另已验证无探针启动失败后插回重试。未烧录/复位/停核。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/firmware-current-match.json",
+            "label": "firmware-current-match.json"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-live-200hz-0.png",
+            "label": "usb-live-200hz-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-paused-0.png",
+            "label": "usb-paused-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-resumed.txt",
+            "label": "usb-resumed.txt"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-stopped-released.txt",
+            "label": "usb-stopped-released.txt"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-reconnected.txt",
+            "label": "usb-reconnected.txt"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-export-saved.txt",
+            "label": "usb-export-saved.txt"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-replug-retry.txt",
+            "label": "usb-replug-retry.txt"
+          }
+        ]
+      }
     },
     {
       "id": "AT-10",
@@ -368,8 +555,8 @@
         "匹配固件与 ELF"
       ],
       "status": "blocked",
-      "reason": "C-05代码及离线回放完成，权威服务端提交25dcbe9未部署；本轮禁止连接设备、远程部署及实机操作。历史候选/实机证据保留，不代表新代码通过。",
-      "resumeWhen": "取得具体部署及目标操作授权，确认服务端25dcbe9或后续兼容版本的已部署身份、板卡/固件/探针与DLL版本，再按步骤进行切换和持续采集验收。",
+      "reason": "C-05服务端25dcbe9未部署，本轮范围为本地/离线/USB。USB短时采集、断线恢复和外部工具释放已在AT-09/24实测，RTT断线发现LOCAL-02；尚未完成变量与有日志RTT各30分钟及远程网页切换，不以空闲RTT界面代替长稳验收。",
+      "resumeWhen": "先修复LOCAL-02；具备对应固件日志与远端部署环境后，按步骤记录各30分钟的内存、响应、缺口及重复日志。",
       "steps": [
         "复用AT-02/AT-10的适用证据，使用同一最终包。",
         "分别运行变量与RTT至少30分钟，记录内存、响应、缺口和重复日志。",
@@ -469,7 +656,7 @@
         "当前双账本生成的 test-results/harness/index.html"
       ],
       "status": "blocked",
-      "reason": "2026-10-22 已刷新现有 HTML 看板。Browser Use 拒绝 file: 协议：仅允许 http/https，并明确禁止用替代浏览器或间接方式绕过；没有把静态生成/测试标作真实浏览器操作通过。",
+      "reason": "本轮通过只监听127.0.0.1的离线HTTP服务，在Edge实测状态/来源筛选、中文搜索、无结果提示、Tab/Enter展开、历史包说明、清空恢复46项。HTTP下file证据链接点击未打开；既有file协议限制未绕过。仍缺直接HTML打开/本机证据导航与窄窗口验收，故保留blocked。",
       "resumeWhen": "用户在本地浏览器手动打开 test-results/harness/index.html 执行既有步骤并回传证据，或提供经策略允许的访问方式。",
       "steps": [
         "重新生成看板并记录页面底部账本摘要和本次 Harness 源码提交。",
@@ -478,7 +665,23 @@
         "查看本机证据链接，确认缺失证据以文字说明；窄窗口核对无横向溢出，使用 Tab/Enter 操作筛选与展开。"
       ],
       "expected": "筛选组合及关联跳转正确，文字/证据路径可读；无隐式修改、网络依赖或设备操作。结果绑定页面展示的候选包，并在实际环境和证据中额外记录账本摘要及 Harness 源码提交。",
-      "lastResult": null
+      "lastResult": null,
+      "partialResult": {
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "本轮通过只监听127.0.0.1的离线HTTP服务，在Edge实测状态/来源筛选、中文搜索、无结果提示、Tab/Enter展开、历史包说明、清空恢复46项。HTTP下file证据链接点击未打开；既有file协议限制未绕过。仍缺直接HTML打开/本机证据导航与窄窗口验收，故保留blocked。",
+        "evidence": [
+          "test-results/local-acceptance-20261025/dashboard-restored.txt",
+          "test-results/local-acceptance-20261025/dashboard-browser.png"
+        ],
+        "snapshotSha256": "c41e7c170e55a084f8426bee45eb6e928744d4902f58a65a8fc3bf53c0b41b5f",
+        "harnessCommit": "372640a"
+      }
     },
     {
       "id": "AT-15",
@@ -891,15 +1094,46 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "核心冲突恢复、显式保留结案、重复/并发/损坏日志/备份保护已通过；新包真实确认对话框的取消与明确选择尚未完成。",
-      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "恢复冲突并验证 Apply 仍拒绝；分别测试恢复 Before、显式保留当前内容结案及取消。",
         "核对重复结案、错误工程、并发改动、损坏日志和备份保留。"
       ],
       "expected": "只有安全恢复或明确结案才解除阻塞；原文件与外部修改不被静默覆盖，日志和诊断可追溯。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "automated",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "当前同源码 Release 205 项测试通过；补齐发布包真实确认对话框：默认回车选择否，journal保持conflict、外部修改保持；再次显式点是后status=accepted-current，记录explicit-keep-current和文件摘要，原plan/备份保留、外部文件内容不变。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/verify-release-unsandboxed.log",
+            "label": "verify-release-unsandboxed.log"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/conflict-confirm-default-no-0.png",
+            "label": "conflict-confirm-default-no-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/conflict-accepted-current-0.png",
+            "label": "conflict-accepted-current-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/conflict-result.json",
+            "label": "conflict-result.json"
+          }
+        ]
+      },
       "auditRefs": [
         2
       ],
@@ -1115,15 +1349,42 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "SamplingHealth阈值、单次/部分失败/恢复/无变量及会话释放替身已通过；受控原生SDK与完整Worker循环组合尚未验证，不能用纯逻辑测试代替。",
-      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "用受控 SDK/采样替身覆盖单个坏地址、短暂全失败、持续全失败及恢复。",
         "覆盖 RTT-only 无变量、RTT 空闲、停止/重试和释放失败。"
       ],
       "expected": "持续无有效读取有明确健康升级，局部失败及空闲 RTT 不被误杀；事件不断不能被当作数据正常。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "automated",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "直接运行发布Worker配合受控原生DLL：坏地址不拖垮其他变量；1.2秒全失败后恢复；持续全失败超过3秒退出1；RTT-only无变量/空闲不会误杀。发布Core父进程进一步验证错误原因、Dispose释放、SDK Close阻塞强制回收及重试。属于离线替身结果，不替代AT-24真实设备。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/native-trials.json",
+            "label": "native-trials.json"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/parent-native-and-portname.json",
+            "label": "parent-native-and-portname.json"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/parent-native.log",
+            "label": "parent-native.log"
+          }
+        ]
+      },
       "auditRefs": [
         4
       ],
@@ -1168,16 +1429,71 @@
         "已确认状态的目标板/J-Link与匹配ELF",
         "授权的断连/恢复测试窗口"
       ],
-      "status": "blocked",
-      "reason": "尚无当前候选下该异常分支的实机记录，设备状态和允许的故障注入方式待确认。",
-      "resumeWhen": "设备与测试窗口就绪并明确本次操作范围后执行；修复复验使用包含 AUD-04 的候选。",
+      "status": "pending",
+      "reason": "真实拔线测试已执行；变量采集恢复通过，RTT-only 拔线未报错，LOCAL-02 待修复。",
+      "resumeWhen": "修复 LOCAL-02 后，用同一探针复验 RTT 断线提示、停止释放和插回重试。",
       "steps": [
         "先确认板卡、固件、DLL版本及授权允许的断连方式，记录正常采样。",
         "分别验证 RTT 关闭/开启时异常；记录 SDK 返回不完整、阻塞或退出的实际分支。",
         "核对故障提示、停止释放、外部工具可用及重连；与 AT-11 复用适用证据。"
       ],
       "expected": "用真实 SDK 证实触发分支和恢复边界，不能把静态推断记成拔线实测。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "failed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "manual",
+        "kind": "hardware",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "USB20250010/STM32G474VE。RTT关闭的变量采集拔线：SDK弹出Communication timed out，父进程提示采集进程超时；点击停止后Worker40112退出、弹窗消失，插回恢复200Hz。RTT-only开启分支：用户拔线后独立发布Worker枚举为空，UI仍持续采集中100Hz、无故障提示；点击停止可释放，插回重启约100Hz。最终独立只读SDK成功连接并逐段读取匹配Flash，haltedBefore/After=0，released=true。实际模块路径为9.42.0+st.1/JLink_x64.dll，模块文件版本9.42；变量断线弹窗标题却为J-Link V9.12 Error，按观察并列保留，不据标题推断加载版本。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/usb-disconnect-timeout-confirmed-0.png",
+            "label": "usb-disconnect-timeout-confirmed-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-disconnect-released-0.png",
+            "label": "usb-disconnect-released-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/usb-disconnect-recovered-0.png",
+            "label": "usb-disconnect-recovered-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/rtt-disconnect-false-live-0.png",
+            "label": "rtt-disconnect-false-live-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/rtt-disconnected-probes.json",
+            "label": "rtt-disconnected-probes.json"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/rtt-disconnect-stopped-0.png",
+            "label": "rtt-disconnect-stopped-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/rtt-disconnect-recovered-0.png",
+            "label": "rtt-disconnect-recovered-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/rtt-final-released-0.png",
+            "label": "rtt-final-released-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/external-tool-after-recovery.json",
+            "label": "external-tool-after-recovery.json"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/actual-sdk-modules.json",
+            "label": "actual-sdk-modules.json"
+          }
+        ]
+      },
       "auditRefs": [
         4
       ],
@@ -1357,15 +1673,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "实际WPF慢枚举、权限错误、COM手选保留、重叠刷新与关闭后迟到结果已通过；友好名称PortName提取和未知名称的定向分支未完整验证。",
-      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "注入慢枚举和权限失败，核对主界面持续响应、重复刷新结果有序。",
         "覆盖关闭窗口、保留手选COM、友好名称PortName提取与未知名称。"
       ],
       "expected": "枚举不阻塞UI，迟到结果不更新已关闭窗口，不自动换端口或建立串口连接。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "automated",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "本轮补齐当前源码PortName的8个定向输入（友好名、空格/大小写、未知名、空值及非标准COM字样），全部通过。串口枚举的真实WPF慢枚举、权限错误、手选COM保留、重叠刷新及关闭后迟到结果复用offlineResult中2026-10-22已执行证据；该源码至发布候选无变化。本轮另重跑发布包WPF冒烟，但不称重复执行了慢枚举注入。未打开COM。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/parent-native-and-portname.json",
+            "label": "parent-native-and-portname.json"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/gui-smoke.log",
+            "label": "gui-smoke.log"
+          }
+        ]
+      },
       "auditRefs": [
         10
       ],
@@ -1791,15 +2130,50 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "1/2/3变量阈值、自动切回、通知及固定提示的源码/自动检查通过；新包禁用控件真实鼠标悬停未完成。",
-      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "分别选择1、2、3个变量，核对分道可用性、自动切回和禁用时悬停说明。",
         "确认说明与阈值一致，保留通知及目录发布契约测试。"
       ],
       "expected": "2个仍可分道，超过2个禁止，提示准确；本项仅修语义矛盾。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "automated",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "真实GUI验证1、2个变量可勾选分道缩放；在2个变量已勾选状态加入第3个后自动取消且禁用；鼠标实际悬停显示“仅显示不超过两个参数时可用”。同源码205项测试通过，保留通知/发布契约检查。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/one-variable-scale-0.png",
+            "label": "one-variable-scale-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/two-variable-scale-0.png",
+            "label": "two-variable-scale-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/third-variable-auto-reset-0.png",
+            "label": "third-variable-auto-reset-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/three-variable-real-hover-0.png",
+            "label": "three-variable-real-hover-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/verify-release-unsandboxed.log",
+            "label": "verify-release-unsandboxed.log"
+          }
+        ]
+      },
       "auditRefs": [
         25
       ],
@@ -1844,15 +2218,38 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "控制读取器对非法计划/超长行/EOF的退出结果和stderr、父进程协议故障/回收已分别通过；真实Worker配受控原生SDK的整条控制失败-释放-重试链尚未完成。",
-      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "受控进程/SDK替身注入非法计划、超长控制行及正常EOF。",
         "核对exitCode、stderr、父进程可见原因、释放后重试。"
       ],
       "expected": "协议错误不会伪装正常退出，正常停止不误报，释放顺序保持。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "automated",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "发布Worker+原生替身验证非法计划、超过1MiB控制行及正常EOF的exitCode/stderr与RTT stop/close。发布Core父进程验证可见原因、释放完成及重新启动；错误退出不伪装正常停止，EOF正常退出0。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/native-trials.json",
+            "label": "native-trials.json"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/parent-native-and-portname.json",
+            "label": "parent-native-and-portname.json"
+          }
+        ]
+      },
       "auditRefs": [
         23
       ],
@@ -1973,15 +2370,54 @@
         "Windows 离线隔离副本",
         "与所验候选源码一致的测试构建；不连接硬件"
       ],
-      "status": "pending",
-      "reason": "真实CLI帮助、非法命令、ELF解析及返回码通过；plot-preview非法/边界参数解析测试通过；新包实际错误弹窗和合法预览窗口反馈未完成。",
-      "resumeWhen": "在对应受控离线夹具或无人并发操作的新包窗口完成尚缺步骤，追加实际证据后再关闭；不要求真实设备来代替这些自动分支。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "离线检查帮助、非法命令、elf夹具解析和错误退出；不调用网络refresh或设备命令。",
         "对plot-preview覆盖非数字、0、17及1/16合法边界，核对反馈。"
       ],
       "expected": "帮助与实现一致，错误输入可行动且退出结果明确；既有CLI成品自检不再笼统称为零测试。",
-      "lastResult": null,
+      "lastResult": {
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "method": "automated",
+        "kind": "software",
+        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+        "candidate": {
+          "version": "1.0.24-alpha.1",
+          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+        },
+        "details": "发布CLI六种离线入口：无参数帮助/非法命令exit2，版本/真实ELF/工程check exit0，缺失ELF exit1；未调用refresh/设备命令。发布GUI经Computer Use分别核对plot-preview abc、0、17提示1～16并退出2；1和16均显示离线合成曲线，关闭退出0。",
+        "evidence": [
+          {
+            "path": "test-results/local-acceptance-20261025/entry-results.json",
+            "label": "entry-results.json"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/preview-invalid-abc-0.png",
+            "label": "preview-invalid-abc-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/preview-invalid-zero-0.png",
+            "label": "preview-invalid-zero-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/preview-invalid-seventeen-0.png",
+            "label": "preview-invalid-seventeen-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/preview-one-valid-0.png",
+            "label": "preview-one-valid-0.png"
+          },
+          {
+            "path": "test-results/local-acceptance-20261025/preview-sixteen-valid-0.png",
+            "label": "preview-sixteen-valid-0.png"
+          }
+        ]
+      },
       "auditRefs": [
         23
       ],

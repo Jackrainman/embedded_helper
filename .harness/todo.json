@@ -1,6 +1,52 @@
 {
   "schemaVersion": 2,
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "LOCAL-01",
+      "title": "修复最小窗口下串口实时日志区被挤成细条",
+      "refs": [
+        "SER-02",
+        "NFR-02"
+      ],
+      "status": "todo",
+      "priority": "P1",
+      "component": "WPF / SerialView",
+      "dependsOn": [],
+      "testIds": [
+        "AT-04"
+      ],
+      "reason": "",
+      "resumeWhen": "",
+      "doneWhen": "1000×720最小窗口下保留可阅读的实时日志高度；参数、发送区和冻结分栏仍可操作，当前显示环境及系统缩放复验通过。",
+      "evidence": [
+        "test-results/local-acceptance-20261025/minimum-serial-0.png"
+      ]
+    },
+    {
+      "id": "LOCAL-02",
+      "title": "修复 RTT-only USB 拔线后仍显示采集中和100Hz",
+      "refs": [
+        "CON-03",
+        "CON-05",
+        "NFR-01"
+      ],
+      "status": "todo",
+      "priority": "P1",
+      "component": "Worker / RTT健康状态",
+      "dependsOn": [],
+      "testIds": [
+        "AT-03",
+        "AT-24"
+      ],
+      "reason": "",
+      "resumeWhen": "",
+      "doneWhen": "RTT-only空闲时能区分探针断线与正常无日志；断线给出真实故障提示，停止释放和插回重试仍可用，真实USB拔插复验通过。",
+      "evidence": [
+        "test-results/local-acceptance-20261025/rtt-disconnect-false-live-0.png",
+        "test-results/local-acceptance-20261025/rtt-disconnected-probes.json"
+      ]
+    }
+  ],
   "auditImport": {
     "document": "../AUDIT.md",
     "sha256": "e5c78ffa8325a480661da7adc986683ba4b5836f6b097e7a64259adc67308904",
