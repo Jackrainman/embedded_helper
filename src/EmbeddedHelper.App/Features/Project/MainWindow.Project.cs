@@ -92,7 +92,7 @@ public partial class MainWindow
                 ProjectPage.ProjectDiagnostics.AppendText("\n" + remoteView.ReadOnlyReason);
             }
             remoteView.GdbPort = (integration?.GdbPort ?? 2331).ToString(CultureInfo.InvariantCulture);
-            remoteView.EideUpload = integration?.EideFields?.Length > 0;
+            remoteView.KeepEideUpload = false;
             if (File.Exists(System.IO.Path.Combine(loaded.Root, ".embedded_helper", "tools.lock.json")))
             {
                 try { remoteView.SelectedRelease = ToolCache.ReadLock(loaded.Root); }

@@ -23,7 +23,7 @@ public static class VsCodeIntegration
         catch (Exception ex) when (ex is JsonException or IOException or UnauthorizedAccessException or InvalidDataException)
         { throw new InvalidDataException("接入归属记录不可读：" + path + "；" + ex.Message, ex); }
     }
-    public static ConfigPlan Plan(ProjectInfo project, BuildTarget target, string host, int port, int gdbPort, ToolRelease tool, bool eideUpload = false, string? webAddress = null)
+    public static ConfigPlan Plan(ProjectInfo project, BuildTarget target, string host, int port, int gdbPort, ToolRelease tool, bool eideUpload = true, string? webAddress = null)
     {
         if (gdbPort is < 1 or > 65533) throw new ArgumentException("本机GDB端口须为1～65533，并为相邻两个端口留出空间。");
         var remote = RemoteConfiguration.Plan(project, target, host, port, webAddress);
@@ -87,8 +87,14 @@ public static class VsCodeIntegration
         var state = ReadState(root);
         if (desired.Length == 0 && state == null) throw new InvalidDataException("没有共享接入归属记录，无法确认可移除条目；原配置保持不变。");
         var changes = new List<FileChange>(additional);
-        var eide = EideUpload.Plan(root, target, eideUpload, state?.EideFields ?? [], command);
-        changes.Add(eide.Change);
+        var eideFields = state?.EideFields ?? [];
+        // Skipping replacement preserves current settings; only explicit removal restores them.
+        if (eideUpload || desired.Length == 0)
+        {
+            var eide = EideUpload.Plan(root, target, eideUpload, eideFields, command);
+            changes.Add(eide.Change);
+            eideFields = eide.Fields;
+        }
         var old = state?.Entries ?? [];
         foreach (var file in old.Select(e => e.File).Concat(desired.Select(e => e.File)).Distinct())
         {
@@ -102,7 +108,7 @@ public static class VsCodeIntegration
             changes.Add(new FileChange(path, before, text));
         }
         var owner = Path.Combine(root, OwnerFile); ConfigTransaction.CheckPath(root, owner);
-        changes.Add(new FileChange(owner, File.Exists(owner) ? File.ReadAllText(owner) : null, JsonSerializer.Serialize(new IntegrationState(1, target, desired, eide.Fields, gdbPort), Product.Json)));
+        changes.Add(new FileChange(owner, File.Exists(owner) ? File.ReadAllText(owner) : null, JsonSerializer.Serialize(new IntegrationState(1, target, desired, eideFields, gdbPort), Product.Json)));
         return new ConfigPlan(root, changes.Where(c => c.Before != c.After).ToArray());
     }
 }

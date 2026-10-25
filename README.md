@@ -78,7 +78,7 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 
 当前开发版本以 VERSION 为准，包含 MCU Viewer 坐标轴、完整记录 Excel 导出及 LAN_Debug 工程接入。最终同包远程实测由验收账本跟踪，保留 C-07 来源；构建成功不代表硬件验收或发布通过。
 
-远程接入：打开工程，在远程配置页填写服务器地址和端口，点击“一键导入 LAN_Debug”，自动准备已核验工具并写入工程任务；离线可直接选择官方 ZIP。生成任务通过 Python 使用工程内 LAN_Debug/jlink_flash.py 的相对路径，无需绑定本机环境变量或重启 VS Code。新配置使用 LAN_Debug/remote-jlink.json；已有 Debug_LAN 或工程根配置继续兼容。重新导入迁移由助手管理的旧入口，保留用户本地任务；冲突时提示并保留原文件。移除只恢复受管配置，保留远程 JSON、工具锁和缓存供复用。客户端脚本可随工程提交 Git，另一台电脑只需准备 Python 3.10+ 和 SEGGER。
+远程接入：打开工程，在远程配置页填写服务器地址和端口，点击“一键导入 LAN_Debug”，自动准备已核验工具并写入工程任务，默认切换 EIDE 到 Custom CLI 并写入烧录命令；勾选“不替换Custom CLI烧录选项”则保留当前烧录配置。导入只写配置，不执行烧录。离线可直接选择官方 ZIP。生成任务通过 Python 使用工程内 LAN_Debug/jlink_flash.py 的相对路径，无需绑定本机环境变量或重启 VS Code。新配置使用 LAN_Debug/remote-jlink.json；已有 Debug_LAN 或工程根配置继续兼容。重新导入迁移由助手管理的旧入口，保留用户本地任务；冲突时提示并保留原文件。移除只恢复受管配置，保留远程 JSON、工具锁和缓存供复用。客户端脚本可随工程提交 Git，另一台电脑只需准备 Python 3.10+ 和 SEGGER。
 
 单EXE首次启动自动将内部运行组件准备到旁边data/runtime，设置仍在data/settings；搬迁时携带data保留配置，更新只替换主EXE。内部SDK工作进程和CLI保持隔离，用户无需管理DLL。运行时可能另用Windows临时缓存。
 

@@ -3383,6 +3383,30 @@
         "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
         "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
       }
+    },
+    {
+      "id": "AT-47",
+      "origin": "R-34",
+      "title": "导入默认写入 Custom CLI，勾选后保留现有配置",
+      "refs": [
+        "REM-08"
+      ],
+      "kind": "software",
+      "method": "computer_use",
+      "environment": [
+        "Windows 桌面新包",
+        "tmp 隔离模板工程；不连接设备"
+      ],
+      "status": "pending",
+      "reason": "",
+      "resumeWhen": "",
+      "steps": [
+        "打开隔离工程，确认“不替换Custom CLI烧录选项”默认未勾选，导入后回读 Custom CLI 命令。",
+        "勾选后重复导入，确认 EIDE 配置字节不变，其他接入正常；切换选项使旧预览失效。",
+        "重新打开工程确认默认未勾选；移除接入恢复原配置。"
+      ],
+      "expected": "默认自动写入；勾选保留当前 EIDE 配置及恢复历史；只写配置，不执行烧录。",
+      "lastResult": null
     }
   ],
   "candidateHistory": [

@@ -7,7 +7,7 @@ namespace EmbeddedHelper.App;
 public sealed class RemoteViewModel : INotifyPropertyChanged
 {
     private string host = "", port = "19011", web = "", gdbPort = "2331", preview = "";
-    private bool eideUpload, busy;
+    private bool keepEideUpload, busy;
     private ToolRelease? selectedRelease;
     public ToolRelease? SelectedRelease { get => selectedRelease; set { if (Set(ref selectedRelease, value)) Invalidate(); } }
     private string toolStatus = "请打开工程，选择要接入的工具版本。";
@@ -16,7 +16,7 @@ public sealed class RemoteViewModel : INotifyPropertyChanged
     public string Port { get => port; set { if (Set(ref port, value)) Invalidate(); } }
     public string Web { get => web; set { if (Set(ref web, value)) Invalidate(); } }
     public string GdbPort { get => gdbPort; set { if (Set(ref gdbPort, value)) Invalidate(); } }
-    public bool EideUpload { get => eideUpload; set { if (Set(ref eideUpload, value)) Invalidate(); } }
+    public bool KeepEideUpload { get => keepEideUpload; set { if (Set(ref keepEideUpload, value)) Invalidate(); } }
     public bool Busy { get => busy; set { Set(ref busy, value); Notify(nameof(CanApply)); Notify(nameof(CanEdit)); } }
     private string readOnlyReason = "";
     public string ReadOnlyReason { get => readOnlyReason; set { Set(ref readOnlyReason, value); Invalidate(); Notify(nameof(CanEdit)); } }

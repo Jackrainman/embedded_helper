@@ -42,7 +42,7 @@ public partial class MainWindow
             var toolPackage = System.IO.Path.Combine(directory, "debug-lan.zip");
             if (File.Exists(toolPackage))
             {
-                remoteView.EideUpload = true; remoteView.GdbPort = "2450"; remoteView.Web = "http://test.example.invalid:8000";
+                remoteView.KeepEideUpload = false; remoteView.GdbPort = "2450"; remoteView.Web = "http://test.example.invalid:8000";
                 var badPackage = System.IO.Path.Combine(directory, "invalid-tool.zip");
                 File.WriteAllText(badPackage, "not a trusted tool package");
                 var ownerPath = System.IO.Path.Combine(project!.Root, ".embedded_helper", "integration.json");
@@ -57,7 +57,7 @@ public partial class MainWindow
                 ProjectToolCache.Resolve(project!.Root, remoteView.SelectedRelease!);
                 SaveSmokeScreenshot(directory, "lan-import-success.png");
                 await LoadProjectAsync(project!.Root);
-                if (remoteView.EideUpload != true || remoteView.GdbPort != "2450" || remoteView.Web != "http://test.example.invalid:8000") throw new InvalidDataException("远程配置读回失败。");
+                if (remoteView.KeepEideUpload || remoteView.GdbPort != "2450" || remoteView.Web != "http://test.example.invalid:8000") throw new InvalidDataException("远程配置读回失败。");
                 ProjectPage.ElfPath.Text = System.IO.Path.Combine(directory, "scalars.elf"); await ParseElfAsync();
                 PreviewIntegration(null, null!);
                 if (plan == null || plan.Changes.Length != 0) throw new InvalidDataException("重复接入非幂等。");

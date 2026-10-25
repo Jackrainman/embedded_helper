@@ -38,7 +38,7 @@ public sealed class PresentationStateTests
         view.ShowPlan(plan); view.Busy = true; Assert.False(view.CanApply); Assert.False(view.CanEdit);
         view.Busy = false; Assert.True(view.CanApply);
         view.Port = "not a port"; Assert.Null(view.Plan);
-        view.ShowPlan(plan); view.EideUpload = true; Assert.Null(view.Plan);
+        view.ShowPlan(plan); view.KeepEideUpload = true; Assert.Null(view.Plan);
         view.ShowPlan(plan); view.Invalidate(); Assert.False(view.CanApply);
     }
 }

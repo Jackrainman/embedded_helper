@@ -9,6 +9,40 @@ namespace EmbeddedHelper.Tests;
 public sealed class IntegrationTests : TestWorkspace
 {
     [Fact]
+    public void ImportReplacesCustomCliByDefaultAndRemovalRestoresOriginal()
+    {
+        var path = CopyProject(); var project = ProjectReader.Read(path); var target = project.Targets[0];
+        var yaml = Path.Combine(path, ".eide/eide.yml");
+        var original = File.ReadAllText(yaml);
+        var plan = VsCodeIntegration.Plan(project, target, "example.invalid", 19011, 2331, ToolRelease.Known[0]);
+        ConfigTransaction.Apply(plan, Path.Combine(root, "journal"));
+        var saved = File.ReadAllText(yaml);
+        Assert.Equal("\"Custom\"", EideUpload.Get(saved, ["targets", target.Name, "uploader"]));
+        Assert.Contains("${ProjectRoot}/LAN_Debug/jlink_flash.py", EideUpload.Get(saved, ["targets", target.Name, "uploadConfigMap", "Custom", "commandLine"]));
+        ConfigTransaction.Apply(VsCodeIntegration.Remove(path), Path.Combine(root, "journal"));
+        Assert.Equal(original, File.ReadAllText(yaml));
+    }
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public void ImportWithoutReplacementKeepsCurrentEideAndItsRestoreHistory(bool alreadyManaged)
+    {
+        var path = CopyProject(); var project = ProjectReader.Read(path); var target = project.Targets[0];
+        var yaml = Path.Combine(path, ".eide/eide.yml");
+        var original = File.ReadAllText(yaml);
+        if (alreadyManaged)
+            ConfigTransaction.Apply(VsCodeIntegration.Plan(project, target, "example.invalid", 19011, 2331, ToolRelease.Known[0], true), Path.Combine(root, "journal"));
+        var before = File.ReadAllText(yaml);
+        var plan = VsCodeIntegration.Plan(project, target, "example.invalid", 19011, 2450, ToolRelease.Known[0], false);
+        Assert.DoesNotContain(plan.Changes, c => c.Path == yaml);
+        ConfigTransaction.Apply(plan, Path.Combine(root, "journal"));
+        Assert.Equal(before, File.ReadAllText(yaml));
+        Assert.Equal(alreadyManaged, VsCodeIntegration.ReadState(path)!.EideFields!.Length > 0);
+        Assert.Empty(VsCodeIntegration.Plan(project, target, "example.invalid", 19011, 2450, ToolRelease.Known[0], false).Changes);
+        ConfigTransaction.Apply(VsCodeIntegration.Remove(path), Path.Combine(root, "journal"));
+        Assert.Equal(original, File.ReadAllText(yaml));
+    }
+    [Fact]
     public void IntegrationIsIdempotentPreservesLocalBytesAndRemovesWithoutPrivateBackups()
     {
         var path = CopyProject(); var project = ProjectReader.Read(path);
