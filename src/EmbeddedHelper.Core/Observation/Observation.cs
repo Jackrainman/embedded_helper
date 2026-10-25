@@ -18,7 +18,8 @@ public sealed class ObservationSession : IObservationSession
     private readonly CancellationTokenSource lifetime = new();
     private Task? watchdog;
     private long lastEvent;
-    private bool faulted, stopping;
+    private volatile bool faulted;
+    private bool stopping;
     private ObservationRecording? recording;
     public long Generation { get; private set; } = 1;
     public string SessionId { get; } = Guid.NewGuid().ToString("N");
@@ -106,6 +107,7 @@ public sealed class ObservationSession : IObservationSession
                 while (!lifetime.IsCancellationRequested)
                 {
                     await Task.Delay(1000, lifetime.Token);
+                    if (faulted) return;
                     if (!stopping && Stopwatch.GetElapsedTime(Interlocked.Read(ref lastEvent)).TotalSeconds > 15)
                     {
                         State = "采集进程超时；请重试，重连前将释放旧进程。"; faulted = true;

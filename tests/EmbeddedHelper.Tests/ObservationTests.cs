@@ -74,6 +74,22 @@ public sealed class ObservationTests : TestWorkspace
     }
 
     [Fact]
+    public async Task FirstWorkerFailureRemainsVisibleAfterHeartbeatDeadline()
+    {
+        var worker = Path.Combine(AppContext.BaseDirectory, "worker", "EmbeddedHelper.Worker.exe");
+        var invalidLibrary = Path.Combine(root, "invalid-native-library.dll");
+        File.WriteAllText(invalidLibrary, "Not a native library; no hardware access.");
+        await using var session = new ObservationSession();
+        var request = new ObservationRequest(invalidLibrary, 1, "", 0, "fixture", "SWD", 1000, 100, true, []);
+        await Assert.ThrowsAnyAsync<Exception>(() => session.StartAsync(worker, request));
+        var failure = session.State;
+        Assert.StartsWith("采集失败：", failure);
+        await Task.Delay(TimeSpan.FromSeconds(17));
+        Assert.Equal(failure, session.State);
+        Assert.True(session.CanRetry);
+    }
+
+    [Fact]
     public async Task ActualWorkerChineseErrorSurvivesLegacyParentEncoding()
     {
         var worker = Path.Combine(AppContext.BaseDirectory, "worker", "EmbeddedHelper.Worker.exe");
