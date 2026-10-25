@@ -8,7 +8,7 @@
         "SER-02",
         "NFR-02"
       ],
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P1",
       "component": "WPF / SerialView",
       "dependsOn": [],
@@ -30,7 +30,7 @@
         "CON-05",
         "NFR-01"
       ],
-      "status": "todo",
+      "status": "in_progress",
       "priority": "P1",
       "component": "Worker / RTT健康状态",
       "dependsOn": [],

@@ -15,31 +15,32 @@ internal static class UsbProbeDiscovery
     {
         if (!Path.IsPathFullyQualified(dll)) throw new ArgumentException("J-Link 组件必须为绝对路径。");
         var library = NativeLibrary.Load(dll);
+        try { return Read(library); }
+        finally { NativeLibrary.Free(library); }
+    }
+    internal static UsbProbe[] Read(IntPtr library)
+    {
+        var getList = Marshal.GetDelegateForFunctionPointer<GetListDelegate>(NativeLibrary.GetExport(library, "JLINKARM_EMU_GetList"));
+        var memory = Marshal.AllocHGlobal(InfoSize * MaxProbes);
         try
         {
-            var getList = Marshal.GetDelegateForFunctionPointer<GetListDelegate>(NativeLibrary.GetExport(library, "JLINKARM_EMU_GetList"));
-            var memory = Marshal.AllocHGlobal(InfoSize * MaxProbes);
-            try
+            var bytes = new byte[InfoSize * MaxProbes];
+            Marshal.Copy(bytes, 0, memory, bytes.Length);
+            var count = getList(1, memory, MaxProbes);
+            if (count < 0) throw new IOException("USB 探针枚举失败，请检查 J-Link 组件和 USB 驱动。");
+            if (count > MaxProbes) throw new IOException("USB 探针数量超出枚举范围，无法确认完整列表。");
+            Marshal.Copy(memory, bytes, 0, bytes.Length);
+            var probes = new List<UsbProbe>();
+            for (var i = 0; i < count; i++)
             {
-                var bytes = new byte[InfoSize * MaxProbes];
-                Marshal.Copy(bytes, 0, memory, bytes.Length);
-                var count = getList(1, memory, MaxProbes);
-                if (count < 0) throw new IOException("USB 探针枚举失败，请检查 J-Link 组件和 USB 驱动。");
-                if (count > MaxProbes) throw new IOException("USB 探针数量超出枚举范围，无法确认完整列表。");
-                Marshal.Copy(memory, bytes, 0, bytes.Length);
-                var probes = new List<UsbProbe>();
-                for (var i = 0; i < count; i++)
-                {
-                    var info = bytes.AsSpan(i * InfoSize, InfoSize);
-                    var serial = BinaryPrimitives.ReadUInt32LittleEndian(info);
-                    if (info[4] != 1 || serial == 0 || serial > int.MaxValue) continue;
-                    var model = Encoding.ASCII.GetString(info.Slice(50, 32)).Split('\0')[0].Trim();
-                    probes.Add(new((int)serial, model.Length == 0 ? "J-Link（型号未返回）" : model));
-                }
-                return probes.DistinctBy(p => p.SerialNumber).OrderBy(p => p.SerialNumber).ToArray();
+                var info = bytes.AsSpan(i * InfoSize, InfoSize);
+                var serial = BinaryPrimitives.ReadUInt32LittleEndian(info);
+                if (info[4] != 1 || serial == 0 || serial > int.MaxValue) continue;
+                var model = Encoding.ASCII.GetString(info.Slice(50, 32)).Split('\0')[0].Trim();
+                probes.Add(new((int)serial, model.Length == 0 ? "J-Link（型号未返回）" : model));
             }
-            finally { Marshal.FreeHGlobal(memory); }
+            return probes.DistinctBy(p => p.SerialNumber).OrderBy(p => p.SerialNumber).ToArray();
         }
-        finally { NativeLibrary.Free(library); }
+        finally { Marshal.FreeHGlobal(memory); }
     }
 }

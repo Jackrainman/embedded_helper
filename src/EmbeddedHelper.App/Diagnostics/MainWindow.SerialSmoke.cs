@@ -54,6 +54,8 @@ public partial class MainWindow
         var width = Width; var height = Height; Width = MinWidth; Height = MinHeight;
         await Dispatcher.InvokeAsync(() => { }, DispatcherPriority.ApplicationIdle);
         if (SerialPage.FrozenLog.ActualWidth < 120 || live.ActualWidth < 120) throw new InvalidDataException("最小窗口分栏不可用。");
+        if (live.Editor.ActualHeight < 100 || SerialPage.FrozenLog.Editor.ActualHeight < 100)
+            throw new InvalidDataException($"最小窗口日志正文不可读：实时{live.Editor.ActualHeight:F0}，历史{SerialPage.FrozenLog.Editor.ActualHeight:F0}。");
         SaveSmokeScreenshot(directory, "page-2-frozen-minimum.png"); Width = width; Height = height;
         ClearSerial(null, null!);
         if (live.PlainText != "" || SerialPage.FrozenLog.PlainText != frozen) throw new InvalidDataException("清屏误清历史侧。");
@@ -94,6 +96,8 @@ public partial class MainWindow
                 for (var block = 0; block < 32; block++)
                     serialText.Append(new(++sequence, block % 2 == 0 ? "RX" : "TX", Encoding.UTF8.GetBytes(new string('x', 126) + "\r\n")));
                 RenderSerialLog(); UpdateLayout();
+                if (live.ActualHeight > SerialPage.ActualHeight)
+                    throw new InvalidDataException("日志内容撑高页面，发送区不可达。");
                 worst = Math.Max(worst, Stopwatch.GetElapsedTime(started).TotalMilliseconds);
                 peakRuns = Math.Max(peakRuns, live.RunCount);
                 if (live.PlainText != serialText.Text || live.RunCount > 4096 || live.PlainText.Length > 65536) throw new InvalidDataException("日志渲染与有界模型不一致。");

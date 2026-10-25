@@ -67,6 +67,8 @@ internal sealed class Link : IDisposable
 {
     private readonly IntPtr library;
     private bool open, rtt;
+    private readonly int probeSerial;
+    private readonly Stopwatch probeCheck = Stopwatch.StartNew();
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate IntPtr OpenDelegate();
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate void VoidDelegate();
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)] private delegate int IntDelegate();
@@ -80,6 +82,7 @@ internal sealed class Link : IDisposable
     private T Function<T>(string name) where T : Delegate => Marshal.GetDelegateForFunctionPointer<T>(NativeLibrary.GetExport(library, name));
     public Link(ObservationRequest request)
     {
+        probeSerial = request.ProbeSerial;
         if (!Path.IsPathFullyQualified(request.Dll)) throw new ArgumentException("SDK 必须为绝对路径。");
         library = NativeLibrary.Load(request.Dll);
         try
@@ -122,6 +125,14 @@ internal sealed class Link : IDisposable
     public byte[] Rtt()
     {
         if (!rtt) return [];
+        // An empty RTT buffer can keep returning immediately after USB removal.
+        // Check presence independently of sample traffic, without opening another probe.
+        if (probeCheck.Elapsed >= TimeSpan.FromSeconds(1))
+        {
+            if (!UsbProbeDiscovery.Read(library).Any(probe => probe.SerialNumber == probeSerial))
+                throw new IOException($"USB 探针 {probeSerial} 已断开；请重新插入后重试。");
+            probeCheck.Restart();
+        }
         var bytes = new byte[8192];
         var count = Function<RttReadDelegate>("JLINK_RTTERMINAL_Read")(0, bytes, (uint)bytes.Length);
         if (count < 0) throw new IOException("RTT 读取失败。");
