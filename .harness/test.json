@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
   "candidate": {
-    "version": "1.0.24-alpha.1",
-    "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
-    "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
-    "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+    "version": "1.0.26-alpha.1",
+    "commit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
+    "packageSha256": "8785d11af4afa944e452413c7ca812b1ba5bba92e1ddd5d92a26739c0b790e7a",
+    "executableSha256": "c83bc89ee8c63fa192747f07ae9efe2288acaccce8e4d913472f1cb9b9522e8b"
   },
   "checks": [
     {
@@ -118,9 +118,9 @@
         "Windows 桌面",
         "隔离工程与配置"
       ],
-      "status": "pending",
-      "reason": "已完成本地页面反馈矩阵；RTT-only 实机拔线仍显示采集中，LOCAL-02 待修复。",
-      "resumeWhen": "修复 LOCAL-02 后复验 RTT 离线提示。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "逐页检查工程、共享连接、RTT、远程配置、设置的空状态、有效状态与错误状态。",
         "检查用途、当前结果、下一步是否明确，错误是否就地显示，反馈是否不只靠颜色。",
@@ -129,54 +129,50 @@
       ],
       "expected": "各页状态可理解且与实际数据一致；已有串口文案和LF/CRLF子项不重复列为缺陷。",
       "lastResult": {
-        "outcome": "failed",
-        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T11:53:25.876Z",
         "method": "computer_use",
         "kind": "software",
-        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
         "candidate": {
-          "version": "1.0.24-alpha.1",
-          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
-          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
-          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+          "version": "1.0.26-alpha.1",
+          "commit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
+          "packageSha256": "8785d11af4afa944e452413c7ca812b1ba5bba92e1ddd5d92a26739c0b790e7a",
+          "executableSha256": "c83bc89ee8c63fa192747f07ae9efe2288acaccce8e4d913472f1cb9b9522e8b"
         },
-        "details": "五页空/有效状态、USB连接错误、非法端口提示、组件保存回读、配置冲突确认均已实测；损坏归属记录使接入操作禁用，修复并重开后入口恢复；损坏ELF提示具体重试方法，替换文件后解析744/958项成功。但RTT实机断线仍显示采集中100Hz，页面反馈与探针离线事实不一致。",
+        "environment": "Windows 10.0.26300 x64；桌面完整1.0.26-alpha.1测试包；本机当前显示缩放；Computer Use及受控离线SDK，未接目标板。历史复用范围见details。",
+        "details": "本轮对桌面1.0.26执行影响范围回归：空工程、有效工程/ELF、RTT空闲、模拟探针消失后的就地错误、超过21秒仍保留断开原因、同窗重试恢复约100Hz、停止释放；真实9.42 SDK在USB未插时刷新为空并提示记住的探针未在线。组件通过界面恢复真实DLL并保存回读。此前1.0.24已执行的其余页面/事务/损坏归属/端口与ELF错误矩阵复用resultHistory，相关源码未改变（source-scope.json），不声称本轮全矩阵重跑。软件反馈复验通过；真实拔插仍由AT-24单列，模拟不能替代。",
         "evidence": [
           {
-            "path": "test-results/local-acceptance-20261025/corrupt-owner-readonly-0.png",
-            "label": "corrupt-owner-readonly-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/rtt-fault-preserved-after-deadline-0.png",
+            "label": "rtt-fault-preserved-after-deadline-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/corrupt-owner-disabled-actions-0.png",
-            "label": "corrupt-owner-disabled-actions-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/rtt-fault-timing.json",
+            "label": "rtt-fault-timing.json"
           },
           {
-            "path": "test-results/local-acceptance-20261025/corrupt-owner-recovered-actions-0.png",
-            "label": "corrupt-owner-recovered-actions-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/rtt-retry-recovered-0.png",
+            "label": "rtt-retry-recovered-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/invalid-elf-feedback-0.png",
-            "label": "invalid-elf-feedback-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/rtt-stopped-released-0.png",
+            "label": "rtt-stopped-released-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/invalid-elf-recovered-0.png",
-            "label": "invalid-elf-recovered-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/real-sdk-no-usb-0.png",
+            "label": "real-sdk-no-usb-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/invalid-port-inline-0.png",
-            "label": "invalid-port-inline-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/real-sdk-restored-0.png",
+            "label": "real-sdk-restored-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/settings-diagnostic-refreshed-0.png",
-            "label": "settings-diagnostic-refreshed-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/cleanup.json",
+            "label": "cleanup.json"
           },
           {
-            "path": "test-results/local-acceptance-20261025/rtt-disconnect-false-live-0.png",
-            "label": "rtt-disconnect-false-live-0.png"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/rtt-disconnected-probes.json",
-            "label": "rtt-disconnected-probes.json"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/source-scope.json",
+            "label": "source-scope.json"
           }
         ]
       },
@@ -188,6 +184,60 @@
       ],
       "partialEvidence": [
         "test-results/audit-20261022/ui/status.json"
+      ],
+      "resultHistory": [
+        {
+          "outcome": "failed",
+          "recordedAt": "2026-10-25T18:45:30+08:00",
+          "method": "computer_use",
+          "kind": "software",
+          "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+          "candidate": {
+            "version": "1.0.24-alpha.1",
+            "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+            "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+            "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+          },
+          "details": "五页空/有效状态、USB连接错误、非法端口提示、组件保存回读、配置冲突确认均已实测；损坏归属记录使接入操作禁用，修复并重开后入口恢复；损坏ELF提示具体重试方法，替换文件后解析744/958项成功。但RTT实机断线仍显示采集中100Hz，页面反馈与探针离线事实不一致。",
+          "evidence": [
+            {
+              "path": "test-results/local-acceptance-20261025/corrupt-owner-readonly-0.png",
+              "label": "corrupt-owner-readonly-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/corrupt-owner-disabled-actions-0.png",
+              "label": "corrupt-owner-disabled-actions-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/corrupt-owner-recovered-actions-0.png",
+              "label": "corrupt-owner-recovered-actions-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/invalid-elf-feedback-0.png",
+              "label": "invalid-elf-feedback-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/invalid-elf-recovered-0.png",
+              "label": "invalid-elf-recovered-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/invalid-port-inline-0.png",
+              "label": "invalid-port-inline-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/settings-diagnostic-refreshed-0.png",
+              "label": "settings-diagnostic-refreshed-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/rtt-disconnect-false-live-0.png",
+              "label": "rtt-disconnect-false-live-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/rtt-disconnected-probes.json",
+              "label": "rtt-disconnected-probes.json"
+            }
+          ]
+        }
       ]
     },
     {
@@ -203,9 +253,9 @@
         "Windows 桌面",
         "可调整窗口及显示缩放的测试环境"
       ],
-      "status": "pending",
-      "reason": "实测发现：最小窗口下串口实时日志区被压缩成约一行以下的细条，无法阅读。工程/MCU/RTT/设置页操作可达；串口布局需修复后复验。",
-      "resumeWhen": "修复 LOCAL-01 后重新检查最小窗口；系统DPI单列AT-06。",
+      "status": "complete",
+      "reason": "",
+      "resumeWhen": "",
       "steps": [
         "在最小窗口和测试缩放环境检查五个页面，确认按钮、错误提示、滚动可用。",
         "核对旧记录中中断的窗口/标签是否仍存在；仅关闭确认属于该次测试且无未保存内容的对象，不能照旧ID盲目关闭。",
@@ -214,38 +264,74 @@
       ],
       "expected": "内容无遮挡、操作可达；旧清理事项有核对结果，本次测试不遗留窗口。",
       "lastResult": {
-        "outcome": "failed",
-        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "outcome": "passed",
+        "recordedAt": "2026-10-25T11:53:25.876Z",
         "method": "computer_use",
         "kind": "software",
-        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
         "candidate": {
-          "version": "1.0.24-alpha.1",
-          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
-          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
-          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+          "version": "1.0.26-alpha.1",
+          "commit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
+          "packageSha256": "8785d11af4afa944e452413c7ca812b1ba5bba92e1ddd5d92a26739c0b790e7a",
+          "executableSha256": "c83bc89ee8c63fa192747f07ae9efe2288acaccce8e4d913472f1cb9b9522e8b"
         },
-        "details": "Computer Use 将窗口缩至1000×720逻辑最小值（截图986×714含可见框），串口参数栏换行后，实时日志区域剩余空间被上方/下方Auto行挤占，接收区不可读。已记录LOCAL-01。",
+        "environment": "Windows 10.0.26300 x64；桌面完整1.0.26-alpha.1测试包；本机当前显示缩放；Computer Use及受控离线SDK，未接目标板。历史复用范围见details。",
+        "details": "最终包1000×720逻辑最小窗：串口实时/冻结双栏正文清晰，页面滚动可达发送区，未连接发送有明确提示；工程/MCU/RTT/设置五页可达，设置底部可滚动。离线样例ELF解析7个可观察变量；1变量曲线、2变量独立/共用曲线切换、3变量禁用及UIA说明“仅显示不超过两个参数时可用”已复测。本轮未捕获悬停浮层；浮层视觉复用同源码AT-33的1.0.24真实GUI证据，不冒称本轮截图。当前缩放下布局通过，系统100/125/150%仍单列AT-06。旧测试助手/设置窗口已不在当前窗口清单；关闭本轮主窗/弹窗/浏览器页，Worker与测试App均为0，保留用户窗口。",
         "evidence": [
           {
-            "path": "test-results/local-acceptance-20261025/minimum-serial-0.png",
-            "label": "minimum-serial-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/serial-minimum-0.png",
+            "label": "serial-minimum-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/minimum-serial.txt",
-            "label": "minimum-serial.txt"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/serial-frozen-minimum-0.png",
+            "label": "serial-frozen-minimum-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/minimum-project-0.png",
-            "label": "minimum-project-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/serial-send-controls-0.png",
+            "label": "serial-send-controls-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/minimum-rtt-0.png",
-            "label": "minimum-rtt-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/serial-disconnected-send-0.png",
+            "label": "serial-disconnected-send-0.png"
           },
           {
-            "path": "test-results/local-acceptance-20261025/minimum-settings-0.png",
-            "label": "minimum-settings-0.png"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/project-minimum-0.png",
+            "label": "project-minimum-0.png"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/mcu-minimum-0.png",
+            "label": "mcu-minimum-0.png"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/settings-bottom-reachable-0.png",
+            "label": "settings-bottom-reachable-0.png"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/axis-one-sampling-0.png",
+            "label": "axis-one-sampling-0.png"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/axis-two-independent-0.png",
+            "label": "axis-two-independent-0.png"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/axis-two-shared-0.png",
+            "label": "axis-two-shared-0.png"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/axis-three-disabled.txt",
+            "label": "axis-three-disabled.txt"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/cleanup.json",
+            "label": "cleanup.json"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/windows-after.json",
+            "label": "windows-after.json"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/source-scope.json",
+            "label": "source-scope.json"
           }
         ]
       },
@@ -254,6 +340,44 @@
       ],
       "partialEvidence": [
         "test-results/audit-20261022/ui/status.json"
+      ],
+      "resultHistory": [
+        {
+          "outcome": "failed",
+          "recordedAt": "2026-10-25T18:45:30+08:00",
+          "method": "computer_use",
+          "kind": "software",
+          "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+          "candidate": {
+            "version": "1.0.24-alpha.1",
+            "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+            "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+            "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+          },
+          "details": "Computer Use 将窗口缩至1000×720逻辑最小值（截图986×714含可见框），串口参数栏换行后，实时日志区域剩余空间被上方/下方Auto行挤占，接收区不可读。已记录LOCAL-01。",
+          "evidence": [
+            {
+              "path": "test-results/local-acceptance-20261025/minimum-serial-0.png",
+              "label": "minimum-serial-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/minimum-serial.txt",
+              "label": "minimum-serial.txt"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/minimum-project-0.png",
+              "label": "minimum-project-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/minimum-rtt-0.png",
+              "label": "minimum-rtt-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/minimum-settings-0.png",
+              "label": "minimum-settings-0.png"
+            }
+          ]
+        }
       ]
     },
     {
@@ -656,7 +780,7 @@
         "当前双账本生成的 test-results/harness/index.html"
       ],
       "status": "blocked",
-      "reason": "本轮通过只监听127.0.0.1的离线HTTP服务，在Edge实测状态/来源筛选、中文搜索、无结果提示、Tab/Enter展开、历史包说明、清空恢复46项。HTTP下file证据链接点击未打开；既有file协议限制未绕过。仍缺直接HTML打开/本机证据导航与窄窗口验收，故保留blocked。",
+      "reason": "已补Edge中560 CSS px原始看板iframe视口：中文搜索5/48、换行无横向溢出、LOCAL-01关联跳转到AT-04并展开正常；只监听127.0.0.1。先前筛选/键盘证据保留。直接file HTML与本机证据链接仍未验收，既有file协议限制未绕过。",
       "resumeWhen": "用户在本地浏览器手动打开 test-results/harness/index.html 执行既有步骤并回传证据，或提供经策略允许的访问方式。",
       "steps": [
         "重新生成看板并记录页面底部账本摘要和本次 Harness 源码提交。",
@@ -667,21 +791,40 @@
       "expected": "筛选组合及关联跳转正确，文字/证据路径可读；无隐式修改、网络依赖或设备操作。结果绑定页面展示的候选包，并在实际环境和证据中额外记录账本摘要及 Harness 源码提交。",
       "lastResult": null,
       "partialResult": {
-        "recordedAt": "2026-10-25T18:45:30+08:00",
+        "recordedAt": "2026-10-25T11:53:25.876Z",
         "candidate": {
           "version": "1.0.24-alpha.1",
           "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
           "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
           "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
         },
-        "details": "本轮通过只监听127.0.0.1的离线HTTP服务，在Edge实测状态/来源筛选、中文搜索、无结果提示、Tab/Enter展开、历史包说明、清空恢复46项。HTTP下file证据链接点击未打开；既有file协议限制未绕过。仍缺直接HTML打开/本机证据导航与窄窗口验收，故保留blocked。",
+        "details": "已补Edge中560 CSS px原始看板iframe视口：中文搜索5/48、换行无横向溢出、LOCAL-01关联跳转到AT-04并展开正常；只监听127.0.0.1。先前筛选/键盘证据保留。直接file HTML与本机证据链接仍未验收，既有file协议限制未绕过。 此次页面仍展示更新前1.0.24候选、2开发+46验收；与随后生成的1.0.26账本快照分开。",
+        "snapshotSha256": "8a6388dceb2be74db4fd0591d27febb0a3f400d5a09de2d81c9c4933c72f038d",
+        "harnessCommit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
         "evidence": [
-          "test-results/local-acceptance-20261025/dashboard-restored.txt",
-          "test-results/local-acceptance-20261025/dashboard-browser.png"
-        ],
-        "snapshotSha256": "c41e7c170e55a084f8426bee45eb6e928744d4902f58a65a8fc3bf53c0b41b5f",
-        "harnessCommit": "372640a"
-      }
+          "test-results/local-fixes-20261025/dashboard-narrow.png",
+          "test-results/local-fixes-20261025/dashboard-narrow-linked.png",
+          "test-results/local-fixes-20261025/dashboard-narrow-linked.txt"
+        ]
+      },
+      "partialResultHistory": [
+        {
+          "recordedAt": "2026-10-25T18:45:30+08:00",
+          "candidate": {
+            "version": "1.0.24-alpha.1",
+            "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+            "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+            "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+          },
+          "details": "本轮通过只监听127.0.0.1的离线HTTP服务，在Edge实测状态/来源筛选、中文搜索、无结果提示、Tab/Enter展开、历史包说明、清空恢复46项。HTTP下file证据链接点击未打开；既有file协议限制未绕过。仍缺直接HTML打开/本机证据导航与窄窗口验收，故保留blocked。",
+          "evidence": [
+            "test-results/local-acceptance-20261025/dashboard-restored.txt",
+            "test-results/local-acceptance-20261025/dashboard-browser.png"
+          ],
+          "snapshotSha256": "c41e7c170e55a084f8426bee45eb6e928744d4902f58a65a8fc3bf53c0b41b5f",
+          "harnessCommit": "372640a"
+        }
+      ]
     },
     {
       "id": "AT-15",
@@ -1429,71 +1572,16 @@
         "已确认状态的目标板/J-Link与匹配ELF",
         "授权的断连/恢复测试窗口"
       ],
-      "status": "pending",
-      "reason": "真实拔线测试已执行；变量采集恢复通过，RTT-only 拔线未报错，LOCAL-02 待修复。",
-      "resumeWhen": "修复 LOCAL-02 后，用同一探针复验 RTT 断线提示、停止释放和插回重试。",
+      "status": "blocked",
+      "reason": "LOCAL-02已修复，最终1.0.26发布Worker原生模拟及Computer Use断线/原因保留/重试/释放通过；用户已拔出J-Link，未执行修复版真实USB拔插，不以模拟替代实机。",
+      "resumeWhen": "接回探针20250010和对应目标板后，在最终1.0.26包复验RTT-only及变量分支真实拔线、停止释放、外部工具和插回重试。",
       "steps": [
         "先确认板卡、固件、DLL版本及授权允许的断连方式，记录正常采样。",
         "分别验证 RTT 关闭/开启时异常；记录 SDK 返回不完整、阻塞或退出的实际分支。",
         "核对故障提示、停止释放、外部工具可用及重连；与 AT-11 复用适用证据。"
       ],
       "expected": "用真实 SDK 证实触发分支和恢复边界，不能把静态推断记成拔线实测。",
-      "lastResult": {
-        "outcome": "failed",
-        "recordedAt": "2026-10-25T18:45:30+08:00",
-        "method": "manual",
-        "kind": "hardware",
-        "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
-        "candidate": {
-          "version": "1.0.24-alpha.1",
-          "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
-          "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
-          "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
-        },
-        "details": "USB20250010/STM32G474VE。RTT关闭的变量采集拔线：SDK弹出Communication timed out，父进程提示采集进程超时；点击停止后Worker40112退出、弹窗消失，插回恢复200Hz。RTT-only开启分支：用户拔线后独立发布Worker枚举为空，UI仍持续采集中100Hz、无故障提示；点击停止可释放，插回重启约100Hz。最终独立只读SDK成功连接并逐段读取匹配Flash，haltedBefore/After=0，released=true。实际模块路径为9.42.0+st.1/JLink_x64.dll，模块文件版本9.42；变量断线弹窗标题却为J-Link V9.12 Error，按观察并列保留，不据标题推断加载版本。",
-        "evidence": [
-          {
-            "path": "test-results/local-acceptance-20261025/usb-disconnect-timeout-confirmed-0.png",
-            "label": "usb-disconnect-timeout-confirmed-0.png"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/usb-disconnect-released-0.png",
-            "label": "usb-disconnect-released-0.png"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/usb-disconnect-recovered-0.png",
-            "label": "usb-disconnect-recovered-0.png"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/rtt-disconnect-false-live-0.png",
-            "label": "rtt-disconnect-false-live-0.png"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/rtt-disconnected-probes.json",
-            "label": "rtt-disconnected-probes.json"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/rtt-disconnect-stopped-0.png",
-            "label": "rtt-disconnect-stopped-0.png"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/rtt-disconnect-recovered-0.png",
-            "label": "rtt-disconnect-recovered-0.png"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/rtt-final-released-0.png",
-            "label": "rtt-final-released-0.png"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/external-tool-after-recovery.json",
-            "label": "external-tool-after-recovery.json"
-          },
-          {
-            "path": "test-results/local-acceptance-20261025/actual-sdk-modules.json",
-            "label": "actual-sdk-modules.json"
-          }
-        ]
-      },
+      "lastResult": null,
       "auditRefs": [
         4
       ],
@@ -1504,8 +1592,85 @@
         "src/EmbeddedHelper.Core/Observation/Observation.cs:109"
       ],
       "codeCommits": [
-        "81e27a39bb9261f0f918f204c225aa56a5d94c7b"
-      ]
+        "81e27a39bb9261f0f918f204c225aa56a5d94c7b",
+        "83135edc88b99f66074d798635db0a95b2c830c2",
+        "2f300d385307870e636bb1ce0c3a8a4e7266127b"
+      ],
+      "resultHistory": [
+        {
+          "outcome": "failed",
+          "recordedAt": "2026-10-25T18:45:30+08:00",
+          "method": "manual",
+          "kind": "hardware",
+          "environment": "本机 Windows 10.0.26300 x64；发布版 1.0.24-alpha.1 的隔离副本；Computer Use / 发布组件离线夹具；具体范围见 details。",
+          "candidate": {
+            "version": "1.0.24-alpha.1",
+            "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+            "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+            "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+          },
+          "details": "USB20250010/STM32G474VE。RTT关闭的变量采集拔线：SDK弹出Communication timed out，父进程提示采集进程超时；点击停止后Worker40112退出、弹窗消失，插回恢复200Hz。RTT-only开启分支：用户拔线后独立发布Worker枚举为空，UI仍持续采集中100Hz、无故障提示；点击停止可释放，插回重启约100Hz。最终独立只读SDK成功连接并逐段读取匹配Flash，haltedBefore/After=0，released=true。实际模块路径为9.42.0+st.1/JLink_x64.dll，模块文件版本9.42；变量断线弹窗标题却为J-Link V9.12 Error，按观察并列保留，不据标题推断加载版本。",
+          "evidence": [
+            {
+              "path": "test-results/local-acceptance-20261025/usb-disconnect-timeout-confirmed-0.png",
+              "label": "usb-disconnect-timeout-confirmed-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/usb-disconnect-released-0.png",
+              "label": "usb-disconnect-released-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/usb-disconnect-recovered-0.png",
+              "label": "usb-disconnect-recovered-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/rtt-disconnect-false-live-0.png",
+              "label": "rtt-disconnect-false-live-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/rtt-disconnected-probes.json",
+              "label": "rtt-disconnected-probes.json"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/rtt-disconnect-stopped-0.png",
+              "label": "rtt-disconnect-stopped-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/rtt-disconnect-recovered-0.png",
+              "label": "rtt-disconnect-recovered-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/rtt-final-released-0.png",
+              "label": "rtt-final-released-0.png"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/external-tool-after-recovery.json",
+              "label": "external-tool-after-recovery.json"
+            },
+            {
+              "path": "test-results/local-acceptance-20261025/actual-sdk-modules.json",
+              "label": "actual-sdk-modules.json"
+            }
+          ]
+        }
+      ],
+      "partialResult": {
+        "recordedAt": "2026-10-25T11:53:25.876Z",
+        "candidate": {
+          "version": "1.0.26-alpha.1",
+          "commit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
+          "packageSha256": "8785d11af4afa944e452413c7ca812b1ba5bba92e1ddd5d92a26739c0b790e7a",
+          "executableSha256": "c83bc89ee8c63fa192747f07ae9efe2288acaccce8e4d913472f1cb9b9522e8b"
+        },
+        "scope": "offline-native-fixture-and-real-gui; NOT physical USB disconnect",
+        "details": "LOCAL-02已修复，最终1.0.26发布Worker原生模拟及Computer Use断线/原因保留/重试/释放通过；用户已拔出J-Link，未执行修复版真实USB拔插，不以模拟替代实机。",
+        "evidence": [
+          "test-results/local-fixes-20261025/final-1.0.26/native-published/result.json",
+          "test-results/local-fixes-20261025/final-1.0.26/rtt-fault-timing.json",
+          "test-results/local-fixes-20261025/final-1.0.26/rtt-retry-recovered-0.png",
+          "test-results/local-fixes-20261025/final-1.0.26/cleanup.json"
+        ]
+      }
     },
     {
       "id": "AT-25",
@@ -2621,29 +2786,49 @@
       "expected": "指定分支有行为回归且无遗留进程；15秒看门狗只标故障，不误称立即Kill。保留已有真实Worker非零退出及重试测试。",
       "lastResult": {
         "outcome": "passed",
+        "recordedAt": "2026-10-25T11:53:25.876Z",
         "method": "automated",
         "kind": "software",
         "candidate": {
-          "version": "1.0.24-alpha.1",
-          "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
-          "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
-          "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+          "version": "1.0.26-alpha.1",
+          "commit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
+          "packageSha256": "8785d11af4afa944e452413c7ca812b1ba5bba92e1ddd5d92a26739c0b790e7a",
+          "executableSha256": "c83bc89ee8c63fa192747f07ae9efe2288acaccce8e4d913472f1cb9b9522e8b"
         },
-        "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
-        "details": "受控真实子进程覆盖错误会话、1MiB超长输出、未确认计划、静默看门狗；故障时子进程仍活着，Dispose强制回收后逐PID核验退出。",
-        "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+        "environment": "Windows 10.0.26300 x64；桌面完整1.0.26-alpha.1测试包；本机当前显示缩放；Computer Use及受控离线SDK，未接目标板。历史复用范围见details。",
+        "details": "最终源码Release 206项测试全部通过，包含错误会话/超长输出/未确认计划/静默超时及无响应子进程回收。新增真实Worker错误保留17秒回归，旧代码红、修复绿。最终发布Worker+原生替身6例通过；Computer Use模拟断线21.9秒后错误原因仍保留，故障WorkerCount=0，同窗重试恢复且停止释放，最终无残留进程。不连接硬件。",
         "evidence": [
           {
-            "label": "同包构建及自动验证日志",
-            "path": "test-results/audit-20261022/final-package.log"
+            "path": "test-results/local-fixes-20261025/final-1.0.26/release.trx",
+            "label": "release.trx"
           },
           {
-            "label": "Release完整客户端TRX",
-            "path": "test-results/audit-20261022/release.trx"
+            "path": "test-results/local-fixes-20261025/package.log",
+            "label": "package.log"
           },
           {
-            "label": "process-evidence.json",
-            "path": "test-results/audit-20261022/process-evidence.json"
+            "path": "test-results/local-fixes-20261025/watchdog-red.log",
+            "label": "watchdog-red.log"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/watchdog-green.log",
+            "label": "watchdog-green.log"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/native-published/result.json",
+            "label": "result.json"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/rtt-fault-timing.json",
+            "label": "rtt-fault-timing.json"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/worker-exited-on-fault.json",
+            "label": "worker-exited-on-fault.json"
+          },
+          {
+            "path": "test-results/local-fixes-20261025/final-1.0.26/cleanup.json",
+            "label": "cleanup.json"
           }
         ]
       },
@@ -2668,7 +2853,37 @@
         "scope": "源码/隔离测试证据；同包最终绑定待完成",
         "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
         "candidateScope": "与此候选对应的源码/隔离测试；见details区分实际成品、替身和插桩。"
-      }
+      },
+      "resultHistory": [
+        {
+          "outcome": "passed",
+          "method": "automated",
+          "kind": "software",
+          "candidate": {
+            "version": "1.0.24-alpha.1",
+            "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+            "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+            "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+          },
+          "environment": "Windows 本机；SDK10.0.402/.NET10.0.12；源码78e65f4。仅离线，未连接设备。AT-45/46使用有记录的隔离插桩构建；AT-43仅静态读取既有DLL。",
+          "details": "受控真实子进程覆盖错误会话、1MiB超长输出、未确认计划、静默看门狗；故障时子进程仍活着，Dispose强制回收后逐PID核验退出。",
+          "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+          "evidence": [
+            {
+              "label": "同包构建及自动验证日志",
+              "path": "test-results/audit-20261022/final-package.log"
+            },
+            {
+              "label": "Release完整客户端TRX",
+              "path": "test-results/audit-20261022/release.trx"
+            },
+            {
+              "label": "process-evidence.json",
+              "path": "test-results/audit-20261022/process-evidence.json"
+            }
+          ]
+        }
+      ]
     },
     {
       "id": "AT-40",
@@ -3190,64 +3405,38 @@
       },
       "retiredAt": "2026-10-22T12:27:32.252576+00:00",
       "reason": "用户授权发布1.0.24-alpha.1；当前候选切换为成功CI的实际发布包。桌面包及其全部历史验收结果保留，不转记为新包通过。"
+    },
+    {
+      "candidate": {
+        "version": "1.0.24-alpha.1",
+        "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
+        "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
+        "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+      },
+      "retiredAt": "2026-10-25T11:53:25.876Z",
+      "reason": "切换至本地未发布修复候选1.0.26；历史实机与其他验收保留原候选身份，不继承为新包实测。"
     }
   ],
   "offlineValidation": {
-    "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+    "recordedAt": "2026-10-25T11:53:25.876Z",
     "candidate": {
-      "version": "1.0.24-alpha.1",
-      "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
-      "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
-      "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+      "version": "1.0.26-alpha.1",
+      "commit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
+      "packageSha256": "8785d11af4afa944e452413c7ca812b1ba5bba92e1ddd5d92a26739c0b790e7a",
+      "executableSha256": "c83bc89ee8c63fa192747f07ae9efe2288acaccce8e4d913472f1cb9b9522e8b"
     },
-    "recordedAt": "2026-10-22T11:42:29.967920+00:00",
-    "commands": [
-      {
-        "command": "python -X utf8 scripts/verify.py --client",
-        "exitCode": 0,
-        "harnessTests": 48,
-        "clientTests": 205,
-        "evidence": "test-results/audit-20261022/final-package.log"
-      },
-      {
-        "command": "python -X utf8 scripts/verify.py --client --configuration Debug",
-        "exitCode": 0,
-        "harnessTests": 48,
-        "clientTests": 205,
-        "evidence": "test-results/audit-20261022/final-debug.log"
-      },
-      {
-        "command": "python -X utf8 scripts/gui_smoke.py --configuration Debug",
-        "exitCode": 0,
-        "evidence": "test-results/audit-20261022/final-debug-gui.log"
-      },
-      {
-        "command": "EMBEDDED_HELPER_SMOKE_PERF=1 python -X utf8 scripts/package_client.py --output dist/candidates/1.0.24-alpha.1-78e65f4-audit --tool-zip <已核验本机ZIP> --upgrade-from <1.0.1-alpha.1原包EXE>",
-        "exitCode": 0,
-        "evidence": "test-results/audit-20261022/final-package.log"
-      },
-      {
-        "command": "python -X utf8 scripts/offline_fault_trials.py --tool-zip <已核验本机ZIP> --evidence test-results/audit-20261022/fault-trials",
-        "exitCode": 0,
-        "evidence": "test-results/audit-20261022/fault-trials/results.json"
-      },
-      {
-        "command": "LAN_Debug: python -X utf8 -m unittest discover -s client/LAN_Debug/tests",
-        "exitCode": 0,
-        "tests": 22,
-        "evidence": "test-results/audit-20261022/final-lan-client.log"
-      },
-      {
-        "command": "LAN_Debug/server: LAN_DEBUG_TEST_BASH=<已定位Git Bash> python -X utf8 -m unittest discover -s tests; node tests/test_rtt_poll.js; node tests/test_client_config.js",
-        "exitCode": 0,
-        "tests": 17,
-        "evidence": "test-results/audit-20261022/C-05-server-suite.log"
-      }
-    ],
-    "deliveryPath": "C:\\Users\\Mechrevo\\Desktop\\EmbeddedHelper_test\\EmbeddedHelper-1.0.24-alpha.1-78e65f4-audit",
-    "runtime": "10.0.12",
-    "scope": "代码完成；已列离线检查通过。完整人工/设备验收未通过。没有设备操作、远程部署、发布、push或tag。",
-    "windowCleanup": "自动测试自有进程均已退出；桌面新候选窗口70356检测到人机并发输入，保留供用户使用，没有强制关闭或清理其data。"
+    "sourceCommit": "2f300d385307870e636bb1ce0c3a8a4e7266127b",
+    "scope": "最终源码Release全门+最终包自检和Computer Use影响范围；无硬件",
+    "harnessTests": 48,
+    "clientTests": 206,
+    "nativeFixtureCases": 6,
+    "evidence": [
+      "test-results/local-fixes-20261025/package.log",
+      "test-results/local-fixes-20261025/final-1.0.26/release.trx",
+      "test-results/local-fixes-20261025/final-1.0.26/package-smoke.json",
+      "test-results/local-fixes-20261025/final-1.0.26/native-published/result.json",
+      "test-results/local-fixes-20261025/final-1.0.26/cleanup.json"
+    ]
   },
   "publishedRelease": {
     "candidate": {
@@ -3272,5 +3461,64 @@
       "test-results/push-release-asset-verification.json",
       "dist/candidates/1.0.24-alpha.1-c2e9dab-ci/verification-evidence.json"
     ]
-  }
+  },
+  "offlineValidationHistory": [
+    {
+      "sourceCommit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+      "candidate": {
+        "version": "1.0.24-alpha.1",
+        "commit": "78e65f413904b826e4a83f99a6b42350f89a2496",
+        "packageSha256": "9c31f1afba027f3fcfb18a6d16e311a27afe55dc5c02a238bcd9cdd3fb6b2810",
+        "executableSha256": "8c0a9b57a36e69068b7ac89fbd4f74374d27558ce0aa88185238a13437c6bc5d"
+      },
+      "recordedAt": "2026-10-22T11:42:29.967920+00:00",
+      "commands": [
+        {
+          "command": "python -X utf8 scripts/verify.py --client",
+          "exitCode": 0,
+          "harnessTests": 48,
+          "clientTests": 205,
+          "evidence": "test-results/audit-20261022/final-package.log"
+        },
+        {
+          "command": "python -X utf8 scripts/verify.py --client --configuration Debug",
+          "exitCode": 0,
+          "harnessTests": 48,
+          "clientTests": 205,
+          "evidence": "test-results/audit-20261022/final-debug.log"
+        },
+        {
+          "command": "python -X utf8 scripts/gui_smoke.py --configuration Debug",
+          "exitCode": 0,
+          "evidence": "test-results/audit-20261022/final-debug-gui.log"
+        },
+        {
+          "command": "EMBEDDED_HELPER_SMOKE_PERF=1 python -X utf8 scripts/package_client.py --output dist/candidates/1.0.24-alpha.1-78e65f4-audit --tool-zip <已核验本机ZIP> --upgrade-from <1.0.1-alpha.1原包EXE>",
+          "exitCode": 0,
+          "evidence": "test-results/audit-20261022/final-package.log"
+        },
+        {
+          "command": "python -X utf8 scripts/offline_fault_trials.py --tool-zip <已核验本机ZIP> --evidence test-results/audit-20261022/fault-trials",
+          "exitCode": 0,
+          "evidence": "test-results/audit-20261022/fault-trials/results.json"
+        },
+        {
+          "command": "LAN_Debug: python -X utf8 -m unittest discover -s client/LAN_Debug/tests",
+          "exitCode": 0,
+          "tests": 22,
+          "evidence": "test-results/audit-20261022/final-lan-client.log"
+        },
+        {
+          "command": "LAN_Debug/server: LAN_DEBUG_TEST_BASH=<已定位Git Bash> python -X utf8 -m unittest discover -s tests; node tests/test_rtt_poll.js; node tests/test_client_config.js",
+          "exitCode": 0,
+          "tests": 17,
+          "evidence": "test-results/audit-20261022/C-05-server-suite.log"
+        }
+      ],
+      "deliveryPath": "C:\\Users\\Mechrevo\\Desktop\\EmbeddedHelper_test\\EmbeddedHelper-1.0.24-alpha.1-78e65f4-audit",
+      "runtime": "10.0.12",
+      "scope": "代码完成；已列离线检查通过。完整人工/设备验收未通过。没有设备操作、远程部署、发布、push或tag。",
+      "windowCleanup": "自动测试自有进程均已退出；桌面新候选窗口70356检测到人机并发输入，保留供用户使用，没有强制关闭或清理其data。"
+    }
+  ]
 }
