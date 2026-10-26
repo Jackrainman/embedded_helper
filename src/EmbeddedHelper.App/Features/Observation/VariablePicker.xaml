@@ -14,6 +14,7 @@
   </DataGrid.Columns></DataGrid></GroupBox>
   <GridSplitter x:Name="Divider" Grid.Row="3" Height="4" HorizontalAlignment="Stretch" VerticalAlignment="Center" ResizeDirection="Rows" ResizeBehavior="PreviousAndNext"/>
   <GroupBox x:Name="AddedVariables" Grid.Row="4" Header="已添加变量 · 最多64项"><DataGrid x:Name="SelectedRows" IsReadOnly="True"><DataGrid.Columns>
+   <DataGridTemplateColumn Header="显示" Width="44"><DataGridTemplateColumn.CellTemplate><DataTemplate><CheckBox IsChecked="{Binding ShowPlot, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0" ToolTip="在右侧显示曲线；取消勾选仍继续采集和记录" AutomationProperties.Name="显示变量曲线"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
    <DataGridTemplateColumn Header="变量" Width="*"><DataGridTemplateColumn.CellTemplate><DataTemplate><local:VariableNameText FullName="{Binding Variable.Name}" ToolTip="{Binding Detail}"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>
    <DataGridTextColumn Header="当前值" Binding="{Binding Value}" Width="80"/>
    <DataGridTemplateColumn Width="48"><DataGridTemplateColumn.CellTemplate><DataTemplate><Button Content="移除" Margin="0" Padding="4,2" MinHeight="24" Height="28" IsEnabled="{Binding CanEdit, RelativeSource={RelativeSource AncestorType={x:Type local:VariablePicker}}}" Click="Remove"/></DataTemplate></DataGridTemplateColumn.CellTemplate></DataGridTemplateColumn>

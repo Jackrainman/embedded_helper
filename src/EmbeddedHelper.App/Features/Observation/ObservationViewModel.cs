@@ -18,13 +18,49 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
             subscribed.Clear();
             foreach (var row in variables) { subscribed.Add(row); row.PropertyChanged += SelectionChanged; }
             VisibleRows = variables.Where(row => row.Selected).ToArray();
+            ClearPlot();
         };
     }
     private void SelectionChanged(object? sender, PropertyChangedEventArgs e)
-    { if (e.PropertyName == nameof(VariableRow.Selected)) { VisibleRows = variables.Where(row => row.Selected).ToArray(); SelectionEdited?.Invoke(this, EventArgs.Empty); } }
+    {
+        if (e.PropertyName == nameof(VariableRow.Selected))
+        {
+            VisibleRows = variables.Where(row => row.Selected).ToArray();
+            ApplyPlotVisibility();
+            SelectionEdited?.Invoke(this, EventArgs.Empty);
+        }
+        else if (e.PropertyName == nameof(VariableRow.ShowPlot))
+        {
+            RefreshScaleAvailability();
+            ApplyPlotVisibility();
+        }
+    }
     public event EventHandler? SelectionEdited;
     public ObservableCollection<VariableRow> Variables => variables;
-    public void ReplaceRows(VariableRow[] rows) => variables.Replace(rows);
+    public void ReplaceRows(VariableRow[] rows)
+    {
+        var visibility = variables.ToDictionary(row => row.Variable.Identity, row => row.ShowPlot);
+        foreach (var row in rows)
+            if (visibility.TryGetValue(row.Variable.Identity, out var show)) row.ShowPlot = show;
+        variables.Replace(rows);
+    }
+    // Visibility edits reuse the displayed snapshot, including while live updates are paused.
+    private (VariableRow Row, double[] Times, double[] Values)[] plotSnapshot = [];
+    public void RefreshPlot()
+    {
+        plotSnapshot = variables.Where(row => row.Selected && row.History.Count > 1)
+            .Select(row => (row, row.HistorySeconds.ToArray(), row.History.ToArray())).ToArray();
+        ApplyPlotVisibility();
+    }
+    public void ClearPlot() { plotSnapshot = []; ApplyPlotVisibility(); }
+    private void ApplyPlotVisibility()
+    {
+        var plotted = plotSnapshot.Where(item => item.Row.Selected && item.Row.ShowPlot).Take(16).ToArray();
+        PlotLabels = plotted.Select(item => item.Row.Variable.Name).ToArray();
+        Times = plotted.Select(item => item.Times).ToArray();
+        Series = plotted.Select(item => item.Values).ToArray();
+        Notify(nameof(PlotEmpty));
+    }
     public void LoadIndex(Variable[] index, string[] selected)
     {
         var identities = selected.ToHashSet(StringComparer.Ordinal);
@@ -42,13 +78,17 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
         set
         {
             Set(ref visibleRows, value); Notify(nameof(HasVariables)); Notify(nameof(VariablesMissing));
-            Notify(nameof(CanScaleIndependently)); Notify(nameof(ScaleHint));
-            if (!CanScaleIndependently) IndependentScale = false;
+            RefreshScaleAvailability();
         }
     }
-    public bool CanScaleIndependently => VisibleRows.Length <= 2;
+    private void RefreshScaleAvailability()
+    {
+        Notify(nameof(CanScaleIndependently)); Notify(nameof(ScaleHint)); Notify(nameof(PlotEmpty));
+        if (!CanScaleIndependently) IndependentScale = false;
+    }
+    public bool CanScaleIndependently => VisibleRows.Count(row => row.ShowPlot) <= 2;
     public string? ScaleHint => CanScaleIndependently ? null : "仅显示不超过两个参数时可用";
-    private bool independentScale = true;
+    private bool independentScale;
     public bool IndependentScale { get => independentScale; set => Set(ref independentScale, value && CanScaleIndependently); }
     public bool HasVariables => VisibleRows.Length > 0;
     private bool ready, busy, hasSession, canRetry, paused;
@@ -85,7 +125,7 @@ public sealed class ObservationViewModel : INotifyPropertyChanged
     public string ConfigureText { get => configureText; set => Set(ref configureText, value); }
     public string Status { get => status; set => Set(ref status, value); }
     public string VariablesEmpty { get => variablesEmpty; set => Set(ref variablesEmpty, value); }
-    public string PlotEmpty { get => plotEmpty; set => Set(ref plotEmpty, value); }
+    public string PlotEmpty { get => HasVariables && VisibleRows.All(row => !row.ShowPlot) ? "勾选左侧变量的“显示”即可查看曲线" : plotEmpty; set => Set(ref plotEmpty, value); }
     public double[][] Series { get => series; set { Set(ref series, value); Notify(nameof(HasPlot)); Notify(nameof(PlotMissing)); } }
     public bool VariablesMissing => !HasVariables;
     public bool PlotMissing => !HasPlot;

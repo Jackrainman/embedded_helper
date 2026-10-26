@@ -95,7 +95,7 @@ public partial class MainWindow
         if (ObservationPage == null) return;
         ShowViewerIssue("请确认当前目标的连接配置和变量设置。", false);
         observationView.VisibleRows = [];
-        observationView.Series = [];
+        observationView.ClearPlot();
     }
     private void ShowViewerIssue(string message, bool report = true, ObservationConfigurationArea destination = ObservationConfigurationArea.Observation)
     {
@@ -138,7 +138,7 @@ public partial class MainWindow
             observationView.Summary = $"{loaded.Name} / {target.Name} · {connection} · {request.SampleRate} Hz · {request.Variables.Length} 个变量";
             observationView.PlotEmpty = "开始采集后显示曲线";
             observationView.Status = request.Host.Length > 0 ? "未连接 · 开始前请先在远程网页手动停止 RTT" : "未连接 · ELF 与固件匹配未核验";
-            observationView.Series = [];
+            observationView.ClearPlot();
             Report("已读取变量与共享连接配置；尚未连接设备。");
         }
         catch (ObservationPreparationException ex)

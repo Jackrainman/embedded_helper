@@ -44,7 +44,7 @@ public partial class MainWindow
         {
             SetElfFeedback(ElfParseFeedback.Failure(ex));
             observationView.ReplaceRows(Variables.Where(v => v.Selected).Select(v => new VariableRow(v.Variable with { Status = "ELF 解析失败，地址不可用" }) { Selected = true }).ToArray());
-            observationView.Series = []; elfStamp = default;
+            observationView.ClearPlot(); elfStamp = default;
             throw;
         }
     }
@@ -104,7 +104,7 @@ public partial class MainWindow
             observationView.ReplaceRows(Variables.Where(v => v.Selected).Select(v => new VariableRow(v.Variable with { Status = "ELF 解析失败，地址不可用" }) { Selected = true }).ToArray());
             elfStamp = default;
             ShowViewerIssue(observationView.ElfStatus, false, ObservationConfigurationArea.Project);
-            RefreshViewerRows(); observationView.Series = [];
+            RefreshViewerRows(); observationView.ClearPlot();
             throw;
         }
         finally { indexing = false; SyncObservationState(); }
@@ -151,7 +151,7 @@ public partial class MainWindow
         displayDirty = rttDirty = true;
     });
     private void ResetObservationDisplay()
-    { samples = 0; observationOriginTicks = null; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear(); rttFormatReported = false; displayDirty = rttDirty = true; }
+    { samples = 0; observationOriginTicks = null; sampling.Restart(); rttDecoder.Reset(); rttHistory.Clear(); rttFormatReported = false; observationView.ClearPlot(); displayDirty = rttDirty = true; }
     private async void StopObservation(object? sender, RoutedEventArgs e) => await Guard(StopObservationAsync);
     private async Task StopObservationAsync()
     {
@@ -220,7 +220,7 @@ public partial class MainWindow
             if (!rttSession && !observationView.Paused && ObservationPage.IsVisible)
             {
                 foreach (var row in Variables.Where(v => v.LatestValue != null)) row.Value = row.LatestValue + (acquisition.CanRetry || DateTimeOffset.UtcNow - row.LastObservedAt > TimeSpan.FromSeconds(3) ? " / 过期" : "");
-                if (displayDirty || wasPaused) { var plotted = Variables.Where(v => v.Selected && v.History.Count > 1).Take(16).ToArray(); observationView.PlotLabels = plotted.Select(v => v.Variable.Name).ToArray(); observationView.Times = plotted.Select(v => v.HistorySeconds.ToArray()).ToArray(); observationView.Series = plotted.Select(v => v.History.ToArray()).ToArray(); displayDirty = false; }
+                if (displayDirty || wasPaused) { observationView.RefreshPlot(); displayDirty = false; }
             }
             wasPaused = observationView.Paused;
         }

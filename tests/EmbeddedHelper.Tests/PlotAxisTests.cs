@@ -37,6 +37,8 @@ public sealed class PlotAxisTests
         var model = new ObservationViewModel();
         model.LoadIndex(Enumerable.Range(0, 3).Select(i => new Variable($"v{i}", $"v{i}", (uint)(0x20000000 + i * 4), "float", 4, "")).ToArray(), ["v0", "v1"]);
         Assert.True(model.CanScaleIndependently);
+        Assert.False(model.IndependentScale);
+        model.IndependentScale = true;
         Assert.True(model.IndependentScale);
         model.Variables[2].Selected = true;
         Assert.False(model.CanScaleIndependently);

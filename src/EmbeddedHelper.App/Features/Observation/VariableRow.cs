@@ -12,6 +12,8 @@ public sealed class VariableRow(Variable variable) : INotifyPropertyChanged
     public string Address => Variable.Size == 0 ? "未解析" : Variable.AddressText;
     private bool selected;
     public bool Selected { get => selected; set { if (selected == value) return; selected = value; Changed(); } }
+    private bool showPlot = true;
+    public bool ShowPlot { get => showPlot; set { if (showPlot == value) return; showPlot = value; Changed(); } }
     public Queue<double> History { get; } = new();
     public Queue<double> HistorySeconds { get; } = new();
     public string? LatestValue { get; set; }
