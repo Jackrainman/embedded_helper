@@ -3547,26 +3547,25 @@
   },
   "publishedRelease": {
     "candidate": {
-      "version": "1.0.27-alpha.1",
-      "commit": "e62aa73ef443f871e9c0bc6245ba18f5ba911cac",
-      "packageSha256": "b2f2ef91a910977b50e4c8ca485d2ae897876200c63ed8fc6302f789692a40de",
-      "executableSha256": "317dd58e28e697b360be35fb893bd3029c14a3a3bcd8d362043875ed22092103"
+      "version": "1.1.0-alpha.1",
+      "commit": "3d3846d440bcd7a087db2056b3ae88d709656dc4",
+      "packageSha256": "ec2bd5048b99a839797245e6a1ec70126c51aa6fdc122e81f520aab3782391e9",
+      "executableSha256": "1297ac57662a60f447f95128f36dad6f0f3d942cdd4164919bf12136e3643335"
     },
-    "url": "https://github.com/Jackrainman/embedded_helper/releases/tag/v1.0.27-alpha.1",
-    "publishedAt": "2026-10-26T07:53:24Z",
+    "url": "https://github.com/Jackrainman/embedded_helper/releases/tag/v1.1.0-alpha.1",
+    "publishedAt": "2026-10-26T14:10:50Z",
     "profile": "developer-preview",
-    "verificationRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/40195914043",
-    "releaseRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/40288379667",
+    "verificationRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/40333217757",
+    "releaseRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/40337048775",
     "result": "passed",
-    "scope": "CI仓库48项、客户端209项、静态检查、Release构建及最终包首次/重复/搬迁自检通过；发布工作流重新验证同包证据。本机仓库48项检查通过。硬件与纯净Windows未验收，原人工验收状态不变。",
-    "assetsVerification": "远端EXE/ZIP大小和SHA256与原CI清单一致；下载的清单、摘要和验收JSON均核对服务器摘要，验收内容与原CI一致。",
+    "scope": "CI仓库48项、客户端209项、静态检查、Release构建及最终包首次/重复/搬迁自检通过；发布工作流重新运行仓库检查并验证同包证据。硬件与纯净Windows未验收，原人工验收及本地候选身份不变。",
+    "assetsVerification": "GitHub记录的五个已上传附件大小和SHA256与原CI清单、摘要及实际传入的验收JSON逐项一致；发布标签指向原CI提交，发布说明已回读核对。",
     "evidence": [
-      "test-results/release-1.0.27-local-verify.log",
-      "test-results/release-1.0.27-ci.log",
-      "test-results/release-1.0.27-publish.log",
-      "test-results/release-1.0.27-remote.json",
-      "test-results/release-1.0.27-asset-verification.json",
-      "test-results/release-1.0.27-remote-assets/verification-evidence.json"
+      "test-results/release-1.1.0-ci.log",
+      "test-results/release-1.1.0-publish.log",
+      "test-results/release-1.1.0-remote.json",
+      "test-results/release-1.1.0-asset-verification.json",
+      "test-results/release-1.1.0-ci-metadata/verification-evidence.json"
     ]
   },
   "offlineValidationHistory": [
@@ -3626,6 +3625,32 @@
       "runtime": "10.0.12",
       "scope": "代码完成；已列离线检查通过。完整人工/设备验收未通过。没有设备操作、远程部署、发布、push或tag。",
       "windowCleanup": "自动测试自有进程均已退出；桌面新候选窗口70356检测到人机并发输入，保留供用户使用，没有强制关闭或清理其data。"
+    }
+  ],
+  "publishedReleaseHistory": [
+    {
+      "candidate": {
+        "version": "1.0.27-alpha.1",
+        "commit": "e62aa73ef443f871e9c0bc6245ba18f5ba911cac",
+        "packageSha256": "b2f2ef91a910977b50e4c8ca485d2ae897876200c63ed8fc6302f789692a40de",
+        "executableSha256": "317dd58e28e697b360be35fb893bd3029c14a3a3bcd8d362043875ed22092103"
+      },
+      "url": "https://github.com/Jackrainman/embedded_helper/releases/tag/v1.0.27-alpha.1",
+      "publishedAt": "2026-10-26T07:53:24Z",
+      "profile": "developer-preview",
+      "verificationRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/40195914043",
+      "releaseRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/40288379667",
+      "result": "passed",
+      "scope": "CI仓库48项、客户端209项、静态检查、Release构建及最终包首次/重复/搬迁自检通过；发布工作流重新验证同包证据。本机仓库48项检查通过。硬件与纯净Windows未验收，原人工验收状态不变。",
+      "assetsVerification": "远端EXE/ZIP大小和SHA256与原CI清单一致；下载的清单、摘要和验收JSON均核对服务器摘要，验收内容与原CI一致。",
+      "evidence": [
+        "test-results/release-1.0.27-local-verify.log",
+        "test-results/release-1.0.27-ci.log",
+        "test-results/release-1.0.27-publish.log",
+        "test-results/release-1.0.27-remote.json",
+        "test-results/release-1.0.27-asset-verification.json",
+        "test-results/release-1.0.27-remote-assets/verification-evidence.json"
+      ]
     }
   ]
 }
