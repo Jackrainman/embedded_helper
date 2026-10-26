@@ -1,6 +1,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import re
 import shutil
 import subprocess
 import tempfile
@@ -34,7 +35,7 @@ class HarnessTests(unittest.TestCase):
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(ROOT / name, target)
-        for name in ['.harness', '.githooks', '.github', 'scripts', 'tests/fixtures']:
+        for name in ['.harness', '.githooks', '.github', 'scripts', 'tests/fixtures', 'picture']:
             shutil.copytree(ROOT / name, self.root / name)
 
     def test_positive_and_negative_rules(self):
@@ -162,8 +163,7 @@ class HarnessTests(unittest.TestCase):
     def test_workflow_pins_and_release_permissions(self):
         p = self.root / '.github/workflows/verify.yml'
         content = p.read_text(encoding='utf-8')
-        p.write_text(content.replace('actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683',
-                                     'actions/checkout@v4'), encoding='utf-8')
+        p.write_text(re.sub(r'actions/checkout@[0-9a-f]{40}', 'actions/checkout@main', content, count=1), encoding='utf-8')
         self.assertTrue(any('Action未锁定' in x for x in verify.validate(self.root)))
         p.write_text(content.replace('contents: read', 'contents: write'), encoding='utf-8')
         self.assertTrue(any('普通验证不得' in x for x in verify.validate(self.root)))
