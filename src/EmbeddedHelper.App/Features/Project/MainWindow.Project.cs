@@ -44,10 +44,12 @@ public partial class MainWindow
             Report("上次工程无法恢复，请重新选择工程：" + ex.Message);
         }
     }
-    private void BrowseProject(object? sender, RoutedEventArgs e)
+    private async void BrowseProject(object? sender, RoutedEventArgs e)
     {
         var dialog = new OpenFolderDialog { Title = "选择 EIDE 工程目录" };
-        if (dialog.ShowDialog(this) == true) ProjectPage.ProjectPath.Text = dialog.FolderName;
+        if (dialog.ShowDialog(this) != true) return;
+        ProjectPage.ProjectPath.Text = dialog.FolderName;
+        await Guard(() => LoadProjectAsync(dialog.FolderName));
     }
     private async void OpenProject(object? sender, RoutedEventArgs e) => await Guard(() => LoadProjectAsync(ProjectPage.ProjectPath.Text));
     private async void OpenRecent(object? sender, System.Windows.Input.MouseButtonEventArgs e)

@@ -3440,6 +3440,31 @@
           }
         ]
       }
+    },
+    {
+      "id": "AT-48",
+      "origin": "R-35",
+      "title": "打开工程单入口与选目录后直接加载",
+      "refs": [
+        "PRJ-01",
+        "PRJ-04"
+      ],
+      "kind": "software",
+      "method": "computer_use",
+      "environment": [
+        "Windows 客户端",
+        "tmp 隔离工程；不连接设备"
+      ],
+      "status": "paused",
+      "reason": "用户明确要求 commit 后直接编译，不运行测试。",
+      "resumeWhen": "用户要求恢复本次测试时继续。",
+      "steps": [
+        "点击唯一的打开工程按钮，选择有效目录，确认后直接显示工程与目标。",
+        "取消目录选择，确认当前工程保持不变。",
+        "手动输入工程目录或工作区文件路径后按 Enter，确认打开；无效路径显示错误。"
+      ],
+      "expected": "选目录后无需二次点击；取消不切换；原有加载、错误反馈及最近工程保存逻辑继续生效。",
+      "lastResult": null
     }
   ],
   "candidateHistory": [

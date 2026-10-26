@@ -95,3 +95,5 @@ Python产品原型、对应测试、requirements.lock及Qt打包探针归档于G
 未 release 的本地测试包构建后统一移动至 Windows 桌面 `EmbeddedHelper_test/EmbeddedHelper-版本-源码短提交-用途/`，供手动测试。保留清单和验证证据，不覆盖旧包及 data；软件逻辑通过不代表 GUI 或硬件验收通过。
 
 采集与解析环境支持从工程/VS Code 明确工具设置、EIDE 默认目录、SEGGER 安装目录及 PATH 查找候选；显示来源、版本及静态校验结果。多候选需选择，已有路径不自动替换；J-Link 文件校验不等于加载或设备连接验证。
+
+工程概览仅保留“打开工程”按钮：点击后选择目录，确认即加载工程；也可输入工程目录或 `.code-workspace` 路径后按 Enter 打开。取消目录选择保留当前工程。

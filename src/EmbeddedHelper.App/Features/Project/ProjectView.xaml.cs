@@ -10,7 +10,12 @@ public partial class ProjectView : UserControl
     public event RoutedEventHandler? BrowseProjectRequested;
     private void BrowseProject(object? sender, RoutedEventArgs e) => BrowseProjectRequested?.Invoke(sender, e);
     public event RoutedEventHandler? OpenProjectRequested;
-    private void OpenProject(object? sender, RoutedEventArgs e) => OpenProjectRequested?.Invoke(sender, e);
+    private void ProjectPathKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        e.Handled = true;
+        OpenProjectRequested?.Invoke(sender, e);
+    }
     public event SelectionChangedEventHandler? TargetChangedRequested;
     private void TargetChanged(object? sender, SelectionChangedEventArgs e) => TargetChangedRequested?.Invoke(sender, e);
     public event RoutedEventHandler? BrowseElfRequested;
