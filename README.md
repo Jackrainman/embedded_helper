@@ -46,7 +46,7 @@ G4一键VS Code接入/共享移除及LAN_Debug Release脚本包的下载、离�
 | 验证与环境检查 | 用一个入口编排文档链接、任务结构、文件边界和环境检查；失败返回非零，缺工具/硬件报告未验证；用正例、反例确认检查有效，再接提交钩子并验证真实触发。 |
 | M0隔离样本 | 配置试验用工程副本；记录上游SHA、脱敏范围和已知预期，覆盖中文空格路径、未知字段、ELF及串口字节；结果记录代码基线、工具版本、输入/硬件、退出结果和未覆盖项。 |
 
-SDK 10.0.402锁定在[global.json](global.json)，运行时10.0.12；根[VERSION](VERSION)通过[scripts/bump_version.py](scripts/bump_version.py)更新。C#工程已有NuGet锁文件：LibObjectFile 2.3.1、YamlDotNet 18.1.0、System.IO.Ports 10.0.12；测试使用xUnit。SDK与库更新须显式修改并重新验证。
+SDK 10.0.403锁定在[global.json](global.json)，运行时10.0.12；根[VERSION](VERSION)通过[scripts/bump_version.py](scripts/bump_version.py)更新。C#工程已有NuGet锁文件：LibObjectFile 2.3.1、YamlDotNet 18.1.0、System.IO.Ports 10.0.12；测试使用xUnit。SDK与库更新须显式修改并重新验证。
 
 `.agents/skills`用于稳定、可复用的项目流程；已有EIDE/J-Link/LAN技能按任务复用，缺失时明确说明，不复制个人技能形成双源，也不预建空技能目录。真实工程写入、烧录/复位/停核和服务部署按具体任务授权执行，文档研究不扩大设备操作范围。
 
