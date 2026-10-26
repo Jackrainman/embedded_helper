@@ -3547,26 +3547,26 @@
   },
   "publishedRelease": {
     "candidate": {
-      "version": "1.0.24-alpha.1",
-      "commit": "c2e9dab8ddaccaff61a72c7f566fce2ecd318e8a",
-      "packageSha256": "0b6012d43f2ece6a1a0daded506f677b8080a69b512bf827f887c48384c0a39e",
-      "executableSha256": "296ea6281d5d72c496855b684b26282072727d63688a3058bfaad0171b5d62af"
+      "version": "1.0.27-alpha.1",
+      "commit": "e62aa73ef443f871e9c0bc6245ba18f5ba911cac",
+      "packageSha256": "b2f2ef91a910977b50e4c8ca485d2ae897876200c63ed8fc6302f789692a40de",
+      "executableSha256": "317dd58e28e697b360be35fb893bd3029c14a3a3bcd8d362043875ed22092103"
     },
-    "url": "https://github.com/Jackrainman/embedded_helper/releases/tag/v1.0.24-alpha.1",
-    "publishedAt": "2026-10-22T12:23:18Z",
+    "url": "https://github.com/Jackrainman/embedded_helper/releases/tag/v1.0.27-alpha.1",
+    "publishedAt": "2026-10-26T07:53:24Z",
     "profile": "developer-preview",
-    "verificationRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/39776259853",
-    "releaseRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/39777756971",
+    "verificationRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/40195914043",
+    "releaseRun": "https://github.com/Jackrainman/embedded_helper/actions/runs/40288379667",
     "result": "passed",
-    "scope": "CI仓库/静态/构建/205项客户端测试及最终包首次、重复、搬迁冒烟通过；本地发布前48项Harness与205项客户端测试通过。硬件、纯净Windows与该云端包旧版替换升级未验证，原人工验收状态不变。",
-    "assetsVerification": "EXE、ZIP、清单、SHA256SUMS与原CI字节一致；验收JSON经工作流重新序列化，内容一致并核对远端摘要。",
+    "scope": "CI仓库48项、客户端209项、静态检查、Release构建及最终包首次/重复/搬迁自检通过；发布工作流重新验证同包证据。本机仓库48项检查通过。硬件与纯净Windows未验收，原人工验收状态不变。",
+    "assetsVerification": "远端EXE/ZIP大小和SHA256与原CI清单一致；下载的清单、摘要和验收JSON均核对服务器摘要，验收内容与原CI一致。",
     "evidence": [
-      "test-results/push-release-verify.log",
-      "test-results/push-release-ci.log",
-      "test-results/push-release-publish.log",
-      "test-results/push-release-remote.json",
-      "test-results/push-release-asset-verification.json",
-      "dist/candidates/1.0.24-alpha.1-c2e9dab-ci/verification-evidence.json"
+      "test-results/release-1.0.27-local-verify.log",
+      "test-results/release-1.0.27-ci.log",
+      "test-results/release-1.0.27-publish.log",
+      "test-results/release-1.0.27-remote.json",
+      "test-results/release-1.0.27-asset-verification.json",
+      "test-results/release-1.0.27-remote-assets/verification-evidence.json"
     ]
   },
   "offlineValidationHistory": [
